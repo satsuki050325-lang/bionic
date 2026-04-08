@@ -186,3 +186,25 @@
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
 - Phase 1 手順6: engine_eventsをDBに保存
+
+---
+
+## 2026-04-09 / Claude Code（5回目）
+
+### やったこと
+- Codex P1 finding 2件を修正した（events.ts バリデーション強化）
+  - EventType許可リスト検証を追加（不明なtypeは400）
+  - EventSource許可リスト検証を追加（不明なsourceは400）
+  - payload型検証を追加（null・配列・非オブジェクトは400）
+- `pnpm typecheck` エラーなし確認
+- curl 5パターンで全て期待通りの結果を確認
+
+### 判断したこと
+- VALID_EVENT_TYPES / VALID_SOURCESはモジュールスコープに定義（リクエストごとの再生成を回避）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1 手順5: SDK最小実装（health/error/usage）
+- Phase 1 手順6: engine_eventsをDBに保存
