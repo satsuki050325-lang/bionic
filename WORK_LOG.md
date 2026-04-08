@@ -116,3 +116,23 @@
 
 ### 次にやること
 - Phase 1 手順3: service interface と local HTTP API の最小仕様
+
+---
+
+## 2026-04-09 / Claude Code（2回目）
+
+### やったこと
+- CURRENT.md を最新の状態に更新した
+  - 完了済みセクションにrepo初期化・shared型定義を追加
+  - 進行中セクションにservice interface /refine待ちを追加
+  - 実装優先順序・Medini接続タイミングの確定事項を追加
+  - Open Questionsを整理（要Claude確認→なし、要Codex確認→API仕様2件）
+
+### 判断したこと
+- CURRENT.md の内容はClaude（チャット側）からの指示通りに上書きした
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /refine の結果を待つ
