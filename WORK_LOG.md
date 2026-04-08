@@ -208,3 +208,26 @@
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
 - Phase 1 手順6: engine_eventsをDBに保存
+
+---
+
+## 2026-04-09 / Claude
+
+### やったこと
+- service interface・local HTTP API仕様をCodexと確定した
+- Phase 1 API 4エンドポイントをClaude Codeで実装した
+- Codexレビューで出たP1 finding 3件を全修正した
+- Windows側でgit cloneしてCodexのレビュー環境を整備した
+
+### 判断したこと
+- approveAction / retryAction はPhase 2まで実装しない
+- runJobはresearch_digestのみ。alert_evaluationは同期処理
+- payload は当面 Record<string, unknown>
+- P2 finding（status.ts / alerts.ts）はDB導入時に対応する
+
+### 未解決・既知リスク
+- status.tsのstartedAtはDB導入時に修正する
+- alerts.tsのフィルターはDB導入時に実装する
+
+### 次にやること
+- engine_eventsをSupabaseに保存する
