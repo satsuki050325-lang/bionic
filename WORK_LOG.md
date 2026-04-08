@@ -164,3 +164,25 @@
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
 - Phase 1 手順6: engine_eventsをDBに保存
+
+---
+
+## 2026-04-09 / Claude Code（4回目）
+
+### やったこと
+- Codex P1 finding 2件を修正した
+  - events.ts: EngineEventの全必須フィールド（id, projectId, serviceId, type, occurredAt, source, payload）を検証するよう拡張
+  - jobs.ts: requestedByの存在チェックとEventSource値のバリデーションを追加
+- `pnpm typecheck` がエラーなく通ることを確認した
+- curlで5パターンのテストを実施し全て期待通りの結果を確認した
+
+### 判断したこと
+- P2 finding（status.ts / alerts.ts）は指示通り今回触らない
+- VALID_SOURCESはルートハンドラ内にローカル定義（共通化は将来必要時に）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1 手順5: SDK最小実装（health/error/usage）
+- Phase 1 手順6: engine_eventsをDBに保存

@@ -6,8 +6,17 @@ export const eventsRouter = Router()
 eventsRouter.post('/', (req, res) => {
   const input = req.body as CaptureEventInput
 
-  if (!input.event?.id || !input.event?.type) {
-    res.status(400).json({ error: 'invalid event' })
+  const e = input.event
+  if (
+    !e?.id ||
+    !e?.projectId ||
+    !e?.serviceId ||
+    !e?.type ||
+    !e?.occurredAt ||
+    !e?.source ||
+    e?.payload === undefined
+  ) {
+    res.status(400).json({ error: 'invalid event: missing required fields' })
     return
   }
 
