@@ -1,0 +1,16 @@
+{
+  "name": "bionic",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}
