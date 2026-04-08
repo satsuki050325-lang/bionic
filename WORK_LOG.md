@@ -112,7 +112,7 @@
 - docs/BIONIC_PRODUCT.md と docs/TECHNICAL_DESIGN.md は内容を変更せずにコピーした
 
 ### 未解決・既知リスク
-- GitHub上の bionic リポジトリの存在確認が必要（pushが通るかどうか）
+- なし
 
 ### 次にやること
 - Phase 1 手順3: service interface と local HTTP API の最小仕様
