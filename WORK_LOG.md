@@ -136,3 +136,31 @@
 
 ### 次にやること
 - Codex /refine の結果を待つ
+
+---
+
+## 2026-04-09 / Claude Code（3回目）
+
+### やったこと
+- packages/shared/src/types.ts を新しい型定義で上書きした（BionicEngineService, EngineEvent, ServiceStatus, Alert, Job 等）
+- packages/engine パッケージを新規作成した
+  - Express HTTPサーバー（ポート3001）
+  - 4エンドポイント実装: POST /api/events, GET /api/status, GET /api/alerts, POST /api/jobs
+- `pnpm typecheck` がshared・engine両方でエラーなく通ることを確認した
+- 4エンドポイント全てでcurlレスポンスを確認した
+  - POST /api/events → 202 {accepted: true, eventId}
+  - GET /api/status → 200 {engine, queue, alerts, lastEventAt}
+  - GET /api/alerts → 200 {alerts: []}
+  - POST /api/jobs → 202 {job: {id, type, status, ...}}
+
+### 判断したこと
+- データはインメモリのみ（指示通り、DB保存は次ステップ）
+- import パスに .js 拡張子を付与（NodeNext moduleResolution の要件）
+- express のバージョンは pnpm resolve に任せた（^4.18.2 指定）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1 手順5: SDK最小実装（health/error/usage）
+- Phase 1 手順6: engine_eventsをDBに保存

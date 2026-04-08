@@ -1,100 +1,111 @@
-// ── EngineEvent ────────────────────────────────────────────────────
-export type EventSuffix =
-  | 'detected'
-  | 'requested'
-  | 'started'
-  | 'completed'
-  | 'failed'
-  | 'granted'
-  | 'denied'
+// ── 基本型 ────────────────────────────────────────────────────────
+export type ISODateString = string
 
+export type EventType =
+  | 'service.health.reported'
+  | 'service.health.degraded'
+  | 'service.error.reported'
+  | 'service.usage.reported'
+  | 'research.item.detected'
+  | 'job.started'
+  | 'job.completed'
+  | 'job.failed'
+
+export type AlertSeverity = 'info' | 'warning' | 'critical'
+export type AlertStatus = 'open' | 'resolved'
+export type EngineRuntimeStatus = 'idle' | 'running' | 'degraded'
+export type JobType = 'research_digest'
+export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'needs_review' | 'cancelled'
+export type EventSource = 'sdk' | 'app' | 'cli' | 'engine' | 'scheduler'
+
+// ── EngineEvent ────────────────────────────────────────────────────
 export interface EngineEvent {
   id: string
-  project_id: string
-  service_id: string
-  type: string
+  projectId: string
+  serviceId: string
+  type: EventType
+  occurredAt: ISODateString
+  source: EventSource
   payload: Record<string, unknown>
-  created_at: string
 }
 
-// ── JobStatus ──────────────────────────────────────────────────────
-export type JobStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'needs_review'
-  | 'cancelled'
-
-export type ResolutionReason =
-  | 'user_cancelled'
-  | 'superseded'
-  | 'manual_resolution'
-  | 'timeout'
-  | 'dependency_error'
-
-export interface EngineJob {
-  id: string
-  project_id: string
-  type: string
-  status: JobStatus
-  resolution_reason?: ResolutionReason
-  payload: Record<string, unknown>
-  created_at: string
-  updated_at: string
+export interface CaptureEventInput {
+  event: EngineEvent
 }
 
-// ── DecisionResult ─────────────────────────────────────────────────
-export type DecisionType = 'auto_execute' | 'needs_review' | 'ignore'
-
-export interface DecisionResult {
-  type: DecisionType
-  reason: string
-  job_id?: string
-}
-
-// ── EngineAction ───────────────────────────────────────────────────
-export type ActionType = 'notify' | 'restart' | 'cache_clear' | 'backup'
-
-export interface EngineAction {
-  id: string
-  job_id: string
-  type: ActionType
-  payload: Record<string, unknown>
-  executed_at?: string
+export interface CaptureEventResult {
+  accepted: true
+  eventId: string
 }
 
 // ── ServiceStatus ──────────────────────────────────────────────────
-export type ServiceHealth = 'ok' | 'degraded' | 'down'
-
 export interface ServiceStatus {
-  service_id: string
-  health: ServiceHealth
-  latency_ms?: number
-  checked_at: string
+  engine: {
+    status: EngineRuntimeStatus
+    startedAt: ISODateString | null
+    version: string | null
+  }
+  queue: {
+    pendingJobs: number
+    runningJobs: number
+    needsReviewJobs: number
+  }
+  alerts: {
+    open: number
+    critical: number
+  }
+  lastEventAt: ISODateString | null
 }
 
 // ── Alert ──────────────────────────────────────────────────────────
-export type AlertSeverity = 'info' | 'warning' | 'critical'
-
 export interface Alert {
   id: string
-  project_id: string
-  service_id: string
+  projectId: string
+  serviceId: string | null
+  type: 'service_health' | 'research_digest' | 'job_failure'
   severity: AlertSeverity
+  title: string
   message: string
-  resolved: boolean
-  created_at: string
+  status: AlertStatus
+  createdAt: ISODateString
+  updatedAt: ISODateString
+}
+
+export interface ListAlertsInput {
+  status?: AlertStatus
+  severity?: AlertSeverity
+  limit?: number
+}
+
+export interface ListAlertsResult {
+  alerts: Alert[]
+}
+
+// ── Job ───────────────────────────────────────────────────────────
+export interface Job {
+  id: string
+  type: JobType
+  status: JobStatus
+  requestedBy: EventSource
+  createdAt: ISODateString
+  startedAt: ISODateString | null
+  completedAt: ISODateString | null
+}
+
+export interface RunJobInput {
+  type: 'research_digest'
+  requestedBy: EventSource
+  projectId?: string
+}
+
+export interface RunJobResult {
+  job: Job
 }
 
 // ── BionicEngineService ────────────────────────────────────────────
-export type JobType = string
-
 export interface BionicEngineService {
-  captureEvent(event: EngineEvent): Promise<void>
+  captureEvent(input: CaptureEventInput): Promise<CaptureEventResult>
   getStatus(): Promise<ServiceStatus>
-  listAlerts(): Promise<Alert[]>
-  runJob(type: JobType): Promise<EngineJob>
-  retryAction(id: string): Promise<void>
-  approveAction(id: string): Promise<void>
+  listAlerts(input?: ListAlertsInput): Promise<ListAlertsResult>
+  runJob(input: RunJobInput): Promise<RunJobResult>
 }
