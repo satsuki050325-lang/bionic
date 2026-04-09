@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { RunJobInput, RunJobResult } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
+import { notifyDigest } from '../actions/notify.js'
 
 export const jobsRouter = Router()
 
@@ -37,6 +38,10 @@ jobsRouter.post('/', async (req, res) => {
     return
   }
 
+  if (input.type === 'research_digest') {
+    void runResearchDigest(data.id, input.projectId ?? 'default')
+  }
+
   const result: RunJobResult = {
     job: {
       id: data.id,
@@ -51,3 +56,54 @@ jobsRouter.post('/', async (req, res) => {
 
   res.status(202).json(result)
 })
+
+async function runResearchDigest(jobId: string, projectId: string): Promise<void> {
+  try {
+    await supabase
+      .from('engine_jobs')
+      .update({ status: 'running', started_at: new Date().toISOString() })
+      .eq('id', jobId)
+
+    const { data: items, error } = await supabase
+      .from('research_items')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('is_digest_sent', false)
+      .order('importance_score', { ascending: false })
+      .limit(10)
+
+    if (error) throw error
+
+    await notifyDigest({
+      projectId,
+      items: (items ?? []).map((row) => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        url: row.url ?? null,
+        source: row.source,
+        importanceScore: row.importance_score,
+      })),
+    })
+
+    if (items && items.length > 0) {
+      await supabase
+        .from('research_items')
+        .update({ is_digest_sent: true })
+        .in('id', items.map((i: { id: string }) => i.id))
+    }
+
+    await supabase
+      .from('engine_jobs')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('id', jobId)
+
+    console.log(`[digest] completed: ${items?.length ?? 0} items sent`)
+  } catch (err) {
+    console.error('[digest] failed:', err)
+    await supabase
+      .from('engine_jobs')
+      .update({ status: 'failed' })
+      .eq('id', jobId)
+  }
+}

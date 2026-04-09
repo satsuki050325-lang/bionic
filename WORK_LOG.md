@@ -586,3 +586,28 @@
 
 ### 次にやること
 - Phase 1の成功条件を全て確認する（/ship判断）
+
+---
+
+## 2026-04-10 / Claude Code（17回目）
+
+### やったこと
+- research digest Discord通知処理を実装した
+  - packages/engine/src/actions/notify.ts — Discord webhook通知（将来差し替え可能な構造）
+  - packages/engine/src/routes/jobs.ts — research_digest job起動時にdigest処理を非同期実行
+  - job状態遷移: pending → running → completed/failed
+  - research_itemsのis_digest_sentフラグを更新
+  - .env.local にDISCORD_WEBHOOK_URLを追加
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- digest処理はvoidで非同期実行（APIレスポンスをブロックしない）
+- 通知先はDiscord webhook。notify.tsに閉じ込めて将来Slack等に差し替え可能
+- 未送信アイテムをimportance_score降順で最大10件取得
+
+### 未解決・既知リスク
+- research_itemsにテストデータがまだない（SQL手動実行待ち）
+
+### 次にやること
+- テストデータ挿入→digest動作確認
+- Phase 1成功条件の全体確認
