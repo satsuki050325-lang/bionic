@@ -54,7 +54,7 @@ eventsRouter.post('/', async (req, res) => {
   }
 
   const { error } = await supabase.from('engine_events').insert({
-    id: e.id,
+    client_event_id: e.id,
     project_id: e.projectId,
     service_id: e.serviceId,
     type: e.type,

@@ -281,3 +281,26 @@
 
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
+
+---
+
+## 2026-04-09 / Claude Code（8回目）
+
+### やったこと
+- Codex P1 finding 2件を修正した
+  - supabase.ts: anon key → service_role key に切り替え、auth設定を追加
+  - events.ts: insert時のidフィールドをclient_event_idに変更（DB側でuuid自動生成）
+  - .env.local にSUPABASE_SERVICE_ROLE_KEYを追加
+  - engine_eventsテーブル変更SQLを出力（手動実行待ち）
+- `pnpm typecheck` エラーなし確認
+
+### 判断したこと
+- service_role keyはRLSをバイパスするため、サーバーサイド専用の設定（autoRefreshToken: false, persistSession: false）を付与
+- idカラムはtext型のまま、gen_random_uuid()::textでデフォルト値を設定する方針
+
+### 未解決・既知リスク
+- engine_eventsテーブルのスキーマ変更SQL未実行（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでスキーマ変更SQLを実行する
+- Phase 1 手順5: SDK最小実装（health/error/usage）
