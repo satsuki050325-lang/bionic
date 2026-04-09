@@ -676,3 +676,27 @@
 
 ### 次にやること
 - リサーチ収集処理の設計
+
+---
+
+## 2026-04-10 / Claude Code（20回目）
+
+### やったこと
+- GET /api/research と POST /api/research を実装した
+  - packages/shared/src/types.ts にResearchItem関連型を追加
+  - packages/engine/src/routes/research.ts を新規作成
+  - packages/engine/src/index.ts にresearchRouterを追加
+- research_itemsテーブルにcategoryカラム追加SQLを出力
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- GET: importance_score降順、category/is_digest_sent/limitフィルター対応
+- POST: title/summary/importanceScore必須、importanceScore 0-100バリデーション
+- snake_case↔camelCase変換はrouter内で実施
+
+### 未解決・既知リスク
+- research_itemsテーブルにcategoryカラムが未追加（SQL手動実行待ち）
+
+### 次にやること
+- categoryカラム追加SQLをSupabaseで実行
+- Research画面をAPIに接続する

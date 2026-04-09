@@ -102,6 +102,43 @@ export interface RunJobResult {
   job: Job
 }
 
+// ── ResearchItem ───────────────────────────────────────────────────
+export interface ResearchItem {
+  id: string
+  projectId: string
+  title: string
+  summary: string
+  url: string | null
+  category: string | null
+  importanceScore: number
+  isDigestSent: boolean
+  createdAt: string
+}
+
+export interface CreateResearchItemInput {
+  projectId: string
+  title: string
+  summary: string
+  url?: string
+  category?: string
+  importanceScore: number
+}
+
+export interface CreateResearchItemResult {
+  item: ResearchItem
+}
+
+export interface ListResearchItemsInput {
+  projectId?: string
+  category?: string
+  isDigestSent?: boolean
+  limit?: number
+}
+
+export interface ListResearchItemsResult {
+  items: ResearchItem[]
+}
+
 // ── BionicEngineService ────────────────────────────────────────────
 export interface BionicEngineService {
   captureEvent(input: CaptureEventInput): Promise<CaptureEventResult>
