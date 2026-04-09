@@ -502,3 +502,27 @@
 
 ### 次にやること
 - MediniへのSDK組み込み
+
+---
+
+## 2026-04-10 / Claude Code（14回目）
+
+### やったこと
+- MediniにBionic SDKを組み込んだ
+  - @bionic/sdk と @bionic/shared を file:参照でインストール
+  - src/lib/bionic.ts を新規作成（sendHealth/sendError/sendUsage）
+  - with-auth.ts に sendHealth('ok') / sendError() を追加（fireforget）
+  - plan.ts の incrementUsage() に sendUsage() を追加（fireforget）
+  - .env.local にBIONIC_ENGINE_URL/PROJECT_ID/SERVICE_IDを追加
+- pnpm build がMediniで成功（既存動作を壊さない）
+
+### 判断したこと
+- workspace:*参照はMonorepo外では解決できないため、pnpm overridesで@bionic/sharedをfile:参照にオーバーライドした
+- sendHealth/sendError/sendUsageはvoidでfireforget呼び出し（Mediniのレスポンスをブロックしない）
+- 環境変数がない場合はbionicクライアントがnullになり何も送らない設計
+
+### 未解決・既知リスク
+- Mediniのgit commitは未実施（指示通り）
+
+### 次にやること
+- 動作確認（Engine + Medini起動→health event送信→Supabase確認）
