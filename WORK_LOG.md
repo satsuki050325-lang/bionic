@@ -416,3 +416,22 @@
 ### 次にやること
 - SDKの動作確認（Engine起動→SDK経由でイベント送信→Supabase確認）
 - Medini接続準備
+
+---
+
+## 2026-04-10 / Claude Code（12回目）
+
+### やったこと
+- Codex P1 finding修正: SDK package.jsonのmain/typesをdist/配下に変更
+- tsconfig.jsonにdeclaration: trueを追加（.d.ts生成に必要）
+- `pnpm typecheck` エラーなし、`pnpm --filter @bionic/sdk build` 成功確認
+- dist/index.js, dist/index.d.ts の生成を確認
+
+### 判断したこと
+- declaration: trueがないと.d.tsが生成されないため追加した
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- SDKの動作確認（Engine起動→SDK経由でイベント送信→Supabase確認）
