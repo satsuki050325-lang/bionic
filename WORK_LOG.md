@@ -370,3 +370,25 @@
 
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
+
+---
+
+## 2026-04-10 / Claude（2回目）
+
+### やったこと
+- engine_jobs / engine_alerts / research_items テーブルをSupabaseに作成した
+- POST /api/jobs でDBにjobを保存する処理を実装した
+- GET /api/alerts でDBからalertを取得する処理を実装した
+- GET /api/status でDB集計・lastEventAtを実装した
+- GET /api/status のDB障害時503対応を実装した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- status.tsはDB障害を503で正直に報告する。ゼロ値で誤魔化さない
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- research_itemsの保存処理はSDK実装後に追加する
+
+### 次にやること
+- SDK最小実装（@bionic/sdk: health / error / usage の3メソッド）
