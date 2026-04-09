@@ -208,3 +208,31 @@
 ### 次にやること
 - Phase 1 手順5: SDK最小実装（health/error/usage）
 - Phase 1 手順6: engine_eventsをDBに保存
+
+---
+
+## 2026-04-09 / Claude Code（6回目）
+
+### やったこと
+- Supabase接続を実装した（TECHNICAL_DESIGN.md 実装順序⑥）
+  - .env.local にSupabase接続情報を配置（.gitignore済み）
+  - @supabase/supabase-js をengineパッケージに追加
+  - packages/engine/src/lib/supabase.ts にクライアントを作成
+  - packages/engine/src/routes/events.ts にSupabase insert処理を追加
+  - engine_events テーブル作成SQL を出力（手動実行待ち）
+- `pnpm typecheck` エラーなし確認
+
+### 判断したこと
+- EngineEventのcamelCaseフィールドをDB側のsnake_caseカラムにマッピングした
+- insert失敗時は500を返し、console.errorでログ出力する
+- テーブル作成SQLはClaude Codeから直接実行できないため出力のみ
+
+### 未解決・既知リスク
+- engine_eventsテーブルがSupabase上にまだ作成されていない（SQL手動実行待ち）
+- RLSポリシー未設定（anon keyではinsertがRLSでブロックされる可能性あり）
+
+### 次にやること
+- Supabase SQL Editorでテーブル作成SQLを実行する
+- RLSポリシーを設定する
+- curlで実際のDB保存を確認する
+- Phase 1 手順5: SDK最小実装（health/error/usage）

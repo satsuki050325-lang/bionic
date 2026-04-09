@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import type { CaptureEventInput, CaptureEventResult, EventType, EventSource } from '@bionic/shared'
+import { supabase } from '../lib/supabase.js'
 
 const VALID_EVENT_TYPES: EventType[] = [
   'service.health.reported',
@@ -16,7 +17,7 @@ const VALID_SOURCES: EventSource[] = ['sdk', 'app', 'cli', 'engine', 'scheduler'
 
 export const eventsRouter = Router()
 
-eventsRouter.post('/', (req, res) => {
+eventsRouter.post('/', async (req, res) => {
   const input = req.body as CaptureEventInput
 
   const e = input.event
@@ -49,6 +50,22 @@ eventsRouter.post('/', (req, res) => {
     Array.isArray(e.payload)
   ) {
     res.status(400).json({ error: 'invalid event: payload must be an object' })
+    return
+  }
+
+  const { error } = await supabase.from('engine_events').insert({
+    id: e.id,
+    project_id: e.projectId,
+    service_id: e.serviceId,
+    type: e.type,
+    occurred_at: e.occurredAt,
+    source: e.source,
+    payload: e.payload,
+  })
+
+  if (error) {
+    console.error('Failed to insert event:', error)
+    res.status(500).json({ error: 'failed to save event' })
     return
   }
 
