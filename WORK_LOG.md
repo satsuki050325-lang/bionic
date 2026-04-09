@@ -392,3 +392,27 @@
 
 ### 次にやること
 - SDK最小実装（@bionic/sdk: health / error / usage の3メソッド）
+
+---
+
+## 2026-04-10 / Claude Code（11回目）
+
+### やったこと
+- @bionic/sdk パッケージを新規作成した
+  - packages/sdk/package.json, tsconfig.json
+  - packages/sdk/src/client.ts — BionicClientクラス（health/error/usage 3メソッド）
+  - packages/sdk/src/index.ts — re-export
+- `pnpm typecheck` が shared + engine + sdk 全3パッケージでエラーなし確認
+
+### 判断したこと
+- fetchはNode.js 18以上の標準APIを使用（外部依存追加なし）
+- イベントIDは `evt_{timestamp}_{random}` 形式で生成（DB側でuuidも自動生成される）
+- health()はstatusが'ok'なら'service.health.reported'、それ以外は'service.health.degraded'を送信
+- sourceはデフォルト'sdk'、コンストラクタで変更可能
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- SDKの動作確認（Engine起動→SDK経由でイベント送信→Supabase確認）
+- Medini接続準備
