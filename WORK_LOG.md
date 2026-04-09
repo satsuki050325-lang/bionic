@@ -327,3 +327,25 @@
 
 ### 次にやること
 - engine_jobs / engine_alerts / research_items テーブルの作成と保存処理
+
+---
+
+## 2026-04-10 / Claude Code（9回目）
+
+### やったこと
+- jobs.ts: POST /api/jobsでengine_jobsテーブルにinsert、.select().single()でDB生成値を返却
+- alerts.ts: GET /api/alertsでengine_alertsテーブルからselect、status/severity/limitフィルター対応
+- status.ts: GET /api/statusでengine_jobs/engine_alerts/engine_eventsから集計（Promise.all並列）、ENGINE_START_TIMEをモジュールスコープで保持
+- `pnpm typecheck` エラーなし確認
+
+### 判断したこと
+- jobs.tsのproject_idはinput.projectId ?? 'default'でフォールバック（型定義でoptionalのため）
+- status.tsのstartedAtはモジュールスコープの定数で保持（プロセス起動時刻を正しく返す）
+- alerts.tsのsnake_case→camelCase変換をmap内で実施
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- 動作確認（curl テスト）
+- Phase 1 手順5: SDK最小実装（health/error/usage）

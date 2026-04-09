@@ -1,25 +1,42 @@
 import { Router } from 'express'
 import type { ServiceStatus } from '@bionic/shared'
+import { supabase } from '../lib/supabase.js'
 
 export const statusRouter = Router()
 
-statusRouter.get('/', (_req, res) => {
+const ENGINE_START_TIME = new Date().toISOString()
+
+statusRouter.get('/', async (_req, res) => {
+  const [jobsResult, alertsResult, lastEventResult] = await Promise.all([
+    supabase.from('engine_jobs').select('status'),
+    supabase.from('engine_alerts').select('severity, status').eq('status', 'open'),
+    supabase
+      .from('engine_events')
+      .select('created_at')
+      .order('created_at', { ascending: false })
+      .limit(1),
+  ])
+
+  const jobs = jobsResult.data ?? []
+  const alerts = alertsResult.data ?? []
+  const lastEvent = lastEventResult.data?.[0] ?? null
+
   const status: ServiceStatus = {
     engine: {
       status: 'running',
-      startedAt: new Date().toISOString(),
+      startedAt: ENGINE_START_TIME,
       version: '0.1.0',
     },
     queue: {
-      pendingJobs: 0,
-      runningJobs: 0,
-      needsReviewJobs: 0,
+      pendingJobs: jobs.filter((j) => j.status === 'pending').length,
+      runningJobs: jobs.filter((j) => j.status === 'running').length,
+      needsReviewJobs: jobs.filter((j) => j.status === 'needs_review').length,
     },
     alerts: {
-      open: 0,
-      critical: 0,
+      open: alerts.length,
+      critical: alerts.filter((a) => a.severity === 'critical').length,
     },
-    lastEventAt: null,
+    lastEventAt: lastEvent?.created_at ?? null,
   }
 
   res.status(200).json(status)
