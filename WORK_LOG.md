@@ -304,3 +304,26 @@
 ### 次にやること
 - Supabase SQL Editorでスキーマ変更SQLを実行する
 - Phase 1 手順5: SDK最小実装（health/error/usage）
+
+---
+
+## 2026-04-10 / Claude
+
+### やったこと
+- engine_eventsのSupabase保存処理を実装した
+- dotenvをpreload方式で導入した
+- service_role keyに切り替えた
+- client_event_idを導入しDB側でuuidを自動生成する設計にした
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- anon keyではなくservice_role keyをEngine側で使う
+- 呼び出し元のIDはclient_event_idとして保存、DBのidはgen_random_uuid()で自動生成
+- RLSは開発中は無効。本番前に有効化する
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- engine_jobs / engine_alerts / research_items はまだ未実装
+
+### 次にやること
+- engine_jobs / engine_alerts / research_items テーブルの作成と保存処理

@@ -33,12 +33,17 @@
 - Engine最小起動（packages/engine）
 - Phase 1 API 4エンドポイント実装（POST /api/events, GET /api/status, GET /api/alerts, POST /api/jobs）
 - Codexレビュー完了・P1 finding全修正済み
+- engine_eventsをSupabaseに保存（テーブル作成・RLS無効・保存処理実装）
+- dotenv導入（.env.local自動読み込み）
+- service_role key切り替え
+- client_event_id導入（DB側でuuid自動生成）
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 進行中
 - なし
 
 ### 未着手
-- engine_eventsをDBに保存
+- engine_jobs / engine_alerts / research_items テーブルの作成と保存処理
 - コピペ自動化
 - リサーチエンジン
 - SDK最小実装
@@ -49,12 +54,11 @@
 ## 次の1手
 
 ### 今すぐやること
-engine_eventsをDBに保存する（Supabase接続・テーブル作成・保存処理）
+engine_jobs / engine_alerts / research_items テーブルの作成と保存処理
 
 ### done条件
-- [ ] Supabaseプロジェクトが作成されている
-- [ ] engine_eventsテーブルが作成されている
-- [ ] POST /api/events でDBに保存される
+- [ ] 各テーブルがSupabaseに作成されている
+- [ ] POST /api/jobs, GET /api/alerts でDBに保存・取得される
 - [ ] pnpm typecheck が通る
 
 ---
@@ -73,6 +77,7 @@ engine_eventsをDBに保存する（Supabase接続・テーブル作成・保存
 
 - Phase 0では手動コピペが残る。基盤完成後のコピペ自動化まで許容する
 - Electronは未確定。最初はWebコンソールで進める
+- RLSは開発中無効。本番前に有効化が必要
 - status.tsのstartedAtはDB導入時に修正する
 - alerts.tsのフィルターはDB導入時に実装する
 
@@ -91,4 +96,4 @@ engine_eventsをDBに保存する（Supabase接続・テーブル作成・保存
 
 ## 最終更新
 
-2026-04-09 / Claude
+2026-04-10 / Claude
