@@ -46,12 +46,15 @@
 - SDK最小実装（@bionic/sdk: health / error / usage）
 - SDK package entrypoint修正（dist/配下に変更）
 - Codexレビュー完了・P1 finding全修正済み
+- App 3画面実装（Dashboard / Alerts / Research）
+- NEXT_PUBLIC_ENGINE_URL環境変数管理
+- Codexレビュー完了・問題なし
 
 ### 進行中
 - なし
 
 ### 未着手
-- App 3画面（Dashboard / Alerts / Research）
+- MediniへのSDK組み込み
 - コピペ自動化
 - リサーチエンジン
 
@@ -60,14 +63,12 @@
 ## 次の1手
 
 ### 今すぐやること
-App 3画面実装（Dashboard / Alerts / Research）
+MediniへのSDK組み込み（Bionic Phase 1成功条件：health eventをSDK経由で送る）
 
 ### done条件
-- [ ] apps/app が作成されている（Next.js）
-- [ ] Dashboard画面でGET /api/statusの内容が表示される
-- [ ] Alerts画面でGET /api/alertsの内容が表示される
-- [ ] Research画面の枠が存在する
-- [ ] pnpm typecheck が通る
+- [ ] MediniのコードベースにBionic SDKが組み込まれている
+- [ ] Mediniからhealth eventがBionic Engineに送信される
+- [ ] Bionic App DashboardでMediniのstatus情報が確認できる
 
 ---
 
@@ -87,6 +88,7 @@ App 3画面実装（Dashboard / Alerts / Research）
 - Electronは未確定。最初はWebコンソールで進める
 - RLSは開発中無効。本番前に有効化が必要
 - research_itemsの保存処理はSDK実装後に追加する
+- GET /api/research はPhase 2で追加する
 
 ---
 

@@ -480,3 +480,25 @@
 ### 次にやること
 - 動作確認（Engine起動→App起動→画面表示確認）
 - Medini接続準備
+
+---
+
+## 2026-04-10 / Claude（4回目）
+
+### やったこと
+- apps/app を Next.js App Router で作成した
+- Dashboard / Alerts / Research の3画面を実装した
+- EngineURLをNEXT_PUBLIC_ENGINE_URLで環境変数管理する設計にした
+- Codexレビュー完了・問題なし
+
+### 判断したこと
+- Engine未起動時は画面内に「Engineが起動していません」と表示する
+- ResearchページはPhase 1ではstub
+- Vercel配備は将来の選択肢として残す。Phase 1はローカル運用
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- GET /api/research はPhase 2で追加する
+
+### 次にやること
+- MediniへのSDK組み込み
