@@ -259,3 +259,25 @@
 - RLSポリシーを設定する
 - curlで実際のDB保存を確認する
 - Phase 1 手順5: SDK最小実装（health/error/usage）
+
+---
+
+## 2026-04-09 / Claude Code（7回目）
+
+### やったこと
+- dotenvを導入し、.env.local自動読み込みを実装した
+  - devスクリプトを `DOTENV_CONFIG_PATH=../../.env.local tsx watch --require dotenv/config src/index.ts` に変更
+  - `--require dotenv/config` でESM import解決前に環境変数をロード
+  - index.tsへのdotenv importは不要（preload方式のため）
+- `pnpm typecheck` エラーなし確認
+- `pnpm --filter @bionic/engine dev` だけで起動→Supabase保存成功を確認
+
+### 判断したこと
+- コード内でdotenv.config()を呼ぶ方式はESMのimport hoistingにより失敗するため、`--require`によるpreload方式を採用
+- DOTENV_CONFIG_PATHでモノレポルートの.env.localを相対パス指定（`../../.env.local`）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1 手順5: SDK最小実装（health/error/usage）
