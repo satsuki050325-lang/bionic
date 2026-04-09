@@ -545,3 +545,21 @@
 
 ### 次にやること
 - CURRENT.md / WORK_LOG.md の更新
+
+---
+
+## 2026-04-10 / Claude Code（16回目）
+
+### やったこと
+- with-auth.ts のisAuthError判定を削除した（Codex P1 finding）
+  - catch節で無条件にsendErrorを呼ぶよう簡素化
+- pnpm build がMediniで成功確認
+
+### 判断したこと
+- with-auth.tsの構造上、認証失敗はtry内でreturnされるためcatch節に到達しない。isAuthError判定は不要
+
+### 未解決・既知リスク
+- Mediniのgit commitは未実施（指示通り）
+
+### 次にやること
+- CURRENT.md / WORK_LOG.md の更新
