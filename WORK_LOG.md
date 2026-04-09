@@ -454,3 +454,29 @@
 
 ### 次にやること
 - App 3画面実装（Dashboard / Alerts / Research）
+
+---
+
+## 2026-04-10 / Claude Code（13回目）
+
+### やったこと
+- apps/app を Next.js 14 App Routerで新規作成した
+  - Dashboard画面（/）: GET /api/status の内容を表示
+  - Alerts画面（/alerts）: GET /api/alerts の内容を表示
+  - Research画面（/research）: 準備中プレースホルダー
+  - src/lib/engine.ts: Engine APIクライアント（getStatus, getAlerts）
+  - layout.tsx: ナビゲーション付きレイアウト
+- `pnpm --filter @bionic/app build` 成功、`pnpm --filter @bionic/app typecheck` エラーなし
+- .gitignoreに.next/を追加
+
+### 判断したこと
+- Next.js 14はnext.config.tsをサポートしないため、next.config.mjsを使用
+- Server ComponentからEngine APIをfetchで直接呼び出し（cache: 'no-store'）
+- Engine未起動時はnullを返してフォールバックUIを表示
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- 動作確認（Engine起動→App起動→画面表示確認）
+- Medini接続準備
