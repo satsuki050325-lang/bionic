@@ -563,3 +563,26 @@
 
 ### 次にやること
 - CURRENT.md / WORK_LOG.md の更新
+
+---
+
+## 2026-04-10 / Claude（5回目）
+
+### やったこと
+- MediniにBionic SDKをfile:参照で組み込んだ
+- with-auth.ts にhealth / error を組み込んだ
+- plan.ts にusage を組み込んだ
+- sendError送信条件を修正した（isAuthError削除・catch節で無条件送信）
+- Codexレビュー完了・P1 finding全修正済み
+- Phase 1成功条件「MediniがSDK経由でhealth eventを送れる」を達成した
+
+### 判断したこと
+- with-auth.tsのcatch節に到達する時点で全て予期しない例外なのでisAuthError判定は不要
+- sendHealth('ok')の位置はhandler実行前で概念的に正しい（認証レイヤーが生きているという意味）
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- sendHealth('ok')の位置についてはPhase 2で再検討余地あり
+
+### 次にやること
+- Phase 1の成功条件を全て確認する（/ship判断）

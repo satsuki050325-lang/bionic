@@ -49,12 +49,15 @@
 - App 3画面実装（Dashboard / Alerts / Research）
 - NEXT_PUBLIC_ENGINE_URL環境変数管理
 - Codexレビュー完了・問題なし
+- MediniへのBionic SDK組み込み（health / error / usage）
+- with-auth.ts sendError送信条件の修正（isAuthError削除・catch節で無条件送信）
+- Codexレビュー完了・P1 finding全修正済み
+- Phase 1成功条件達成（MediniがSDK経由でhealth eventをSupabaseに送信確認済み）
 
 ### 進行中
 - なし
 
 ### 未着手
-- MediniへのSDK組み込み
 - コピペ自動化
 - リサーチエンジン
 
@@ -63,12 +66,13 @@
 ## 次の1手
 
 ### 今すぐやること
-MediniへのSDK組み込み（Bionic Phase 1成功条件：health eventをSDK経由で送る）
+Phase 1の成功条件を全て確認する（/ship判断）
 
 ### done条件
-- [ ] MediniのコードベースにBionic SDKが組み込まれている
-- [ ] Mediniからhealth eventがBionic Engineに送信される
-- [ ] Bionic App DashboardでMediniのstatus情報が確認できる
+- [ ] MediniでSDKを使ってhealth eventを拾える
+- [ ] 重要なresearchが1日1回digestで届く（Phase 2へ先送り可）
+- [ ] alertが1画面で見える
+- [ ] 自動修復なしでも「今日見る価値」がある
 
 ---
 
@@ -87,7 +91,8 @@ MediniへのSDK組み込み（Bionic Phase 1成功条件：health eventをSDK経
 - Phase 0では手動コピペが残る。基盤完成後のコピペ自動化まで許容する
 - Electronは未確定。最初はWebコンソールで進める
 - RLSは開発中無効。本番前に有効化が必要
-- research_itemsの保存処理はSDK実装後に追加する
+- research_itemsの保存処理は未実装
+- sendHealth('ok')の位置についてはPhase 2で再検討余地あり
 - GET /api/research はPhase 2で追加する
 
 ---
