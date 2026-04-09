@@ -349,3 +349,24 @@
 ### 次にやること
 - 動作確認（curl テスト）
 - Phase 1 手順5: SDK最小実装（health/error/usage）
+
+---
+
+## 2026-04-10 / Claude Code（10回目）
+
+### やったこと
+- status.tsにDB障害検知を追加（Codex P1 finding修正）
+  - Promise.allの3クエリのいずれかがエラーを返した場合に503を返す
+  - console.errorで各クエリのエラー詳細をログ出力
+- `pnpm typecheck` エラーなし確認
+- 動作確認: 正常時200、不正URL時503を確認済み
+
+### 判断したこと
+- エラーチェックはデータ集計の前に配置（早期リターン）
+- 503 Service Unavailableが適切（DBが利用不可）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1 手順5: SDK最小実装（health/error/usage）

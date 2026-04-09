@@ -17,6 +17,16 @@ statusRouter.get('/', async (_req, res) => {
       .limit(1),
   ])
 
+  if (jobsResult.error || alertsResult.error || lastEventResult.error) {
+    console.error('Failed to fetch status:', {
+      jobsError: jobsResult.error,
+      alertsError: alertsResult.error,
+      lastEventError: lastEventResult.error,
+    })
+    res.status(503).json({ error: 'service unavailable: failed to fetch status' })
+    return
+  }
+
   const jobs = jobsResult.data ?? []
   const alerts = alertsResult.data ?? []
   const lastEvent = lastEventResult.data?.[0] ?? null
