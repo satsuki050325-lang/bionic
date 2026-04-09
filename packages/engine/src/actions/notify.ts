@@ -12,16 +12,18 @@ export interface NotifyDigestInput {
   projectId: string
 }
 
-export async function notifyDigest(input: NotifyDigestInput): Promise<boolean> {
+export type NotifyResult = 'sent' | 'skipped' | 'misconfigured'
+
+export async function notifyDigest(input: NotifyDigestInput): Promise<NotifyResult> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL
   if (!webhookUrl) {
     console.warn('[notify] DISCORD_WEBHOOK_URL is not set')
-    return false
+    return 'misconfigured'
   }
 
   if (input.items.length === 0) {
     console.log('[notify] no items to digest')
-    return false
+    return 'skipped'
   }
 
   const targetItems = input.items.slice(0, 3)
@@ -55,5 +57,5 @@ export async function notifyDigest(input: NotifyDigestInput): Promise<boolean> {
     throw new Error(`Discord webhook failed: ${res.status} ${res.statusText}`)
   }
 
-  return true
+  return 'sent'
 }

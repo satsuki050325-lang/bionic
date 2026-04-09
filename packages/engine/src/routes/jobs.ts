@@ -74,7 +74,7 @@ async function runResearchDigest(jobId: string, projectId: string): Promise<void
 
     if (error) throw error
 
-    const sent = await notifyDigest({
+    const result = await notifyDigest({
       projectId,
       items: (items ?? []).map((row) => ({
         id: row.id,
@@ -86,19 +86,26 @@ async function runResearchDigest(jobId: string, projectId: string): Promise<void
       })),
     })
 
-    if (sent && items && items.length > 0) {
+    if (result === 'sent' && items && items.length > 0) {
       await supabase
         .from('research_items')
         .update({ is_digest_sent: true })
         .in('id', items.map((i: { id: string }) => i.id))
     }
 
-    await supabase
-      .from('engine_jobs')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
-      .eq('id', jobId)
-
-    console.log(`[digest] completed: ${items?.length ?? 0} items sent`)
+    if (result === 'misconfigured') {
+      await supabase
+        .from('engine_jobs')
+        .update({ status: 'failed', completed_at: new Date().toISOString() })
+        .eq('id', jobId)
+      console.error('[digest] failed: DISCORD_WEBHOOK_URL is not set')
+    } else {
+      await supabase
+        .from('engine_jobs')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', jobId)
+      console.log(`[digest] completed: result=${result}`)
+    }
   } catch (err) {
     console.error('[digest] failed:', err)
     await supabase

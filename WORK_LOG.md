@@ -631,3 +631,23 @@
 
 ### 次にやること
 - Phase 1成功条件の全体確認
+
+---
+
+## 2026-04-10 / Claude Code（19回目）
+
+### やったこと
+- digest job完了条件を修正した（Codex P1 finding）
+  - notifyDigest()の戻り値を boolean → 'sent' | 'skipped' | 'misconfigured' に変更
+  - misconfigured時はjob status = failed、sent/skipped時はcompleted
+  - is_digest_sent更新はresult === 'sent'の時だけ
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- アイテムゼロ（skipped）は正常完了。Webhook未設定（misconfigured）は設定不備なのでfailed
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1成功条件の全体確認
