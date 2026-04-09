@@ -700,3 +700,27 @@
 ### 次にやること
 - categoryカラム追加SQLをSupabaseで実行
 - Research画面をAPIに接続する
+
+---
+
+## 2026-04-10 / Claude（7回目）
+
+### やったこと
+- Research API（GET/POST /api/research）を実装した
+- shared型にResearchItem関連の型を追加した
+- research_itemsにcategoryカラムを追加した
+
+### 判断したこと
+- summaryのみ（contentなし）
+- 手動保存もdigest対象に含める（is_digest_sent: false）
+- categoryフィールドを持つ
+- リサーチ収集は自動収集ではなく手動保存＋閲覧に方針転換した
+- チャット内蔵・Electron化は将来のタスクとしてIDEAS.mdに記録する
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- チャット内蔵・Electron化は将来検討
+
+### 次にやること
+- Codex /review（Research API）
+- Bionic App Research画面実装（保存フォーム + 一覧表示）

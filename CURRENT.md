@@ -58,12 +58,15 @@
 - NotifyResult型（sent/skipped/misconfigured）導入
 - Codexレビュー完了・P1 finding全修正済み
 - Phase 1成功条件全て達成
+- Research API実装（GET/POST /api/research）
+- shared型にResearchItem追加
+- research_itemsにcategoryカラム追加
 
 ### 進行中
 - なし
 
 ### 未着手
-- リサーチ収集処理（どこから情報を取ってくるか）
+- Bionic App Research画面実装（保存フォーム + 一覧表示）
 - コピペ自動化
 
 ---
@@ -71,12 +74,14 @@
 ## 次の1手
 
 ### 今すぐやること
-リサーチ収集処理の設計（どこから情報を取ってくるか）
+- Codex /review（Research API）
+- Bionic App Research画面実装（保存フォーム + 一覧表示）
 
 ### done条件
-- [ ] リサーチ収集元が決定されている
-- [ ] 収集→research_items保存の処理が設計されている
-- [ ] スケジューラーとの接続方法が決定されている
+- [ ] Codexレビュー完了
+- [ ] Research画面に保存フォームがある
+- [ ] Research画面にリサーチ一覧が表示される
+- [ ] POST /api/research でリサーチが保存できる
 
 ---
 
@@ -95,9 +100,8 @@
 - Phase 0では手動コピペが残る。基盤完成後のコピペ自動化まで許容する
 - Electronは未確定。最初はWebコンソールで進める
 - RLSは開発中無効。本番前に有効化が必要
-- リサーチ収集処理（どこから情報を取ってくるか）は未実装
+- チャット内蔵・Electron化は将来検討
 - sendHealth('ok')の位置についてはPhase 2で再検討余地あり
-- GET /api/research はPhase 2で追加する
 
 ---
 
