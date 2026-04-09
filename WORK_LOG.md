@@ -651,3 +651,28 @@
 
 ### 次にやること
 - Phase 1成功条件の全体確認
+
+---
+
+## 2026-04-10 / Claude（6回目）
+
+### やったこと
+- research digest Discord通知を実装した
+- digest件数を3件に絞った
+- 2000文字超過時の切り詰め処理を実装した
+- NotifyResult型（sent/skipped/misconfigured）を導入した
+- Webhook未設定時はjob failedとして扱う実装にした
+- Codexレビュー完了・P1 finding全修正済み
+- Phase 1成功条件全て達成を確認した
+
+### 判断したこと
+- digest件数は上位3件（importance_score降順）
+- アイテムゼロはcompleted・Webhook未設定はfailed
+- is_digest_sentの更新はresult === 'sent'の時だけ
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- リサーチ収集処理（どこから情報を取ってくるか）は未実装
+
+### 次にやること
+- リサーチ収集処理の設計

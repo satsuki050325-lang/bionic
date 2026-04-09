@@ -53,26 +53,30 @@
 - with-auth.ts sendError送信条件の修正（isAuthError削除・catch節で無条件送信）
 - Codexレビュー完了・P1 finding全修正済み
 - Phase 1成功条件達成（MediniがSDK経由でhealth eventをSupabaseに送信確認済み）
+- research digest Discord通知実装
+- digest件数3件・2000文字上限・送信済みフラグ管理
+- NotifyResult型（sent/skipped/misconfigured）導入
+- Codexレビュー完了・P1 finding全修正済み
+- Phase 1成功条件全て達成
 
 ### 進行中
 - なし
 
 ### 未着手
+- リサーチ収集処理（どこから情報を取ってくるか）
 - コピペ自動化
-- リサーチエンジン
 
 ---
 
 ## 次の1手
 
 ### 今すぐやること
-Phase 1の成功条件を全て確認する（/ship判断）
+リサーチ収集処理の設計（どこから情報を取ってくるか）
 
 ### done条件
-- [ ] MediniでSDKを使ってhealth eventを拾える
-- [ ] 重要なresearchが1日1回digestで届く（Phase 2へ先送り可）
-- [ ] alertが1画面で見える
-- [ ] 自動修復なしでも「今日見る価値」がある
+- [ ] リサーチ収集元が決定されている
+- [ ] 収集→research_items保存の処理が設計されている
+- [ ] スケジューラーとの接続方法が決定されている
 
 ---
 
@@ -91,7 +95,7 @@ Phase 1の成功条件を全て確認する（/ship判断）
 - Phase 0では手動コピペが残る。基盤完成後のコピペ自動化まで許容する
 - Electronは未確定。最初はWebコンソールで進める
 - RLSは開発中無効。本番前に有効化が必要
-- research_itemsの保存処理は未実装
+- リサーチ収集処理（どこから情報を取ってくるか）は未実装
 - sendHealth('ok')の位置についてはPhase 2で再検討余地あり
 - GET /api/research はPhase 2で追加する
 
