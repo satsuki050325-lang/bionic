@@ -526,3 +526,22 @@
 
 ### 次にやること
 - 動作確認（Engine + Medini起動→health event送信→Supabase確認）
+
+---
+
+## 2026-04-10 / Claude Code（15回目）
+
+### やったこと
+- with-auth.ts のsendError送信条件を修正した（Codex P1 finding）
+  - 認証エラー（Unauthorized/Forbidden/認証）はsendErrorをスキップ
+  - 予期しない例外（DB接続失敗等）のみsendErrorを送信
+- pnpm build がMediniで成功確認
+
+### 判断したこと
+- catch節に到達するのは基本的に予期しない例外のみだが、Supabase auth.getUser()がthrowする可能性を考慮してフィルタを追加
+
+### 未解決・既知リスク
+- Mediniのgit commitは未実施（指示通り）
+
+### 次にやること
+- CURRENT.md / WORK_LOG.md の更新
