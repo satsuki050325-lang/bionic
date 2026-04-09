@@ -43,27 +43,30 @@
 - GET /api/status のDB集計・lastEventAt実装
 - GET /api/status のDB障害時503対応
 - Codexレビュー完了・P1 finding全修正済み
+- SDK最小実装（@bionic/sdk: health / error / usage）
+- SDK package entrypoint修正（dist/配下に変更）
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 進行中
 - なし
 
 ### 未着手
-- SDK最小実装
+- App 3画面（Dashboard / Alerts / Research）
 - コピペ自動化
 - リサーチエンジン
-- App 3画面
 
 ---
 
 ## 次の1手
 
 ### 今すぐやること
-SDK最小実装（@bionic/sdk: health / error / usage の3メソッド）
+App 3画面実装（Dashboard / Alerts / Research）
 
 ### done条件
-- [ ] packages/sdk が作成されている
-- [ ] bionic.health() / bionic.error() / bionic.usage() が動作する
-- [ ] Engine側のPOST /api/events にイベントが送信される
+- [ ] apps/app が作成されている（Next.js）
+- [ ] Dashboard画面でGET /api/statusの内容が表示される
+- [ ] Alerts画面でGET /api/alertsの内容が表示される
+- [ ] Research画面の枠が存在する
 - [ ] pnpm typecheck が通る
 
 ---

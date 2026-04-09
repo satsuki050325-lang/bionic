@@ -435,3 +435,22 @@
 
 ### 次にやること
 - SDKの動作確認（Engine起動→SDK経由でイベント送信→Supabase確認）
+
+---
+
+## 2026-04-10 / Claude（3回目）
+
+### やったこと
+- @bionic/sdk を実装した（health / error / usage の3メソッド）
+- SDK package entrypointをdist/配下に修正した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- SDKはfetchのみ使用。外部依存なし
+- entrypointはdist/index.js・dist/index.d.tsを正本とする
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+
+### 次にやること
+- App 3画面実装（Dashboard / Alerts / Research）
