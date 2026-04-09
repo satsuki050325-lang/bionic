@@ -611,3 +611,23 @@
 ### 次にやること
 - テストデータ挿入→digest動作確認
 - Phase 1成功条件の全体確認
+
+---
+
+## 2026-04-10 / Claude Code（18回目）
+
+### やったこと
+- Codex finding 2件を修正した
+  - notify.ts: notifyDigest()がbooleanを返すよう変更、3件上限、2000文字切り詰め
+  - jobs.ts: sent===trueの時だけis_digest_sentを更新、limit 10→3
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- DISCORD_WEBHOOK_URL未設定時はfalseを返し、呼び出し元でis_digest_sent更新をスキップ
+- digest件数は3件に絞り、省略数を「他X件は省略」で表示
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Phase 1成功条件の全体確認

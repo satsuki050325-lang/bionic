@@ -70,11 +70,11 @@ async function runResearchDigest(jobId: string, projectId: string): Promise<void
       .eq('project_id', projectId)
       .eq('is_digest_sent', false)
       .order('importance_score', { ascending: false })
-      .limit(10)
+      .limit(3)
 
     if (error) throw error
 
-    await notifyDigest({
+    const sent = await notifyDigest({
       projectId,
       items: (items ?? []).map((row) => ({
         id: row.id,
@@ -86,7 +86,7 @@ async function runResearchDigest(jobId: string, projectId: string): Promise<void
       })),
     })
 
-    if (items && items.length > 0) {
+    if (sent && items && items.length > 0) {
       await supabase
         .from('research_items')
         .update({ is_digest_sent: true })
