@@ -189,8 +189,32 @@ bionic.usage({ activeUsers: 3 })
 
 ## 設計原則
 
+**Three-phase architecture**
+Phase 1: Intelligent Secretary（知性ある秘書）
+Phase 2: Trust-Based Delegation（信頼に基づく委任）
+Phase 3: Autonomous Operations（自律運用）
+
+**engine_actions is the audit backbone**
+全ての自動アクションはengine_actionsに記録する。
+「AIが何をしたかを絶対に追える台帳」がなければ透明性の思想は実現しない。
+engine_actionsはPhase 1.5として前倒し実装する。
+
+**Two-axis alert design**
+Axis 1: Severity → notification intensity
+Axis 2: ActionMode (automatic / approval_required / manual) → action taken
+These axes are independent. Never conflate them.
+
+**Approval without interruption**
+Discord = awareness channel (notification only)
+CLI/App = approval channel (when starting work)
+No timeout-based auto-approval.
+
+**Trust score is display-only initially**
+信頼スコアは最初は表示・提案のみ。
+自動化権限の変更はCLIで人間が明示的に設定した場合のみ。
+
 **single-tenant first, multi-tenant ready**
-最初からproject_idとservice_idを持つ。user_idは将来拡張可能にする。
+最初からproject_idとservice_idを持つ。
 
 **event-centered**
 実態はcron＋DBジョブ＋必要に応じてevent capture。
@@ -198,11 +222,15 @@ bionic.usage({ activeUsers: 3 })
 **DB駆動ジョブ**
 Temporalは使わない。engine_jobsテーブルで状態管理する。
 
-**AIは補助**
-観察と実行の大半はルールベース。AIは説明と優先順位づけだけ。
+**AIは補助から委任へ段階的に移行する**
+観察と実行の大半はルールベース。
+AIは説明・優先順位づけ・修復提案を担う。
+信頼の蓄積に応じてAIの権限範囲が広がる。
 
-**判断の主体は人間**
-自動でできることはエンジンに入れる。判断が必要なものはエンジンが拾って人間に返す。
+**判断の主体は人間（フェーズ1-2）→ 監査者（フェーズ3）**
+自動でできることはエンジンに入れる。
+判断が必要なものはエンジンが拾って人間に返す。
+フェーズ3では人間は監査と重大判断のみを担う。
 
 ---
 

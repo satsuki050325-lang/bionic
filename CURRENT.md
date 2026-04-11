@@ -80,8 +80,11 @@ Scheduler実装（node-cronでweekly digest自動実行）
 
 ## 確定優先順位（Phase 2）
 
+Event → Alert 最小Decision（完了）
 Scheduler（node-cronでweekly digest自動実行）（今ここ）
 project_bionic / default 混在整理
+engine_actions最小設計・実装（Phase 1.5）
+承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
 App UI改善 + Recent Events表示
 RLS / Security設計
 Deploy→Watch→Alert（Vercel Webhook連携）

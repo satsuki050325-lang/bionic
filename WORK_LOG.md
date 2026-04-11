@@ -970,3 +970,34 @@
 
 ### 次にやること
 - Scheduler実装（node-cronでweekly digest自動実行）
+
+---
+
+## 2026-04-11 / Claude（設計思想更新）
+
+### やったこと
+- Bionicの設計思想を3フェーズに更新した
+- BIONIC_PRODUCT.mdを全面更新した
+- TECHNICAL_DESIGN.mdの設計原則を更新した
+- 自動実行OK・承認必須・永遠に自動化しないの3段階を定義した
+- engine_actionsをPhase 1.5として前倒しすることを決定した
+- 承認フローのUX原則を確定した（Discord=気づき / CLI/App=承認）
+- criticalアラートの2回通知仕様を確定した
+- stale approval（24h再通知・48h自動キャンセル）を確定した
+
+### 判断したこと
+- タイムアウト承認は採用しない
+- 信頼スコアは最初は表示・提案のみ。権限変更は人間が明示的に設定
+- セキュリティ関連（認証・課金・ユーザーデータ）は永遠に自動化しない
+- リサーチ思想（知性ある秘書）はフェーズ1の実装指針として有効
+- 颯紀さんの思想（自律運用AI）はフェーズ3の到達点として正しい
+- 両者は矛盾しない。フェーズ1を丁寧に作ることがフェーズ3への最短経路
+
+### 未解決・既知リスク
+- engine_actionsの詳細スキーマはCodexに/refineを依頼する
+- project_bionic / default 混在はScheduler前に整理が必要
+- RLSは開発中無効
+
+### 次にやること
+- Scheduler実装（node-cronでweekly digest自動実行）
+- その後engine_actions設計
