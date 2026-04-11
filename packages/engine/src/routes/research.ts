@@ -9,12 +9,15 @@ import { supabase } from '../lib/supabase.js'
 export const researchRouter = Router()
 
 researchRouter.get('/', async (req, res) => {
-  const { category, is_digest_sent, limit } = req.query
+  const { projectId, category, is_digest_sent, limit } = req.query
 
   let query = supabase
     .from('research_items')
     .select('*')
     .order('importance_score', { ascending: false })
+
+  const targetProjectId = (projectId as string) ?? 'default'
+  query = query.eq('project_id', targetProjectId)
 
   if (category) query = query.eq('category', category as string)
   if (is_digest_sent !== undefined) query = query.eq('is_digest_sent', is_digest_sent === 'true')

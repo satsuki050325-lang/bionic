@@ -724,3 +724,23 @@
 ### 次にやること
 - Codex /review（Research API）
 - Bionic App Research画面実装（保存フォーム + 一覧表示）
+
+---
+
+## 2026-04-11 / Claude Code（21回目）
+
+### やったこと
+- Codex Research APIレビューのfinding 2件を修正した
+  - P1: GET /api/research にproject_idフィルタを追加（projectIdクエリパラメータ、省略時は'default'）
+  - P2: CreateResearchItemInputのprojectIdをオプショナル化（省略時はEngine側で'default'を使用）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- GET側のprojectIdフォールバックをPOST側（既存の`input.projectId ?? 'default'`）と同じ'default'に統一
+- projectIdがクエリパラメータに含まれない場合でも必ずproject_idフィルタが適用される設計
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Bionic App Research画面実装（保存フォーム + 一覧表示）

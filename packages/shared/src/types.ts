@@ -116,7 +116,7 @@ export interface ResearchItem {
 }
 
 export interface CreateResearchItemInput {
-  projectId: string
+  projectId?: string
   title: string
   summary: string
   url?: string
