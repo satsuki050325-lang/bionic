@@ -84,6 +84,15 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
 
     if (error) throw error
 
+    const notifyActionId = await createAction({
+      projectId,
+      jobId,
+      type: 'notify_discord',
+      title: 'Send research digest to Discord',
+      reason: 'Weekly research digest notification',
+      requestedBy: 'engine',
+    })
+
     const result = await notifyDigest({
       projectId,
       items: (items ?? []).map((row) => ({
@@ -96,16 +105,25 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
       })),
     })
 
-    if (result === 'sent' && items && items.length > 0) {
-      await supabase
-        .from('research_items')
-        .update({ is_digest_sent: true })
-        .in('id', items.map((i: { id: string }) => i.id))
-
-      if (actionId) {
-        await completeAction(actionId, { result: 'sent', itemCount: items.length })
+    if (result === 'sent') {
+      if (notifyActionId) {
+        await completeAction(notifyActionId, { result: 'sent', itemCount: items?.length ?? 0 })
       }
+    } else if (result === 'skipped') {
+      if (notifyActionId) {
+        await skipAction(notifyActionId, 'no items to digest')
+      }
+    } else {
+      if (notifyActionId) {
+        await failAction(notifyActionId, {
+          reason: result === 'misconfigured'
+            ? 'DISCORD_WEBHOOK_URL not configured'
+            : 'notify failed',
+        })
+      }
+    }
 
+    if (result === 'sent' && items && items.length > 0) {
       const markActionId = await createAction({
         projectId,
         jobId,
@@ -114,11 +132,26 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
         input: { itemIds: items.map((i: { id: string }) => i.id) },
         requestedBy: 'engine',
       })
-      if (markActionId) {
+
+      const { error: markError } = await supabase
+        .from('research_items')
+        .update({ is_digest_sent: true })
+        .in('id', items.map((i: { id: string }) => i.id))
+
+      if (markError) {
+        console.error('[digest] failed to mark items as sent:', markError)
+        if (markActionId) {
+          await failAction(markActionId, { message: markError.message, code: markError.code })
+        }
+      } else if (markActionId) {
         await completeAction(markActionId, {
           updatedCount: items.length,
           itemIds: items.map((i: { id: string }) => i.id),
         })
+      }
+
+      if (actionId) {
+        await completeAction(actionId, { result: 'sent', itemCount: items.length })
       }
     } else if (result === 'skipped') {
       if (actionId) {

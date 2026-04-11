@@ -1183,3 +1183,25 @@
 - Supabase SQL Editorでengine_actions migration SQLを実行する
 - 動作確認
 - Codex /review（engine_actions）
+
+---
+
+## 2026-04-11 / Claude Code（35回目）
+
+### やったこと
+- engine_actionsのP1/P2 finding 3件を修正した
+  - logAction全helper関数にtry/catchを追加（例外がメイン処理に伝播しない）
+  - mark_digest_sentのDB更新結果を確認、失敗時にfailActionを呼ぶ
+  - notifyDigest前後でnotify_discordアクションを記録する
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- notify_discordとrun_research_digestは別のアクションとして記録（関心の分離）
+- mark_digest_sentはcreateAction→DB更新→結果に応じてcomplete/failの順序で実行
+- logActionの各関数は全てベストエフォート（try/catchで例外を握る）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（engine_actions finding修正）
