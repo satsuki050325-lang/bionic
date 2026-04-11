@@ -18,6 +18,43 @@ const VALID_SOURCES: EventSource[] = ['sdk', 'app', 'cli', 'engine', 'scheduler'
 
 export const eventsRouter = Router()
 
+eventsRouter.get('/', async (req, res) => {
+  const { projectId, type, limit } = req.query
+
+  const targetProjectId = (projectId as string) ?? 'project_bionic'
+  const limitNum = Math.min(Number(limit ?? 20), 100)
+
+  let query = supabase
+    .from('engine_events')
+    .select('*')
+    .eq('project_id', targetProjectId)
+    .order('created_at', { ascending: false })
+    .limit(limitNum)
+
+  if (type) query = query.eq('type', type as string)
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Failed to fetch events:', error)
+    res.status(500).json({ error: 'failed to fetch events' })
+    return
+  }
+
+  res.status(200).json({
+    events: (data ?? []).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      serviceId: row.service_id,
+      type: row.type,
+      source: row.source,
+      occurredAt: row.occurred_at,
+      createdAt: row.created_at,
+      clientEventId: row.client_event_id ?? null,
+    })),
+  })
+})
+
 eventsRouter.post('/', async (req, res) => {
   const input = req.body as CaptureEventInput
 

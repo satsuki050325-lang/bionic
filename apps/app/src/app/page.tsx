@@ -1,7 +1,10 @@
-import { getStatus } from '@/lib/engine'
+import { getStatus, getEvents } from '@/lib/engine'
 
 export default async function DashboardPage() {
-  const status = await getStatus()
+  const [status, eventsResult] = await Promise.all([
+    getStatus(),
+    getEvents(),
+  ])
 
   if (!status) {
     return (
@@ -67,6 +70,29 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Recent Events */}
+      <div className="card space-y-3">
+        <div className="font-heading font-semibold text-sm text-text-secondary uppercase tracking-wider">
+          Recent Events
+        </div>
+        {!eventsResult || eventsResult.events.length === 0 ? (
+          <p className="text-text-muted font-mono text-sm">No events yet</p>
+        ) : (
+          <div className="space-y-2">
+            {eventsResult.events.slice(0, 10).map((event) => (
+              <div key={event.id} className="flex items-center gap-3 py-1">
+                <span className="badge-muted font-mono shrink-0">{event.type}</span>
+                <span className="text-text-secondary text-sm shrink-0">{event.serviceId}</span>
+                <span className="text-text-muted font-mono text-xs ml-auto shrink-0">
+                  {new Date(event.createdAt).toLocaleTimeString('ja-JP')}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Engine Info */}
       <div className="card space-y-3">
         <div className="font-heading font-semibold text-sm text-text-secondary uppercase tracking-wider">
           Engine

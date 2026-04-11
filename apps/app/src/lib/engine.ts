@@ -5,6 +5,7 @@ import type {
   CreateResearchItemInput,
   CreateResearchItemResult,
   ListActionsResult,
+  ListEventsResult,
 } from '@bionic/shared'
 
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? 'http://localhost:3001'
@@ -33,6 +34,19 @@ export async function getResearchItems(projectId = 'project_bionic'): Promise<Li
   try {
     const res = await fetch(
       `${ENGINE_URL}/api/research?projectId=${projectId}`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+export async function getEvents(projectId = 'project_bionic'): Promise<ListEventsResult | null> {
+  try {
+    const res = await fetch(
+      `${ENGINE_URL}/api/events?projectId=${projectId}&limit=20`,
       { cache: 'no-store' }
     )
     if (!res.ok) return null

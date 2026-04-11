@@ -1306,3 +1306,25 @@
 
 ### 次にやること
 - Recent Events表示
+
+---
+
+## 2026-04-11 / Claude Code（38回目）
+
+### やったこと
+- GET /api/events エンドポイントを追加した（project_id/type/limitフィルター対応）
+- shared型にEventSummary / ListEventsResultを追加した
+- engine.tsにgetEvents関数を追加した
+- DashboardにRecent Eventsセクションを追加した（直近10件を表示）
+- `pnpm typecheck` + `pnpm --filter @bionic/app build` 成功確認
+
+### 判断したこと
+- GETエンドポイントはpayloadを返さない（一覧ではサマリーのみ・詳細表示は将来追加）
+- DashboardではgetStatusとgetEventsをPromise.allで並列取得
+- limit最大100・デフォルト20
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（Recent Events）

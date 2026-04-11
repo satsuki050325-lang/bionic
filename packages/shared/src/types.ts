@@ -143,6 +143,22 @@ export interface ListResearchItemsResult {
   items: ResearchItem[]
 }
 
+// ── EventSummary ──────────────────────────────────────────────────
+export interface EventSummary {
+  id: string
+  projectId: string
+  serviceId: string
+  type: EventType
+  source: EventSource
+  occurredAt: ISODateString
+  createdAt: ISODateString
+  clientEventId: string | null
+}
+
+export interface ListEventsResult {
+  events: EventSummary[]
+}
+
 // ── ActionType / ActionMode / ActionStatus ─────────────────────────
 export type ActionType =
   | 'notify_discord'
