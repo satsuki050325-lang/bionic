@@ -15,6 +15,7 @@
 | 20260411000000_alert_dedup.sql | fingerprint / dedup columns追加 | 2026-04-11 |
 | 20260411000001_research_source_default.sql | research_items.source DEFAULT 'manual'追加 | 2026-04-11 |
 | 20260411000002_jobs_dedupe_key.sql | engine_jobs.dedupe_key追加・ユニーク制約 | 2026-04-11 |
+| 20260411000003_engine_actions.sql | engine_actionsテーブル作成 | 2026-04-11 |
 
 ## 新しいDB変更を加える手順
 1. supabase/migrations/ に新しいSQLファイルを作成する

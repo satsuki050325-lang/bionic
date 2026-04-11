@@ -1,5 +1,6 @@
 import type { EngineEvent } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
+import { createAction, completeAction, failAction, skipAction } from '../actions/logAction.js'
 
 const CRITICAL_CODES = new Set([
   'DB_CONNECTION_FAILED',
@@ -77,6 +78,16 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
     )
   }
 
+  const actionId = await createAction({
+    projectId: event.projectId,
+    serviceId: event.serviceId,
+    eventId: event.id,
+    type: 'create_alert',
+    title: `Evaluate alert for ${event.type}`,
+    input: { eventType: event.type, fingerprint },
+    requestedBy: 'engine',
+  })
+
   try {
     // Step 1: selectでopen alertを確認する
     const { data: existing, error: selectError } = await supabase
@@ -88,6 +99,9 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
 
     if (selectError) {
       console.error('[decision] failed to select alert:', selectError)
+      if (actionId) {
+        await failAction(actionId, { message: 'select failed', code: selectError.code })
+      }
       return
     }
 
@@ -106,32 +120,58 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
 
       if (updateError) {
         console.error('[decision] failed to update alert:', updateError)
+        if (actionId) {
+          await failAction(actionId, { message: 'update failed', code: updateError.code })
+        }
+      } else if (actionId) {
+        await completeAction(actionId, {
+          operation: 'updated',
+          alertId: existing.id,
+          newCount: (existing.count ?? 1) + 1,
+        })
       }
     } else {
       // Step 2b: 存在しない場合はinsertする
-      const { error: insertError } = await supabase.from('engine_alerts').insert({
-        project_id: event.projectId,
-        service_id: event.serviceId,
-        type: alertType,
-        severity,
-        title,
-        message,
-        status: 'open',
-        fingerprint,
-        count: 1,
-        last_seen_at: new Date().toISOString(),
-      })
+      const { data: inserted, error: insertError } = await supabase
+        .from('engine_alerts')
+        .insert({
+          project_id: event.projectId,
+          service_id: event.serviceId,
+          type: alertType,
+          severity,
+          title,
+          message,
+          status: 'open',
+          fingerprint,
+          count: 1,
+          last_seen_at: new Date().toISOString(),
+        })
+        .select('id')
+        .maybeSingle()
 
       if (insertError) {
-        // Race condition: 別プロセスが先にinsertした場合、partial unique indexが23505を返す
         if (insertError.code === '23505') {
           console.warn('[decision] alert already created by concurrent process, skipping:', fingerprint)
+          if (actionId) {
+            await skipAction(actionId, 'race condition: duplicate insert skipped')
+          }
         } else {
           console.error('[decision] failed to insert alert:', insertError)
+          if (actionId) {
+            await failAction(actionId, { message: 'insert failed', code: insertError.code })
+          }
         }
+      } else if (actionId) {
+        await completeAction(actionId, {
+          operation: 'created',
+          alertId: inserted?.id ?? null,
+        })
       }
     }
   } catch (err) {
     console.error('[decision] failed to evaluate alert:', err)
+    if (actionId) {
+      await failAction(actionId, { message: String(err) })
+    }
   }
 }

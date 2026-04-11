@@ -27,6 +27,7 @@ export default async function DashboardPage() {
         <p>Pending: {status.queue.pendingJobs}</p>
         <p>Running: {status.queue.runningJobs}</p>
         <p>Needs Review: {status.queue.needsReviewJobs}</p>
+        <p>Pending Actions: {status.queue.pendingActions}</p>
       </section>
       <section>
         <h2>Alerts</h2>

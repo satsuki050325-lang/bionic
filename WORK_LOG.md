@@ -1151,3 +1151,35 @@
 ### 次にやること
 - project混在の最終確認
 - engine_actions最小設計・実装
+
+---
+
+## 2026-04-11 / Claude Code（34回目）
+
+### やったこと
+- engine_actionsテーブルとAudit Log基盤を実装した（Phase 1.5）
+  - shared型: ActionType / ActionMode / ActionStatus / EngineAction / ListActionsResult追加
+  - ServiceStatusにpendingActions追加
+  - migration: 20260411000003_engine_actions.sql作成
+  - logAction.ts: createAction / completeAction / failAction / skipAction
+  - routes/actions.ts: GET /api/actions エンドポイント
+  - routes/jobs.ts: runResearchDigestにlogAction組み込み
+  - decisions/alerts.ts: evaluateAlertForEventにlogAction組み込み
+  - routes/status.ts: pending_approval件数をカウント
+  - index.ts: actionsRouterを追加
+  - Dashboard: pendingActions表示追加
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- logAction失敗はメイン処理を止めない（actionId nullチェックでガード）
+- alerts.tsのinsertに.select('id').maybeSingle()を追加（actionログにalertIdを含めるため）
+- pendingActionsはcount: 'exact', head: trueで効率的にカウント
+- GET /api/actionsのlimitは最大100、デフォルト50
+
+### 未解決・既知リスク
+- engine_actionsテーブルのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでengine_actions migration SQLを実行する
+- 動作確認
+- Codex /review（engine_actions）

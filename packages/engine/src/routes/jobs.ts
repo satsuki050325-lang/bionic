@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { RunJobInput, RunJobResult } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
 import { notifyDigest } from '../actions/notify.js'
+import { createAction, completeAction, failAction, skipAction } from '../actions/logAction.js'
 
 export const jobsRouter = Router()
 
@@ -58,6 +59,15 @@ jobsRouter.post('/', async (req, res) => {
 })
 
 export async function runResearchDigest(jobId: string, projectId: string): Promise<void> {
+  const actionId = await createAction({
+    projectId,
+    jobId,
+    type: 'run_research_digest',
+    title: 'Run weekly research digest',
+    reason: 'Scheduled weekly digest job',
+    requestedBy: 'engine',
+  })
+
   try {
     await supabase
       .from('engine_jobs')
@@ -91,6 +101,37 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
         .from('research_items')
         .update({ is_digest_sent: true })
         .in('id', items.map((i: { id: string }) => i.id))
+
+      if (actionId) {
+        await completeAction(actionId, { result: 'sent', itemCount: items.length })
+      }
+
+      const markActionId = await createAction({
+        projectId,
+        jobId,
+        type: 'mark_digest_sent',
+        title: 'Mark research items as digest sent',
+        input: { itemIds: items.map((i: { id: string }) => i.id) },
+        requestedBy: 'engine',
+      })
+      if (markActionId) {
+        await completeAction(markActionId, {
+          updatedCount: items.length,
+          itemIds: items.map((i: { id: string }) => i.id),
+        })
+      }
+    } else if (result === 'skipped') {
+      if (actionId) {
+        await skipAction(actionId, 'no items to digest')
+      }
+    } else if (result === 'misconfigured') {
+      if (actionId) {
+        await failAction(actionId, { reason: 'DISCORD_WEBHOOK_URL is not set' })
+      }
+    } else {
+      if (actionId) {
+        await completeAction(actionId, { result, itemCount: 0 })
+      }
     }
 
     if (result === 'misconfigured') {
@@ -108,6 +149,9 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
     }
   } catch (err) {
     console.error('[digest] failed:', err)
+    if (actionId) {
+      await failAction(actionId, { message: String(err) })
+    }
     await supabase
       .from('engine_jobs')
       .update({ status: 'failed' })

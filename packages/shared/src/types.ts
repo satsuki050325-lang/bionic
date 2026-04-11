@@ -49,6 +49,7 @@ export interface ServiceStatus {
     pendingJobs: number
     runningJobs: number
     needsReviewJobs: number
+    pendingActions: number
   }
   alerts: {
     open: number
@@ -140,6 +141,68 @@ export interface ListResearchItemsInput {
 
 export interface ListResearchItemsResult {
   items: ResearchItem[]
+}
+
+// ── ActionType / ActionMode / ActionStatus ─────────────────────────
+export type ActionType =
+  | 'notify_discord'
+  | 'create_alert'
+  | 'run_research_digest'
+  | 'mark_digest_sent'
+  | 'retry_job'
+
+export type ActionMode = 'automatic' | 'approval_required' | 'manual'
+
+export type ActionStatus =
+  | 'pending'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'skipped'
+  | 'pending_approval'
+  | 'approved'
+  | 'denied'
+  | 'cancelled'
+
+export type ApprovalStatus =
+  | 'not_required'
+  | 'pending'
+  | 'approved'
+  | 'denied'
+
+// ── EngineAction ───────────────────────────────────────────────────
+export interface EngineAction {
+  id: string
+  projectId: string
+  serviceId: string | null
+  eventId: string | null
+  alertId: string | null
+  jobId: string | null
+  type: ActionType
+  mode: ActionMode
+  status: ActionStatus
+  title: string
+  reason: string | null
+  input: Record<string, unknown>
+  result: Record<string, unknown>
+  error: Record<string, unknown> | null
+  requestedBy: string
+  startedAt: ISODateString | null
+  completedAt: ISODateString | null
+  createdAt: ISODateString
+  updatedAt: ISODateString
+}
+
+export interface ListActionsInput {
+  projectId?: string
+  status?: ActionStatus
+  type?: ActionType
+  mode?: ActionMode
+  limit?: number
+}
+
+export interface ListActionsResult {
+  actions: EngineAction[]
 }
 
 // ── BionicEngineService ────────────────────────────────────────────
