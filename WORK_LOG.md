@@ -886,3 +886,24 @@
 
 ### 次にやること
 - Codex /review（decisions/alerts.ts）
+
+---
+
+## 2026-04-11 / Claude Code（26回目）
+
+### やったこと
+- supabase/migrations/フォルダを作成し、これまでの全DB変更をmigrationファイルとして記録した
+  - 20260408000000_initial_schema.sql: engine_events / engine_jobs / engine_alerts / research_items の初期スキーマ
+  - 20260409000000_add_columns.sql: categoryカラム追加 / client_event_idデフォルト値
+  - 20260411000000_alert_dedup.sql: fingerprint / count / last_seen_at / partial unique index
+- supabase/migrations/README.md にmigration管理方針と適用済み一覧を記録した
+
+### 判断したこと
+- Supabase CLIは今は使わず手動SQL Editor適用（migration管理はファイルベース）
+- 既存DBには適用済みのためSQLは実行不要（リポジトリへの記録が目的）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（migrations）
