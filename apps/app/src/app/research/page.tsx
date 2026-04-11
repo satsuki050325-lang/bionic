@@ -4,16 +4,22 @@ import { saveResearchItem } from './actions'
 export default async function ResearchPage() {
   const result = await getResearchItems('project_bionic')
 
+  if (!result) {
+    return (
+      <div>
+        <h1>Research</h1>
+        <p>Engineが起動していません。<code>pnpm --filter @bionic/engine dev</code> で起動してください。</p>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h1>Research</h1>
 
-      {/* 保存フォーム */}
+      {/* 保存フォーム（Engineが起動している時だけ表示） */}
       <section>
         <h2>リサーチを保存する</h2>
-        {!result && (
-          <p>Engineが起動していません。<code>pnpm --filter @bionic/engine dev</code> で起動してください。</p>
-        )}
         <form action={saveResearchItem}>
           <div>
             <label htmlFor="title">タイトル *</label>
@@ -42,9 +48,7 @@ export default async function ResearchPage() {
       {/* 一覧表示 */}
       <section>
         <h2>保存済みリサーチ</h2>
-        {!result ? (
-          <p>データを取得できません。</p>
-        ) : result.items.length === 0 ? (
+        {result.items.length === 0 ? (
           <p>まだリサーチが保存されていません。</p>
         ) : (
           <ul>

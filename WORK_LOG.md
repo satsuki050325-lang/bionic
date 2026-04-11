@@ -767,3 +767,23 @@
 
 ### 次にやること
 - Codex /review（Research画面）
+
+---
+
+## 2026-04-11 / Claude Code（23回目）
+
+### やったこと
+- P1 finding修正: Engine未起動時にフォームを非表示にした
+  - resultがnullの場合は早期リターンで「Engineが起動していません」メッセージのみ表示
+  - Engine起動時のみフォームと一覧を表示する構造に変更
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- early returnパターンを採用（nullチェック後にフォーム+一覧を表示）
+- 一覧部分の`!result`分岐も不要になったため削除（early returnでnullが除外済み）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（Research画面・再レビュー）
