@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDigest.js'
 import { runResearchDigest } from '../routes/jobs.js'
 import { supabase } from '../lib/supabase.js'
+import { validateCronExpression } from './cron.js'
 
 const ALLOWED_TIMEZONES = new Set([
   'Asia/Tokyo',
@@ -23,26 +24,6 @@ const ALLOWED_TIMEZONES = new Set([
   'Australia/Sydney',
   'Pacific/Auckland',
 ])
-
-function validateCronExpression(expr: string): boolean {
-  const parts = expr.trim().split(/\s+/)
-  if (parts.length !== 5) return false
-
-  const [minute, hour, dom, month, dow] = parts
-
-  if (dom !== '*' || month !== '*') return false
-  if (!/^\d+$/.test(minute) || !/^\d+$/.test(hour) || !/^\d+$/.test(dow)) return false
-
-  const minuteNum = parseInt(minute, 10)
-  const hourNum = parseInt(hour, 10)
-  const dowNum = parseInt(dow, 10)
-
-  if (minuteNum < 0 || minuteNum > 59) return false
-  if (hourNum < 0 || hourNum > 23) return false
-  if (dowNum < 0 || dowNum > 6) return false
-
-  return true
-}
 
 function getConfig() {
   const cronExpression = process.env.BIONIC_DIGEST_CRON ?? '0 9 * * 1'

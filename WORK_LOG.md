@@ -1520,3 +1520,28 @@
 
 ### 次にやること
 - 最小テスト追加
+
+---
+
+## 2026-04-11 / Claude Code（44回目）
+
+### やったこと
+- Vitestをインストールしてテスト基盤を構築した
+- validateCronExpressionをcron.tsに切り出した（テスタビリティ向上）
+- 3つのテストファイルを作成した（合計19テスト）
+  - cron.test.ts: 9テスト（有効/無効のcron式バリデーション）
+  - researchDigest.test.ts: 3テスト（正常insert / 23505 dedupe / DBエラー）
+  - alerts.test.ts: 7テスト（対象外スキップ / insert / update / severity判定 / エラー耐性）
+- `pnpm --filter @bionic/engine test`: 全19テスト通過
+- `pnpm typecheck`: 全5パッケージ通過
+
+### 判断したこと
+- Supabaseはvi.mockでモック（テストからDB接続しない）
+- logActionもvi.mockでモック（Audit Log記録のテストは統合テストで行う）
+- validateCronExpressionは純粋関数なのでモック不要
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（テスト）

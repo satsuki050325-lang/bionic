@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "DOTENV_CONFIG_PATH=../../.env.local tsx watch --require dotenv/config src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@bionic/shared": "workspace:*",
@@ -24,6 +26,7 @@
     "@types/node": "^20.0.0",
     "@types/node-cron": "^3.0.11",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
   }
 }
