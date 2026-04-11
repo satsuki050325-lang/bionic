@@ -1085,3 +1085,21 @@
 - Supabase SQL Editorでdedupe_key migration SQLを実行する
 - Scheduler動作確認
 - Codex /review（Scheduler）
+
+---
+
+## 2026-04-11 / Claude Code（32回目）
+
+### やったこと
+- catch-up処理のdedupeKeyを起動日基準→予定日基準に変更した（P2 finding修正）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- 年跨ぎ等でnowInTzとscheduledTimeの週番号がずれるケースを防止
+
+### 未解決・既知リスク
+- engine_jobs.dedupe_keyのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでdedupe_key migration SQLを実行する
+- Scheduler動作確認

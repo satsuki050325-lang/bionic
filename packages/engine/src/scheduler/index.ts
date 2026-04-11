@@ -164,7 +164,7 @@ async function catchUpMissedSchedules(): Promise<void> {
     return
   }
 
-  const dedupeKey = getWeeklyDigestKey(nowInTz.toJSDate(), config.timezone)
+  const dedupeKey = getWeeklyDigestKey(scheduledTime.toJSDate(), config.timezone)
   console.log(`[scheduler] checking for missed schedules: ${dedupeKey}`)
 
   const { data } = await supabase
