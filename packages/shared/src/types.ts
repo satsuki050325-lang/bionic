@@ -203,6 +203,10 @@ export interface EngineAction {
   result: Record<string, unknown>
   error: Record<string, unknown> | null
   requestedBy: string
+  approvedBy: string | null
+  approvedAt: ISODateString | null
+  deniedBy: string | null
+  deniedAt: ISODateString | null
   startedAt: ISODateString | null
   completedAt: ISODateString | null
   createdAt: ISODateString

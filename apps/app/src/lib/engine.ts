@@ -9,10 +9,22 @@ import type {
 } from '@bionic/shared'
 
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? 'http://localhost:3001'
+const ENGINE_TOKEN = process.env.BIONIC_ENGINE_TOKEN
+
+function engineHeaders(): HeadersInit {
+  const headers: HeadersInit = {}
+  if (ENGINE_TOKEN) {
+    headers['Authorization'] = `Bearer ${ENGINE_TOKEN}`
+  }
+  return headers
+}
 
 export async function getStatus(): Promise<ServiceStatus | null> {
   try {
-    const res = await fetch(`${ENGINE_URL}/api/status`, { cache: 'no-store' })
+    const res = await fetch(`${ENGINE_URL}/api/status`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
     if (!res.ok) return null
     return res.json()
   } catch {
@@ -22,7 +34,10 @@ export async function getStatus(): Promise<ServiceStatus | null> {
 
 export async function getAlerts(): Promise<ListAlertsResult | null> {
   try {
-    const res = await fetch(`${ENGINE_URL}/api/alerts`, { cache: 'no-store' })
+    const res = await fetch(`${ENGINE_URL}/api/alerts`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
     if (!res.ok) return null
     return res.json()
   } catch {
@@ -34,7 +49,7 @@ export async function getResearchItems(projectId = 'project_bionic'): Promise<Li
   try {
     const res = await fetch(
       `${ENGINE_URL}/api/research?projectId=${projectId}`,
-      { cache: 'no-store' }
+      { cache: 'no-store', headers: engineHeaders() }
     )
     if (!res.ok) return null
     return res.json()
@@ -47,7 +62,7 @@ export async function getEvents(projectId = 'project_bionic'): Promise<ListEvent
   try {
     const res = await fetch(
       `${ENGINE_URL}/api/events?projectId=${projectId}&limit=20`,
-      { cache: 'no-store' }
+      { cache: 'no-store', headers: engineHeaders() }
     )
     if (!res.ok) return null
     return res.json()
@@ -60,7 +75,7 @@ export async function getActions(projectId = 'project_bionic'): Promise<ListActi
   try {
     const res = await fetch(
       `${ENGINE_URL}/api/actions?projectId=${projectId}&limit=20`,
-      { cache: 'no-store' }
+      { cache: 'no-store', headers: engineHeaders() }
     )
     if (!res.ok) return null
     return res.json()
@@ -75,7 +90,7 @@ export async function createResearchItem(
   try {
     const res = await fetch(`${ENGINE_URL}/api/research`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...engineHeaders() },
       body: JSON.stringify(input),
     })
     if (!res.ok) return null

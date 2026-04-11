@@ -5,6 +5,7 @@ export interface BionicSDKConfig {
   projectId: string
   serviceId: string
   source?: EventSource
+  token?: string
 }
 
 export class BionicClient {
@@ -12,12 +13,14 @@ export class BionicClient {
   private projectId: string
   private serviceId: string
   private source: EventSource
+  private token: string | undefined
 
   constructor(config: BionicSDKConfig) {
     this.engineUrl = config.engineUrl.replace(/\/$/, '')
     this.projectId = config.projectId
     this.serviceId = config.serviceId
     this.source = config.source ?? 'sdk'
+    this.token = config.token
   }
 
   private async sendEvent(
@@ -34,9 +37,14 @@ export class BionicClient {
       payload,
     }
 
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
     const res = await fetch(`${this.engineUrl}/api/events`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ event }),
     })
 

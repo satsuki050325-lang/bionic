@@ -46,6 +46,10 @@ actionsRouter.get('/', async (req, res) => {
       result: row.result ?? {},
       error: row.error ?? null,
       requestedBy: row.requested_by,
+      approvedBy: row.approved_by ?? null,
+      approvedAt: row.approved_at ?? null,
+      deniedBy: row.denied_by ?? null,
+      deniedAt: row.denied_at ?? null,
       startedAt: row.started_at ?? null,
       completedAt: row.completed_at ?? null,
       createdAt: row.created_at,
@@ -82,10 +86,14 @@ actionsRouter.post('/:id/approve', async (req, res) => {
     return
   }
 
+  const actorId = req.headers['x-actor-id'] as string | undefined
+
   const { data: updated, error } = await supabase
     .from('engine_actions')
     .update({
       status: 'approved',
+      approved_by: actorId ?? 'cli',
+      approved_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
@@ -131,10 +139,14 @@ actionsRouter.post('/:id/deny', async (req, res) => {
     return
   }
 
+  const actorId = req.headers['x-actor-id'] as string | undefined
+
   const { data: updated, error } = await supabase
     .from('engine_actions')
     .update({
       status: 'denied',
+      denied_by: actorId ?? 'cli',
+      denied_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

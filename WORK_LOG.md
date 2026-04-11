@@ -1440,3 +1440,33 @@
 
 ### 次にやること
 - RLS / Security設計
+
+---
+
+## 2026-04-11 / Claude Code（42回目）
+
+### やったこと
+- 全5テーブルのRLSを有効化するmigrationを作成した
+- engine_actionsにapproved_by/approved_at/denied_by/denied_atカラムを追加した
+- BIONIC_ENGINE_TOKEN認証middlewareを作成した
+- CORS設定を追加した（localhost:3000のみ許可）
+- JSON body size limitを1MBに設定した
+- Engineのlisten hostをBIONIC_ENGINE_HOSTで環境変数化した
+- approve/denyにX-Actor-Idヘッダーからactorを記録するようにした
+- App/CLI/SDKの全fetchにAuthorizationヘッダーを追加した
+- .env.exampleを作成した
+- shared型のEngineActionにapprovedBy/deniedBy関連フィールドを追加した
+- `pnpm typecheck` 全5パッケージでエラーなし確認
+
+### 判断したこと
+- TOKEN未設定時は開発モードのみ許可（production時は起動拒否）
+- RLSは有効化するがpolicyは作らない（service_role keyのみがアクセス可能）
+- actorIdはX-Actor-Idヘッダーから取得、未設定時は'cli'をデフォルト値に
+- CORSはlocalhost:3000/127.0.0.1:3000のみ（将来カスタムドメイン追加時に拡張）
+
+### 未解決・既知リスク
+- RLS有効化・team columns追加のmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでmigration SQLを実行する
+- Codex /review（RLS/Security）
