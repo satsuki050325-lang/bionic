@@ -837,3 +837,30 @@
 
 ### 次にやること
 - Event → Alert 最小Decisionの実装（Codexに/refineを依頼）
+
+---
+
+## 2026-04-11 / Claude Code（24回目）
+
+### やったこと
+- Event → Alert 最小Decisionを実装した（Decision Layer初実装）
+  - packages/shared/src/types.ts: Alert型にservice_error / fingerprint / count / lastSeenAtを追加
+  - packages/engine/src/decisions/alerts.ts を新規作成（evaluateAlertForEvent）
+  - packages/engine/src/routes/events.ts にvoid evaluateAlertForEvent(e)を追加
+  - packages/engine/src/routes/alerts.ts のレスポンスマッピングを更新
+- engine_alertsテーブルのスキーマ変更SQLを出力した（手動実行待ち）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- evaluateAlertForEventはvoidで呼ぶ（event captureのレスポンスタイムをブロックしない）
+- fingerprint設計: `{projectId}:{serviceId}:{alertType}:{normalizedKey}` の4要素
+- 重複alertはcountをインクリメント、last_seen_atを更新
+- CRITICAL_CODES（DB_ERROR, PAYMENT_FAILED等）は'critical'、それ以外は'warning'
+- Decision失敗はconsole.errorで記録するがevent captureは202を返す
+
+### 未解決・既知リスク
+- engine_alertsテーブルのスキーマ変更SQL未実行（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでスキーマ変更SQLを実行する
+- curlで動作確認（service.health.degraded → alert生成）

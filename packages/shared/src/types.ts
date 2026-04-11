@@ -62,11 +62,14 @@ export interface Alert {
   id: string
   projectId: string
   serviceId: string | null
-  type: 'service_health' | 'research_digest' | 'job_failure'
+  type: 'service_health' | 'service_error' | 'research_digest' | 'job_failure'
   severity: AlertSeverity
   title: string
   message: string
   status: AlertStatus
+  fingerprint: string
+  count: number
+  lastSeenAt: ISODateString
   createdAt: ISODateString
   updatedAt: ISODateString
 }

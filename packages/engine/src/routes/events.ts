@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { CaptureEventInput, CaptureEventResult, EventType, EventSource } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
+import { evaluateAlertForEvent } from '../decisions/alerts.js'
 
 const VALID_EVENT_TYPES: EventType[] = [
   'service.health.reported',
@@ -68,6 +69,8 @@ eventsRouter.post('/', async (req, res) => {
     res.status(500).json({ error: 'failed to save event' })
     return
   }
+
+  void evaluateAlertForEvent(e)
 
   const result: CaptureEventResult = {
     accepted: true,
