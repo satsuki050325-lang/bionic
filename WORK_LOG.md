@@ -1565,3 +1565,27 @@
 
 ### 次にやること
 - Codex /review（テストP2 finding修正）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- Vitestを導入して最小テストを追加した（全20テスト通過）
+- validateCronExpressionをscheduler/cron.tsに切り出した
+- cron.test.ts（11件）/ researchDigest.test.ts（3件）/ alerts.test.ts（6件）を追加した
+- Codexレビュー完了・P2 finding全修正済み
+
+### 判断したこと
+- テストフレームワークはVitest（TypeScript/ESM/monorepoとの相性が良い）
+- テストはco-located（対象ファイルの横に配置）
+- Supabaseはvi.mockでモック（Supabase local統合テストはPhase 2）
+- Audit Log呼び出しはテストで固定しない（壊れやすくなるデメリットが大きい）
+- validateCronExpressionはpure functionなのでcron.tsに切り出した
+
+### 未解決・既知リスク
+- apps/appのglobals.css側のtypecheck警告（認証実装とは別系統）
+- Codex環境でVitestの依存解決に問題あり（@rolldown/binding-win32-x64-msvc欠落）
+
+### 次にやること
+- Deploy→Watch→Alert（Vercel Webhook連携）

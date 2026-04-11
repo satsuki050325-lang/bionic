@@ -79,6 +79,10 @@
 - IDEAS.md参照タイミング構造化（全21アイデアに追加）
 - AGENTS.mdに「タスク開始前の確認」ルール追加
 - Codexレビュー完了・P1 finding全修正済み
+- 最小テスト追加（Vitest・全20テスト通過）
+- validateCronExpressionをcron.tsに切り出し
+- cron.test.ts / researchDigest.test.ts / alerts.test.ts 追加
+- Codexレビュー完了・P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -90,8 +94,7 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- 最小テスト追加（次の1手）
-- Deploy→Watch→Alert（Vercel Webhook連携）
+- Deploy→Watch→Alert（次の1手）
 - bionic-ops MCPサーバー（packages/mcp）
 - Discord Bot
 - CLI
@@ -101,11 +104,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- 最小テスト追加（evaluateAlertForEvent / enqueueResearchDigestJob / validateCronExpression）
+- Deploy→Watch→Alert（Vercel Webhook連携）
 
 ### done条件
-- [ ] 主要関数のユニットテストが存在する
-- [ ] pnpm test が通る
+- [ ] Vercel Webhookを受信するエンドポイントが存在する
+- [ ] デプロイ後のエラー率変化を検知する仕組みがある
 
 ---
 
@@ -119,8 +122,8 @@ App UI改善（完了）
 Recent Events表示（完了）
 承認待ちAPI / CLI最小実装（完了）
 RLS / Security設計（完了）
-最小テスト追加（今ここ）
-Deploy→Watch→Alert（Vercel Webhook連携）
+最小テスト追加（完了）
+Deploy→Watch→Alert（今ここ）
 bionic-ops MCPサーバー（packages/mcp として独立）
 Discord Bot（Phase 2後半）
 
