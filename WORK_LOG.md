@@ -1253,3 +1253,32 @@
 
 ### 次にやること
 - App UI改善（TailwindCSS導入）
+
+---
+
+## 2026-04-11 / Claude Code（37回目）
+
+### やったこと
+- TailwindCSS v4を導入した（@tailwindcss/postcss + CSS-first設定）
+- 全4画面をRetro-Futurism × Anthropic Orangeデザインに刷新した
+  - Dashboard: ステータスカード4枚（pendingJobs/pendingApprovals/openAlerts/lastEvent）+ Engine情報
+  - Alerts: severity別バッジ・fingerprint表示・count表示
+  - Actions: Audit Log一覧（status/type/title/timestamp）
+  - Research: 保存フォーム + 一覧をTailwind対応
+- Actions画面を新規追加した（/actions）
+- engine.tsにgetActions関数を追加した
+- globals.cssでカスタムユーティリティ（card/badge/accent-bar）を定義した
+- `pnpm typecheck` + `pnpm --filter @bionic/app build` 成功確認
+
+### 判断したこと
+- TailwindCSS v4はCSS-first設定（tailwind.config.ts不要・@theme + @utilityで定義）
+- PostCSS pluginは@tailwindcss/postcssに変更（v4の破壊的変更に対応）
+- フォント: Space Grotesk（見出し）/ Inter（本文）/ JetBrains Mono（コード・ID）
+- カラー: #0A0A0A背景 + #E8611Aアクセント（TVA×Anthropicの琥珀色）
+- Engine Offline時は共通の◆アイコン + 起動コマンド表示
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（UI改善）

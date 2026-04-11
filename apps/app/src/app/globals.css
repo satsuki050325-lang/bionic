@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #0A0A0A;
+  --color-bg-surface: #111111;
+  --color-bg-elevated: #1A1A1A;
+
+  --color-border-subtle: #2A2A2A;
+  --color-border-default: #333333;
+
+  --color-accent: #E8611A;
+  --color-accent-dim: #E8611A33;
+  --color-accent-hover: #F07030;
+
+  --color-text-primary: #F5F5F5;
+  --color-text-secondary: #888888;
+  --color-text-muted: #444444;
+
+  --color-status-success: #22C55E;
+  --color-status-warning: #F59E0B;
+  --color-status-danger: #EF4444;
+  --color-status-info: #3B82F6;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
+
+  * {
+    border-color: var(--color-border-subtle);
+  }
+}
+
+@utility card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+@utility card-elevated {
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+@utility accent-bar {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 0.75rem;
+}
+
+@utility badge-critical {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-status-danger) 20%, transparent);
+  color: var(--color-status-danger);
+  border: 1px solid color-mix(in srgb, var(--color-status-danger) 30%, transparent);
+}
+
+@utility badge-warning {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-status-warning) 20%, transparent);
+  color: var(--color-status-warning);
+  border: 1px solid color-mix(in srgb, var(--color-status-warning) 30%, transparent);
+}
+
+@utility badge-success {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-status-success) 20%, transparent);
+  color: var(--color-status-success);
+  border: 1px solid color-mix(in srgb, var(--color-status-success) 30%, transparent);
+}
+
+@utility badge-info {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-status-info) 20%, transparent);
+  color: var(--color-status-info);
+  border: 1px solid color-mix(in srgb, var(--color-status-info) 30%, transparent);
+}
+
+@utility badge-muted {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
