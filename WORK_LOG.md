@@ -1123,3 +1123,31 @@
 ### 次にやること
 - Supabase SQL Editorでdedupe_key migration SQLを実行する
 - Scheduler動作確認
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- Schedulerをnode-cron + luxonで実装した
+- project_idをproject_bionicに統一した
+- engine_jobs.dedupe_keyを追加してmigration管理に記録した
+- catch-up処理を実装した（予定時刻チェック・timezone正確化・dedupe_key一貫性）
+- セキュリティ検証を追加した（cron式・timezone・projectIdのバリデーション）
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- luxonを導入してtimezone計算を正確にした（将来の海外対応を見越す）
+- 許可timezoneを17タイムゾーンに拡大した
+- cron式は「分 時 * * 曜日」の形式のみ許可（^\d+$による完全一致）
+- デフォルトは毎週月曜09:00 JST（BIONIC_DIGEST_CRONで変更可能）
+- catch-upはscheduledTime基準のdedupeKeyを一貫して使う
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- project_bionic / default 混在の最終確認が必要
+- engine_actionsはPhase 1.5として次に実装する
+
+### 次にやること
+- project混在の最終確認
+- engine_actions最小設計・実装

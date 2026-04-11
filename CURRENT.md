@@ -44,6 +44,12 @@
 - fingerprintによる重複防止・race condition対応
 - supabase/migrations整備（DB変更の再現性確保）
 - Codexレビュー完了・P1 finding全修正済み
+- Scheduler実装（node-cron + luxon）
+- project_id統一（project_bionic）
+- engine_jobs.dedupe_key追加
+- catch-up処理（予定時刻チェック・timezone正確化・dedupe_key一貫性）
+- セキュリティ検証（cron式・timezone・projectIdバリデーション）
+- Codexレビュー完了・P1/P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -55,8 +61,8 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- Scheduler（node-cron）（次の1手）
-- project_bionic / default 混在整理
+- project_bionic / default 混在の最終確認（次の1手）
+- engine_actions最小設計・実装（Phase 1.5）
 - App UI改善 + Recent Events表示
 - RLS / Security設計
 - Deploy→Watch→Alert（Vercel Webhook連携）
@@ -69,20 +75,20 @@
 ## 次の1手
 
 ### 今すぐやること
-Scheduler実装（node-cronでweekly digest自動実行）
+- project_bionic / default 混在の最終確認と整理
+- engine_actions最小設計（Phase 1.5）
 
 ### done条件
-- [ ] node-cronがEngine起動時にスケジュール登録される
-- [ ] 毎週月曜朝にresearch digestが自動実行される
-- [ ] pnpm typecheck がエラーなく通る
+- [ ] project_bionic / default の混在が解消されている
+- [ ] engine_actionsテーブルの設計が確定している
 
 ---
 
 ## 確定優先順位（Phase 2）
 
 Event → Alert 最小Decision（完了）
-Scheduler（node-cronでweekly digest自動実行）（今ここ）
-project_bionic / default 混在整理
+Scheduler（完了）
+project_bionic / default 混在の最終確認（今ここ）
 engine_actions最小設計・実装（Phase 1.5）
 承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
 App UI改善 + Recent Events表示
