@@ -1545,3 +1545,23 @@
 
 ### 次にやること
 - Codex /review（テスト）
+
+---
+
+## 2026-04-11 / Claude Code（45回目）
+
+### やったこと
+- テストP2 finding 2件を修正した
+  - researchDigest.test.ts: insert payloadにdedupe_keyが含まれることを検証追加
+  - alerts.test.ts: 23505 race conditionでskipActionが呼ばれることを検証追加
+- `pnpm --filter @bionic/engine test`: 全20テスト通過（+1新規、+1強化）
+
+### 判断したこと
+- insert payloadの検証はexpect.objectContainingで主要フィールドのみ検証（timestampは除外）
+- 23505テストはmockのmaybeSingle呼び出し順序で制御
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（テストP2 finding修正）

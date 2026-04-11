@@ -35,6 +35,16 @@ describe('enqueueResearchDigestJob', () => {
 
     expect(result.created).toBe(true)
     expect(result.jobId).toBe('job_123')
+
+    expect(mockQuery.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project_id: 'project_bionic',
+        type: 'research_digest',
+        status: 'pending',
+        requested_by: 'scheduler',
+        dedupe_key: 'research_digest:2026-W15',
+      })
+    )
   })
 
   it('unique violation(23505)では{ created: false }を返しthrowしない', async () => {

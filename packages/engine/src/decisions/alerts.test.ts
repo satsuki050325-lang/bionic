@@ -132,4 +132,19 @@ describe('evaluateAlertForEvent', () => {
 
     await expect(evaluateAlertForEvent(makeEvent())).resolves.toBeUndefined()
   })
+
+  it('insert時に23505が返った場合skipActionが呼ばれthrowしない', async () => {
+    const { skipAction } = await import('../actions/logAction.js')
+
+    const chain = makeMockChain([
+      { data: null, error: null },
+    ])
+    // insertのmaybeSingleで23505を返す
+    chain.maybeSingle.mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: { code: '23505', message: 'duplicate key' } })
+    vi.mocked(supabase.from).mockReturnValue(chain as never)
+
+    await expect(evaluateAlertForEvent(makeEvent())).resolves.toBeUndefined()
+    expect(skipAction).toHaveBeenCalled()
+  })
 })
