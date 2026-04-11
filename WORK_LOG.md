@@ -1398,3 +1398,22 @@
 
 ### 次にやること
 - Codex /review（CLI P1 finding修正）
+
+---
+
+## 2026-04-11 / Claude Code（41回目）
+
+### やったこと
+- approve/denyのupdateに.eq('status', 'pending_approval')を追加した（P1 finding修正）
+- update結果が0件の場合に409を返すようにした
+- `pnpm typecheck` 全5パッケージでエラーなし確認
+
+### 判断したこと
+- select→updateの間にstatusが変わるrace conditionを防止するため、updateにもstatus条件を追加
+- .select('id')で更新行数を確認し、0件なら409（concurrent修正で先に状態が変わった場合）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（approve/deny atomic保証）

@@ -82,16 +82,23 @@ actionsRouter.post('/:id/approve', async (req, res) => {
     return
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('engine_actions')
     .update({
       status: 'approved',
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .eq('status', 'pending_approval')
+    .select('id')
 
   if (error) {
     res.status(500).json({ error: 'failed to approve action' })
+    return
+  }
+
+  if (!updated || updated.length === 0) {
+    res.status(409).json({ error: 'action is no longer pending approval' })
     return
   }
 
@@ -124,16 +131,23 @@ actionsRouter.post('/:id/deny', async (req, res) => {
     return
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('engine_actions')
     .update({
       status: 'denied',
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .eq('status', 'pending_approval')
+    .select('id')
 
   if (error) {
     res.status(500).json({ error: 'failed to deny action' })
+    return
+  }
+
+  if (!updated || updated.length === 0) {
+    res.status(409).json({ error: 'action is no longer pending approval' })
     return
   }
 
