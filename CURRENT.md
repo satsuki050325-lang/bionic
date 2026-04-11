@@ -61,12 +61,15 @@
 - Research API実装（GET/POST /api/research）
 - shared型にResearchItem追加
 - research_itemsにcategoryカラム追加
+- Research画面実装（保存フォーム + 一覧表示）
+- Engine未起動時フォーム非表示対応
+- Codexレビュー完了・P1 finding全修正済み
+- IDEAS.mdにDiscord Bot統合アイデアを追加
 
 ### 進行中
 - なし
 
 ### 未着手
-- Bionic App Research画面実装（保存フォーム + 一覧表示）
 - コピペ自動化
 
 ---
@@ -74,14 +77,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Codex /review（Research API）
-- Bionic App Research画面実装（保存フォーム + 一覧表示）
+- Bionic App のUI改善（現状は素のHTMLのみ。TailwindCSSを導入して最低限見られる状態にする）
 
 ### done条件
-- [ ] Codexレビュー完了
-- [ ] Research画面に保存フォームがある
-- [ ] Research画面にリサーチ一覧が表示される
-- [ ] POST /api/research でリサーチが保存できる
+- [ ] TailwindCSSが導入されている
+- [ ] 全画面が最低限のスタイリングで見られる状態になっている
 
 ---
 
@@ -118,4 +118,4 @@
 
 ## 最終更新
 
-2026-04-10 / Claude
+2026-04-11 / Claude

@@ -787,3 +787,24 @@
 
 ### 次にやること
 - Codex /review（Research画面・再レビュー）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- Research画面を実装した（保存フォーム + 一覧表示）
+- Engine未起動時にフォームを非表示にした
+- Codexレビュー完了・P1 finding全修正済み
+- IDEAS.mdにDiscord Bot統合アイデアを追加した
+
+### 判断したこと
+- Engine未起動時はフォームを非表示にする（データ消失防止）
+- Server ActionはNext.js 14の型制約によりvoid返却に変更
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- Server Actionのエラーハンドリングは将来Client Component化で対応
+
+### 次にやること
+- Bionic App のUI改善（TailwindCSS導入）
