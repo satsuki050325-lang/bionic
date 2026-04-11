@@ -1001,3 +1001,36 @@
 ### 次にやること
 - Scheduler実装（node-cronでweekly digest自動実行）
 - その後engine_actions設計
+
+---
+
+## 2026-04-11 / Claude Code（29回目）
+
+### やったこと
+- project_idを'default'から'project_bionic'に全箇所統一した
+  - packages/engine/src/routes/research.ts（GET/POST）
+  - packages/engine/src/routes/jobs.ts（insert/runResearchDigest呼び出し）
+- engine_jobs.dedupe_keyのmigration SQLを作成した
+- Schedulerモジュールを実装した
+  - packages/engine/src/jobs/researchDigest.ts（dedupeKey生成・job登録）
+  - packages/engine/src/scheduler/index.ts（node-cron・catch-up・config）
+  - packages/engine/src/routes/jobs.ts のrunResearchDigestをexport化
+  - packages/engine/src/index.ts にstartScheduler()を追加
+- node-cron / @types/node-cron をインストールした
+- .env.localにScheduler設定を追加した
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- project_id統一をScheduler実装前に完了（混在状態の解消）
+- dedupeKeyはISO週番号ベース（`research_digest:2026-W15`形式）で週1回の重複防止
+- catch-up機能: Engine起動時に今週分が未実行なら即時実行する
+- BIONIC_SCHEDULER_ENABLED=falseでSchedulerを無効化可能（開発時の制御）
+- runResearchDigestのexportは既存ロジックを変更しない（関数シグネチャ維持）
+
+### 未解決・既知リスク
+- engine_jobs.dedupe_keyのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでdedupe_key migration SQLを実行する
+- Scheduler動作確認（Engine起動→catch-up実行確認）
+- Codex /review（Scheduler）

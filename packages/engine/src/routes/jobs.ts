@@ -23,7 +23,7 @@ jobsRouter.post('/', async (req, res) => {
   const { data, error } = await supabase
     .from('engine_jobs')
     .insert({
-      project_id: input.projectId ?? 'default',
+      project_id: input.projectId ?? 'project_bionic',
       type: input.type,
       status: 'pending',
       requested_by: input.requestedBy,
@@ -39,7 +39,7 @@ jobsRouter.post('/', async (req, res) => {
   }
 
   if (input.type === 'research_digest') {
-    void runResearchDigest(data.id, input.projectId ?? 'default')
+    void runResearchDigest(data.id, input.projectId ?? 'project_bionic')
   }
 
   const result: RunJobResult = {
@@ -57,7 +57,7 @@ jobsRouter.post('/', async (req, res) => {
   res.status(202).json(result)
 })
 
-async function runResearchDigest(jobId: string, projectId: string): Promise<void> {
+export async function runResearchDigest(jobId: string, projectId: string): Promise<void> {
   try {
     await supabase
       .from('engine_jobs')

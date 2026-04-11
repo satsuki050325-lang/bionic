@@ -16,7 +16,7 @@ researchRouter.get('/', async (req, res) => {
     .select('*')
     .order('importance_score', { ascending: false })
 
-  const targetProjectId = (projectId as string) ?? 'default'
+  const targetProjectId = (projectId as string) ?? 'project_bionic'
   query = query.eq('project_id', targetProjectId)
 
   if (category) query = query.eq('category', category as string)
@@ -64,7 +64,7 @@ researchRouter.post('/', async (req, res) => {
   const { data, error } = await supabase
     .from('research_items')
     .insert({
-      project_id: input.projectId ?? 'default',
+      project_id: input.projectId ?? 'project_bionic',
       title: input.title,
       summary: input.summary,
       url: input.url ?? null,
