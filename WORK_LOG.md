@@ -1470,3 +1470,23 @@
 ### 次にやること
 - Supabase SQL Editorでmigration SQLを実行する
 - Codex /review（RLS/Security）
+
+---
+
+## 2026-04-11 / Claude Code（43回目）
+
+### やったこと
+- 本番起動前のvalidateEnvironment()を追加した（P1 finding修正）
+  - NODE_ENV=production時にBIONIC_ENGINE_TOKEN / SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEYを検証
+  - 未設定時はprocess.exit(1)で即時停止
+- `pnpm typecheck` 全5パッケージでエラーなし確認
+
+### 判断したこと
+- validateEnvironment()はapp.listen()の直前に配置（ルーティング設定後・起動前の最終チェック）
+- 開発モード（NODE_ENV未設定）ではスキップ（既存のmiddleware warningで十分）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（validateEnvironment）

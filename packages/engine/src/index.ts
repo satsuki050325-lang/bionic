@@ -32,6 +32,21 @@ app.use('/api/actions', actionsRouter)
 const PORT = process.env.PORT ?? 3001
 const HOST = process.env.BIONIC_ENGINE_HOST ?? '127.0.0.1'
 
+function validateEnvironment(): void {
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.BIONIC_ENGINE_TOKEN) {
+      console.error('[engine] BIONIC_ENGINE_TOKEN is required in production. Exiting.')
+      process.exit(1)
+    }
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[engine] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required in production. Exiting.')
+      process.exit(1)
+    }
+    console.log('[engine] production environment validated.')
+  }
+}
+
+validateEnvironment()
 app.listen(Number(PORT), HOST, () => {
   console.log(`Bionic Engine running on http://${HOST}:${PORT}`)
   startScheduler()
