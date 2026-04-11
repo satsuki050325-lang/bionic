@@ -943,3 +943,30 @@
 
 ### 次にやること
 - Codex /review
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- Event → Alert 最小Decision Layerを実装した（decisions/alerts.ts）
+- Alert.typeにservice_errorを追加した
+- fingerprintによる重複防止を実装した
+- race condition対応（23505エラーハンドリング）を実装した
+- supabase/migrationsを整備してDB変更の再現性を確保した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- evaluateAlertForEventはvoid呼び出し（event captureをDecision失敗でブロックしない）
+- service.error.reportedのseverityはcode有無で判定（全criticalより精度が高い）
+- research_items.sourceはDEFAULT 'manual'（手動保存のデフォルト値）
+- migration管理はsupabase/migrations/に記録する運用を確立した
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- GitHub ActionsでCI（typecheck/build）を必須化していない
+- SECURITY_RELEASE_CHECKLIST.mdがまだない
+- project_bionic / default 混在はScheduler前に整理が必要
+
+### 次にやること
+- Scheduler実装（node-cronでweekly digest自動実行）
