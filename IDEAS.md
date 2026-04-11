@@ -358,3 +358,126 @@ Level 3（永遠に自動化しない）：
 - Supabase Edge Functionsでの検証
 
 いまの判断：後で仕様化（製品化フェーズ）
+
+---
+
+## 2026-04-11 / Codex + Claude（設計負債・将来懸念）
+
+### アイデア1: Engineの実行責務分離
+
+現状の問題：
+routes/jobs.tsがjob実行・Decision呼び出し・Action記録を全部やっている。
+Discord Bot・MCP・repair runnerが増えると崩れる。
+
+目標設計：
+- HTTP routeは受付・バリデーションのみ
+- 実処理はservice/job/action層に分離
+- routes/ → services/ → jobs/ → actions/ の依存方向を守る
+
+いまの判断：後で仕様化（Discord Bot実装前に整理）
+
+---
+
+### アイデア2: DB job runnerの明確化
+
+現状の問題：
+cronがその場で実行・HTTP routeもその場で実行という混在状態。
+approval後の再開・crash recoveryができない。
+
+目標設計：
+- engine_jobsのpendingを拾う専用runner
+- retry・crash recovery・approval後再開を統一的に処理
+- 冪等性キー・最大retry回数・前回error保持を定義する
+
+いまの判断：後で仕様化（Phase 2）
+
+---
+
+### アイデア3: SDKイベントのrate limit・dedupe
+
+現状の問題：
+Medini起動時のcatch節が連続でerrorを送った件が発生済み。
+根本的な対策がまだない。
+
+必要な対策：
+- rate limit（同一serviceIdから1分間に最大N件）
+- client_event_idによるdedupe（同じIDは1回だけ処理）
+- source filteringによるノイズ除去
+- payload sizeの上限（現在1MB body limitのみ）
+
+いまの判断：後で仕様化（SDK v2設計時）
+
+---
+
+### アイデア4: job/action状態遷移の一元化
+
+現状の問題：
+状態遷移（pending→running→completed等）がrouteごとに直接updateされている。
+不正遷移を防げない。
+
+目標設計：
+- 状態遷移専用関数（transitionJobStatus / transitionActionStatus）
+- 不正遷移時はエラーを返す
+- 遷移ログをengine_eventsに記録する
+
+いまの判断：後で仕様化（Phase 2）
+
+---
+
+### アイデア5: 通知ポリシーモジュール
+
+現状の問題：
+Discord通知はActionだが「通知すべきか」「何回送るか」「quiet hoursか」がDecision/Policy寄り。
+今後critical再通知・stale approval通知を入れるとrouteが複雑になる。
+
+目標設計：
+- packages/engine/src/policies/notification.ts
+- 通知条件・頻度・quiet hoursをルールとして管理
+- json-rules-engineと組み合わせる
+
+いまの判断：後で仕様化（Discord Bot実装前）
+
+---
+
+### アイデア6: eventのpayload schema versioning
+
+現状の問題：
+payloadがRecord<string, unknown>のまま運用データが貯まると後から型を締めるのが困難。
+
+目標設計：
+- EngineEvent.payloadにschemaVersionフィールドを追加する余地を持つ
+- event typeごとのpayload定義をdocsに残す
+- 将来の移行時にschemaVersionで分岐できるようにする
+
+いまの判断：後で仕様化（SDK v2設計時）
+
+---
+
+### アイデア7: ローカルファーストとSupabase依存の緊張
+
+現状の問題：
+Supabaseが落ちるとEngineの記録・判断が止まる。
+「ローカルファースト」を強く打ち出すなら矛盾する。
+
+目標設計：
+- SQLite/buffered write/outbox設計
+- Supabaseへの書き込みが失敗した場合はローカルにバッファ
+- 復帰時に同期する
+
+いまの判断：後で仕様化（Phase 2・better-sqlite3導入時）
+
+---
+
+### アイデア8: 承認UXの見落とし防止
+
+現状の問題：
+「Discordは気づく・CLI/Appで承認」は良い思想だが承認待ちが埋もれるリスクがある。
+
+必要な対策：
+- CLI起動時のpending表示（bionic statusでpendingActionsを強調）
+- AppのDashboardにbadge表示
+- 24h stale approval再通知（BIONIC_PRODUCT.mdに記載済み）
+- 48h auto-cancel（BIONIC_PRODUCT.mdに記載済み）
+- stale approvalの処理をSchedulerに追加する
+
+いまの判断：後で仕様化（Discord Bot実装後）
