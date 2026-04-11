@@ -808,3 +808,32 @@
 
 ### 次にやること
 - Bionic App のUI改善（TailwindCSS導入）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- 外部リサーチを2回実施した（個人開発者向けopsエンジン・AI市場・競合・セキュリティ・技術アーキテクチャ）
+- CodexによるBionic Engine現状整理・候補評価を実施した
+- リサーチとCodex分析を統合してPhase 2方針を確定した
+
+### 判断したこと
+- Bionicの存在意義：競合はセッションベース＋LLM推論コストあり。BionicはローカルルールベースでコストO
+- Discord Botは早すぎる。現状Webhook通知で十分。Phase 2後半に移動
+- RLSを後回しにしすぎていた。本番前ゲートとして設計を早めに固める
+- json-rules-engineは段階的に導入。最初は最小Decisionから始める
+- MCPサーバーはpackages/mcpとして独立させる（Engine内に混在させない）
+- project_bionic / default 混在はScheduler前に整理が必要
+- node-cronはGitHub Actions Cronより信頼性が高い（GH Actionsは15〜60分遅延あり）
+- better-sqlite3は将来のローカルファースト対応として温存。今はSupabaseのみ
+- ターゲットは英語市場（一次）/ 日本（二次）
+- 将来は個人＋小チーム（2〜5人）対応を見越した設計
+
+### 未解決・既知リスク
+- engine_alertsの重複防止fingerprint設計が未確定
+- project_bionic / default 混在の整理タイミング
+- RLS設計の具体化
+
+### 次にやること
+- Event → Alert 最小Decisionの実装（Codexに/refineを依頼）
