@@ -744,3 +744,26 @@
 
 ### 次にやること
 - Bionic App Research画面実装（保存フォーム + 一覧表示）
+
+---
+
+## 2026-04-11 / Claude Code（22回目）
+
+### やったこと
+- Bionic App Research画面を実装した
+  - apps/app/src/lib/engine.ts にgetResearchItems/createResearchItemを追加
+  - apps/app/src/app/research/actions.ts を新規作成（Server Action）
+  - apps/app/src/app/research/page.tsx を保存フォーム+一覧表示に実装
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+- `pnpm --filter @bionic/app build` 成功確認
+
+### 判断したこと
+- Server Actionの戻り値をvoidにした（Next.js 14のform action型制約: `(formData: FormData) => void | Promise<void>`）
+- revalidatePath('/research')で保存後の一覧自動更新を実現
+- projectIdは'project_bionic'をハードコード（現時点でマルチプロジェクト切替UIは不要）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（Research画面）
