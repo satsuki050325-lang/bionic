@@ -864,3 +864,25 @@
 ### 次にやること
 - Supabase SQL Editorでスキーマ変更SQLを実行する
 - curlで動作確認（service.health.degraded → alert生成）
+
+---
+
+## 2026-04-11 / Claude Code（25回目）
+
+### やったこと
+- Codex P1 finding 2件を修正した（decisions/alerts.ts）
+  - select / update / insert の全てで{ error }を確認してconsole.errorでログ出力
+  - insertでconflict error（23505）が返った場合はconsole.warnでスキップ（race condition対応）
+  - selectエラー時は早期returnで後続処理を実行しない
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- upsertではなくselect→update/insertの2ステップを維持（partial unique indexとの相性問題を回避）
+- 23505はwarnレベル（データ不整合ではなく正常な競合回避）
+- selectエラー時はreturn（後続のinsertで不整合が起きるのを防止）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（decisions/alerts.ts）

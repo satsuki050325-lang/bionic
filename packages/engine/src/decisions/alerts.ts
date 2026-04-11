@@ -78,15 +78,22 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
   }
 
   try {
-    const { data: existing } = await supabase
+    // Step 1: selectでopen alertを確認する
+    const { data: existing, error: selectError } = await supabase
       .from('engine_alerts')
       .select('id, count')
       .eq('fingerprint', fingerprint)
       .eq('status', 'open')
       .maybeSingle()
 
+    if (selectError) {
+      console.error('[decision] failed to select alert:', selectError)
+      return
+    }
+
     if (existing) {
-      await supabase
+      // Step 2a: 存在する場合はupdateする
+      const { error: updateError } = await supabase
         .from('engine_alerts')
         .update({
           message,
@@ -96,8 +103,13 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
           updated_at: new Date().toISOString(),
         })
         .eq('id', existing.id)
+
+      if (updateError) {
+        console.error('[decision] failed to update alert:', updateError)
+      }
     } else {
-      await supabase.from('engine_alerts').insert({
+      // Step 2b: 存在しない場合はinsertする
+      const { error: insertError } = await supabase.from('engine_alerts').insert({
         project_id: event.projectId,
         service_id: event.serviceId,
         type: alertType,
@@ -109,6 +121,15 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
         count: 1,
         last_seen_at: new Date().toISOString(),
       })
+
+      if (insertError) {
+        // Race condition: 別プロセスが先にinsertした場合、partial unique indexが23505を返す
+        if (insertError.code === '23505') {
+          console.warn('[decision] alert already created by concurrent process, skipping:', fingerprint)
+        } else {
+          console.error('[decision] failed to insert alert:', insertError)
+        }
+      }
     }
   } catch (err) {
     console.error('[decision] failed to evaluate alert:', err)
