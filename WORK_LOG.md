@@ -925,3 +925,21 @@
 
 ### 次にやること
 - Supabase SQL EditorでDEFAULT変更SQLを実行する
+
+---
+
+## 2026-04-11 / Claude Code（28回目）
+
+### やったこと
+- research_items.source DEFAULT 'manual'のmigration記録を追加した
+  - supabase/migrations/20260411000001_research_source_default.sql を作成
+  - supabase/migrations/README.md の適用済みテーブルを更新
+
+### 判断したこと
+- Supabaseに適用済みのためSQLは再実行不要（リポジトリへの記録が目的）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review
