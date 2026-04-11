@@ -1282,3 +1282,27 @@
 
 ### 次にやること
 - Codex /review（UI改善）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- TailwindCSS v4を導入した
+- 黒×オレンジ（Retro-Futurism × Anthropic Orange）のデザインシステムを構築した
+- Dashboard / Alerts / Actions / Research 全画面をスタイル適用した
+- Actions画面を新規追加した（Audit Log表示）
+- getActions()をengine.tsに追加した
+- Codexレビュー完了・問題なし
+
+### 判断したこと
+- カラーパレット：#0A0A0A背景・#E8611Aアクセント（TVA×Anthropicの琥珀色）
+- フォント：Space Grotesk（見出し）/ Inter（本文）/ JetBrains Mono（コード・ID）
+- カードはシャドウなし・薄いボーダーのみ（官僚的な整然さ）
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- テストコードがまだない
+
+### 次にやること
+- Recent Events表示

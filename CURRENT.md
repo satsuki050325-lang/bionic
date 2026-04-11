@@ -58,6 +58,11 @@
 - notifyDigest例外時のnotify_discord action failover
 - mark_digest_sent失敗時のneeds_review対応
 - Codexレビュー完了・P1/P2 finding全修正済み
+- App UI改善（TailwindCSS v4導入・Retro-Futurism × Anthropic Orangeデザイン）
+- Dashboard / Alerts / Actions / Research 全画面スタイル適用
+- Actions画面新規追加（Audit Log表示）
+- getActions()をengine.tsに追加
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -69,7 +74,7 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- App UI改善（次の1手）
+- Recent Events表示（次の1手）
 - 承認待ちAPI / CLI最小実装
 - RLS / Security設計
 - Deploy→Watch→Alert（Vercel Webhook連携）
@@ -82,12 +87,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- App UI改善（TailwindCSS導入・Dashboard/Alerts/Research/Actionsを整備）
+- Recent Events表示（engine_eventsの直近イベントを見える化）
 
 ### done条件
-- [ ] TailwindCSSが導入されている
-- [ ] 全画面が最低限のスタイリングで見られる状態になっている
-- [ ] Actions画面が追加されている
+- [ ] DashboardにRecent Eventsセクションが表示される
+- [ ] GET /api/eventsエンドポイントが存在する
+- [ ] engine_eventsの直近イベントが一覧表示される
 
 ---
 
@@ -97,7 +102,8 @@ Event → Alert 最小Decision（完了）
 Scheduler（完了）
 project_bionic / default 混在整理（完了）
 engine_actions実装（完了）
-App UI改善（今ここ）
+App UI改善（完了）
+Recent Events表示（今ここ）
 承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
 RLS / Security設計
 Deploy→Watch→Alert（Vercel Webhook連携）
