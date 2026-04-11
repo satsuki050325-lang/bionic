@@ -1226,3 +1226,30 @@
 
 ### 次にやること
 - Codex /review（engine_actions finding修正）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- engine_actionsテーブルを作成した（Phase 1.5 Audit Log）
+- logActionヘルパーを作成した（ベストエフォート・例外はcatchしてvoid返却）
+- run_research_digest / notify_discord / create_alert / mark_digest_sentを記録対象にした
+- GET /api/actionsエンドポイントを追加した
+- GET /api/statusにpendingActionsを追加した
+- notifyDigest例外時にnotify_discord actionをfailoverする実装をした
+- mark_digest_sent失敗時にjobをneeds_reviewにする実装をした
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- logActionはベストエフォート（例外をcatchしてメイン処理を止めない）
+- mark_digest_sent失敗時はjobをneeds_reviewにする（Discord送信成功・mark失敗の状態を人間が確認できるようにする）
+- notify_discord actionはrun_research_digestと独立して記録する
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- テストコードがまだない（最小テスト追加はUI改善後に実施）
+- App UIはまだ素のHTMLのみ
+
+### 次にやること
+- App UI改善（TailwindCSS導入）

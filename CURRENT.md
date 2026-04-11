@@ -50,6 +50,14 @@
 - catch-up処理（予定時刻チェック・timezone正確化・dedupe_key一貫性）
 - セキュリティ検証（cron式・timezone・projectIdバリデーション）
 - Codexレビュー完了・P1/P2 finding全修正済み
+- engine_actions実装（Phase 1.5 Audit Log）
+- logActionヘルパー作成（createAction/completeAction/failAction/skipAction）
+- run_research_digest / notify_discord / create_alert / mark_digest_sent の記録
+- GET /api/actions エンドポイント追加
+- GET /api/status にpendingActions追加
+- notifyDigest例外時のnotify_discord action failover
+- mark_digest_sent失敗時のneeds_review対応
+- Codexレビュー完了・P1/P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -61,9 +69,8 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- project_bionic / default 混在の最終確認（次の1手）
-- engine_actions最小設計・実装（Phase 1.5）
-- App UI改善 + Recent Events表示
+- App UI改善（次の1手）
+- 承認待ちAPI / CLI最小実装
 - RLS / Security設計
 - Deploy→Watch→Alert（Vercel Webhook連携）
 - bionic-ops MCPサーバー（packages/mcp）
@@ -75,12 +82,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- project_bionic / default 混在の最終確認と整理
-- engine_actions最小設計（Phase 1.5）
+- App UI改善（TailwindCSS導入・Dashboard/Alerts/Research/Actionsを整備）
 
 ### done条件
-- [ ] project_bionic / default の混在が解消されている
-- [ ] engine_actionsテーブルの設計が確定している
+- [ ] TailwindCSSが導入されている
+- [ ] 全画面が最低限のスタイリングで見られる状態になっている
+- [ ] Actions画面が追加されている
 
 ---
 
@@ -88,10 +95,10 @@
 
 Event → Alert 最小Decision（完了）
 Scheduler（完了）
-project_bionic / default 混在の最終確認（今ここ）
-engine_actions最小設計・実装（Phase 1.5）
+project_bionic / default 混在整理（完了）
+engine_actions実装（完了）
+App UI改善（今ここ）
 承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
-App UI改善 + Recent Events表示
 RLS / Security設計
 Deploy→Watch→Alert（Vercel Webhook連携）
 bionic-ops MCPサーバー（packages/mcp として独立）
