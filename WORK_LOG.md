@@ -1349,3 +1349,29 @@
 
 ### 次にやること
 - 承認待ちAPI / CLI最小実装
+
+---
+
+## 2026-04-11 / Claude Code（39回目）
+
+### やったこと
+- packages/cliを新規作成した（@bionic/cli）
+  - bionic status: Engine状態を表示
+  - bionic approvals: 承認待ちアクション一覧
+  - bionic approve <id>: アクションを承認
+  - bionic deny <id>: アクションを却下
+- Engine側にPOST /api/actions/:id/approve と /api/actions/:id/deny を追加した
+- `pnpm typecheck` 全5パッケージでエラーなし確認（cli追加）
+- CLIの動作確認済み（status / approvals コマンド）
+
+### 判断したこと
+- CLIはcommander + chalk構成（軽量・カラー表示）
+- Engine APIクライアントはfetch直接利用（SDK依存なし）
+- approve/denyはstatus='pending_approval'のレコードのみ更新（状態チェック付き）
+- デザイン: Anthropicオレンジ(#E8611A)をCLI表示にも統一
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（CLI）

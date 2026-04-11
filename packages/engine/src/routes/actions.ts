@@ -55,3 +55,43 @@ actionsRouter.get('/', async (req, res) => {
 
   res.status(200).json(result)
 })
+
+actionsRouter.post('/:id/approve', async (req, res) => {
+  const { id } = req.params
+
+  const { error } = await supabase
+    .from('engine_actions')
+    .update({
+      status: 'approved',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('status', 'pending_approval')
+
+  if (error) {
+    res.status(500).json({ error: 'failed to approve action' })
+    return
+  }
+
+  res.status(200).json({ approved: true, actionId: id })
+})
+
+actionsRouter.post('/:id/deny', async (req, res) => {
+  const { id } = req.params
+
+  const { error } = await supabase
+    .from('engine_actions')
+    .update({
+      status: 'denied',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('status', 'pending_approval')
+
+  if (error) {
+    res.status(500).json({ error: 'failed to deny action' })
+    return
+  }
+
+  res.status(200).json({ denied: true, actionId: id })
+})
