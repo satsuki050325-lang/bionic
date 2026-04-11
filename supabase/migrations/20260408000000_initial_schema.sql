@@ -61,7 +61,7 @@ create table if not exists public.research_items (
   title text not null,
   summary text not null,
   url text,
-  source text not null,
+  source text not null default 'manual',
   importance_score integer not null default 0,
   is_digest_sent boolean not null default false,
   created_at timestamptz not null default now()

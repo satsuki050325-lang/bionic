@@ -907,3 +907,21 @@
 
 ### 次にやること
 - Codex /review（migrations）
+
+---
+
+## 2026-04-11 / Claude Code（27回目）
+
+### やったこと
+- research_items.sourceカラムにDEFAULT 'manual'を追加した（migration修正）
+- Supabase適用用SQLを出力した（手動実行待ち）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- sourceカラムがnot nullだがAPIでinsertしていないため、DEFAULT 'manual'で手動保存を表現
+
+### 未解決・既知リスク
+- Supabaseへの`alter column source set default 'manual'`が未実行（手動実行待ち）
+
+### 次にやること
+- Supabase SQL EditorでDEFAULT変更SQLを実行する
