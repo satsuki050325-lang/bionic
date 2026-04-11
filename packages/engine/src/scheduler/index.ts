@@ -127,9 +127,9 @@ function getScheduledTimeThisWeek(
   return targetDate
 }
 
-async function triggerWeeklyDigest(): Promise<void> {
+async function triggerWeeklyDigest(overrideDedupeKey?: string): Promise<void> {
   const config = getConfig()
-  const dedupeKey = getWeeklyDigestKey(new Date(), config.timezone)
+  const dedupeKey = overrideDedupeKey ?? getWeeklyDigestKey(new Date(), config.timezone)
 
   const result = await enqueueResearchDigestJob({
     projectId: config.projectId,
@@ -177,7 +177,7 @@ async function catchUpMissedSchedules(): Promise<void> {
 
   if (!data) {
     console.log(`[scheduler] missed schedule detected. running catch-up: ${dedupeKey}`)
-    await triggerWeeklyDigest()
+    await triggerWeeklyDigest(dedupeKey)
   } else {
     console.log(`[scheduler] no missed schedule: ${dedupeKey}`)
   }

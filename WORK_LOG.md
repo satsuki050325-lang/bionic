@@ -1103,3 +1103,23 @@
 ### 次にやること
 - Supabase SQL Editorでdedupe_key migration SQLを実行する
 - Scheduler動作確認
+
+---
+
+## 2026-04-11 / Claude Code（33回目）
+
+### やったこと
+- triggerWeeklyDigestにoverrideDedupeKey引数を追加した（P2 finding修正）
+- catch-upからscheduledTime基準のdedupeKeyを渡すよう変更した
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- catch-up: scheduledTime基準のdedupeKeyを一貫して使用（確認→insert間の不整合を防止）
+- cron起動時: new Date()基準のまま（overrideDedupeKey未指定時のフォールバック）
+
+### 未解決・既知リスク
+- engine_jobs.dedupe_keyのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでdedupe_key migration SQLを実行する
+- Scheduler動作確認
