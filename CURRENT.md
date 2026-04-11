@@ -68,6 +68,17 @@
 - CLI最小実装（bionic status / approvals / approve / deny）
 - approve/deny 404/409・atomic update対応
 - Codexレビュー完了・P1 finding全修正済み
+- RLS有効化（全テーブル・policyなし・service_roleのEngineのみ操作）
+- BIONIC_ENGINE_TOKEN認証middleware実装
+- Engineのlisten host環境変数化（デフォルト127.0.0.1）
+- チーム利用設計（approved_by / denied_byカラム追加）
+- 本番環境でのTOKEN未設定時の起動拒否（validateEnvironment）
+- App / CLI のAuthorizationヘッダー追加
+- .env.example作成
+- CORS・JSON body size limit設定
+- IDEAS.md参照タイミング構造化（全21アイデアに追加）
+- AGENTS.mdに「タスク開始前の確認」ルール追加
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -79,7 +90,7 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- RLS / Security設計（次の1手）
+- 最小テスト追加（次の1手）
 - Deploy→Watch→Alert（Vercel Webhook連携）
 - bionic-ops MCPサーバー（packages/mcp）
 - Discord Bot
@@ -90,11 +101,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- RLS / Security設計（本番前ゲート）
+- 最小テスト追加（evaluateAlertForEvent / enqueueResearchDigestJob / validateCronExpression）
 
 ### done条件
-- [ ] RLSポリシーが設計されている
-- [ ] セキュリティチェックリストが作成されている
+- [ ] 主要関数のユニットテストが存在する
+- [ ] pnpm test が通る
 
 ---
 
@@ -107,7 +118,8 @@ engine_actions実装（完了）
 App UI改善（完了）
 Recent Events表示（完了）
 承認待ちAPI / CLI最小実装（完了）
-RLS / Security設計（今ここ）
+RLS / Security設計（完了）
+最小テスト追加（今ここ）
 Deploy→Watch→Alert（Vercel Webhook連携）
 bionic-ops MCPサーバー（packages/mcp として独立）
 Discord Bot（Phase 2後半）
@@ -127,8 +139,7 @@ Discord Bot（Phase 2後半）
 
 ## 既知リスク
 
-- RLSは開発中無効。本番前に有効化が必要
-- project_bionic / default が混在している。Scheduler実装前に整理が必要
+- テストコードがまだない（次のタスク）
 - Discord Bot常駐・外部API監視・LLM要約が増えるとコストが発生する（今は実質$0）
 - GitHub ActionsでCI（typecheck/build）を必須化していない
 - SECURITY_RELEASE_CHECKLIST.mdがまだない

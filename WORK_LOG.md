@@ -1490,3 +1490,33 @@
 
 ### 次にやること
 - Codex /review（validateEnvironment）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- RLS有効化migration追加（全テーブル・policyなし）
+- BIONIC_ENGINE_TOKEN認証middlewareを実装した
+- Engineのlisten hostをBIONIC_ENGINE_HOSTで環境変数化した
+- チーム利用設計を追加した（approved_by / denied_byカラム）
+- 本番環境でのTOKEN未設定時の起動拒否を実装した（validateEnvironment）
+- App / CLIのfetchにAuthorizationヘッダーを追加した
+- .env.exampleを作成した
+- CORS・JSON body size limitを設定した
+- IDEAS.mdの全21アイデアに参照タイミングを追加した
+- AGENTS.mdに「タスク開始前の確認」ルールを追加した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- RLSはpolicyなし・service_roleのEngineのみ操作する設計にした
+- Supabase直接readはPhase 2でAuth・RLS・project_membersとセットで実装する
+- チーム利用設計（listen host・TOKEN・approved_by）は今から入れた
+- TOKEN未設定は開発中のみ許可・本番は起動拒否にした
+- IDEAS.mdの参照タイミングをAGENTS.mdのルールと組み合わせて機能させる
+
+### 未解決・既知リスク
+- テストコードがまだない（次のタスク）
+
+### 次にやること
+- 最小テスト追加
