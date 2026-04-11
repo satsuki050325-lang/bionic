@@ -150,3 +150,51 @@
 - Solo Pro：$14/月 / 無制限連携・リアルタイムアラート・90日履歴・AIスコアリング・デプロイ相関
 - Team：$29/月 / 複数プロジェクト・共有ダッシュボード・ランブック生成・API
 - いまの判断：製品化フェーズで確定
+
+---
+
+## 2026-04-11 / Claude
+
+### アイデア
+- GitHubおよび技術ブログでのBionic公開戦略
+
+### 内容
+
+**公開タイミング（以下が揃ったら）**
+- Event → Alert Decision（自動alertが生成される）
+- Scheduler（自動digestが届く）
+- Deploy→Watch→Alert（デプロイ後の相関通知）
+- bionic-ops MCPサーバー（Claude Desktopから操作できる）
+
+**GitHub公開方針**
+- OSSとして公開（AGPL-3.0 + 商用デュアルライセンス）
+- Nectaで経験済みの構成を踏襲
+- MCPエコシステムへの参加・Hacker Newsでの注目・コントリビューター獲得を狙う
+
+**技術ブログのタイトル候補（英語）**
+- "I built a local-first ops engine because Claude Code sleeps when I close my terminal"
+- "Why I stopped using AI tools for monitoring and built a deterministic alternative"
+- どちらもHN上位に来やすい「Why I stopped using X」「I built Y because Z」パターン
+
+**準備として今からやること**
+- READMEとドキュメントを実装と並行して整備する
+- 公開時の労力を下げるため、機能追加のたびにREADMEを更新する習慣をつける
+
+**配布チャンネルの優先順位**
+1. Hacker News（Show HN）
+2. GitHub（スター・フォーク・コントリビューター）
+3. MCPエコシステム（bionic-ops MCPサーバーの登録）
+4. Raycast拡張（将来）
+5. Product Hunt
+
+### なぜ気になったか
+- 「個人開発者向けローカルファーストopsエンジン」というカテゴリーは存在しない
+- 最初に言語化して公開した人がカテゴリーのオーナーになる
+- 英語市場の開発者コミュニティへの入口として技術ブログ・GitHubが最優先
+
+### いまの判断
+- 後で仕様化（公開タイミングは上記4条件が揃ったとき）
+
+### 次にやるなら
+- 実装と並行してREADMEを整備する
+- 公開タイミングの4条件が揃ったらHN投稿文を作成する
