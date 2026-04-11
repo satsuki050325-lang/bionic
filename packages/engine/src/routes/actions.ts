@@ -59,6 +59,29 @@ actionsRouter.get('/', async (req, res) => {
 actionsRouter.post('/:id/approve', async (req, res) => {
   const { id } = req.params
 
+  const { data: existing, error: selectError } = await supabase
+    .from('engine_actions')
+    .select('id, status')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (selectError) {
+    res.status(500).json({ error: 'failed to fetch action' })
+    return
+  }
+
+  if (!existing) {
+    res.status(404).json({ error: 'action not found' })
+    return
+  }
+
+  if (existing.status !== 'pending_approval') {
+    res.status(409).json({
+      error: `action is not pending approval (current status: ${existing.status})`,
+    })
+    return
+  }
+
   const { error } = await supabase
     .from('engine_actions')
     .update({
@@ -66,7 +89,6 @@ actionsRouter.post('/:id/approve', async (req, res) => {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('status', 'pending_approval')
 
   if (error) {
     res.status(500).json({ error: 'failed to approve action' })
@@ -79,6 +101,29 @@ actionsRouter.post('/:id/approve', async (req, res) => {
 actionsRouter.post('/:id/deny', async (req, res) => {
   const { id } = req.params
 
+  const { data: existing, error: selectError } = await supabase
+    .from('engine_actions')
+    .select('id, status')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (selectError) {
+    res.status(500).json({ error: 'failed to fetch action' })
+    return
+  }
+
+  if (!existing) {
+    res.status(404).json({ error: 'action not found' })
+    return
+  }
+
+  if (existing.status !== 'pending_approval') {
+    res.status(409).json({
+      error: `action is not pending approval (current status: ${existing.status})`,
+    })
+    return
+  }
+
   const { error } = await supabase
     .from('engine_actions')
     .update({
@@ -86,7 +131,6 @@ actionsRouter.post('/:id/deny', async (req, res) => {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('status', 'pending_approval')
 
   if (error) {
     res.status(500).json({ error: 'failed to deny action' })

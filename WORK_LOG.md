@@ -1375,3 +1375,26 @@
 
 ### 次にやること
 - Codex /review（CLI）
+
+---
+
+## 2026-04-11 / Claude Code（40回目）
+
+### やったこと
+- approve/denyに対象確認ロジックを追加した（P1 finding修正）
+  - 存在しないIDは404を返す
+  - pending_approval以外のstatusは409を返す
+- package.jsonのbinフィールドを削除した（tsx経由起動に統一）
+- scriptsにstatus/approvalsショートカットを追加した
+- IDEAS.mdにCLI配布時のbin構成移行メモを追加した
+- `pnpm typecheck` 全5パッケージでエラーなし確認
+
+### 判断したこと
+- select→statusチェック→updateの3ステップで安全に状態遷移する
+- bin構成は公開タイミングで対応する（今はtsx経由で十分）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（CLI P1 finding修正）

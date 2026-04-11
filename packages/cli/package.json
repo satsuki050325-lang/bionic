@@ -2,13 +2,12 @@
   "name": "@bionic/cli",
   "version": "0.0.1",
   "private": true,
-  "bin": {
-    "bionic": "./src/index.ts"
-  },
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "status": "tsx src/index.ts status",
+    "approvals": "tsx src/index.ts approvals"
   },
   "dependencies": {
     "@bionic/shared": "workspace:*",
