@@ -77,3 +77,32 @@
 
 ### 次にやるなら
 - Bionic の会話で出た未整理アイデアをここへ移していく
+
+---
+
+## 2026-04-11 / Claude
+
+### アイデア
+- Discordからメッセージを送ってBionic Engineを操作する（Discord Bot統合）
+
+### 内容
+- discord.jsをpackages/engine内に組み込む
+- `!digest` → research digestを即時実行
+- `!status` → Engineステータスを返す
+- `!research [トピック]` → リサーチを実行して保存
+- `!approve [job_id]` → jobを承認して実行
+- コストはDiscord Bot作成・運用ともに無料
+- リサーチにClaude APIを使う場合のみAPIコストがかかる
+
+### なぜ気になったか
+- 将来的にDiscordを「人間が止められる中間点」として活用できる
+- 通知だけでなく双方向操作にすることでBionicの価値が上がる
+- アプリを開かずにDiscordだけで運用できる可能性がある
+
+### いまの判断
+- 後で仕様化
+
+### 次にやるなら
+- discord.jsの調査
+- packages/engine/src/discord/ モジュールの設計
+- Bionic EngineへのBot統合
