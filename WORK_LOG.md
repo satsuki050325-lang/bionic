@@ -1328,3 +1328,24 @@
 
 ### 次にやること
 - Codex /review（Recent Events）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- GET /api/events エンドポイントを追加した
+- DashboardにRecent Eventsセクションを追加した
+- shared型にEventSummary / ListEventsResultを追加した
+- Codexレビュー完了・問題なし
+
+### 判断したこと
+- GETレスポンスはpayloadを含まない（サマリーのみ・一覧表示に最適化）
+- DashboardではgetStatusとgetEventsをPromise.allで並列取得（レスポンス高速化）
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- テストコードがまだない
+
+### 次にやること
+- 承認待ちAPI / CLI最小実装

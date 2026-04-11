@@ -63,6 +63,8 @@
 - Actions画面新規追加（Audit Log表示）
 - getActions()をengine.tsに追加
 - Codexレビュー完了・問題なし
+- Recent Events表示（GET /api/events + Dashboard Recent Eventsセクション）
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -74,8 +76,7 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- Recent Events表示（次の1手）
-- 承認待ちAPI / CLI最小実装
+- 承認待ちAPI / CLI最小実装（次の1手）
 - RLS / Security設計
 - Deploy→Watch→Alert（Vercel Webhook連携）
 - bionic-ops MCPサーバー（packages/mcp）
@@ -87,12 +88,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Recent Events表示（engine_eventsの直近イベントを見える化）
+- 承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
 
 ### done条件
-- [ ] DashboardにRecent Eventsセクションが表示される
-- [ ] GET /api/eventsエンドポイントが存在する
-- [ ] engine_eventsの直近イベントが一覧表示される
+- [ ] 承認待ちAPIが実装されている
+- [ ] CLIから承認・拒否ができる
 
 ---
 
@@ -103,8 +103,8 @@ Scheduler（完了）
 project_bionic / default 混在整理（完了）
 engine_actions実装（完了）
 App UI改善（完了）
-Recent Events表示（今ここ）
-承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
+Recent Events表示（完了）
+承認待ちAPI / CLI最小実装（今ここ）
 RLS / Security設計
 Deploy→Watch→Alert（Vercel Webhook連携）
 bionic-ops MCPサーバー（packages/mcp として独立）
