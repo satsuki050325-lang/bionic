@@ -1034,3 +1034,31 @@
 - Supabase SQL Editorでdedupe_key migration SQLを実行する
 - Scheduler動作確認（Engine起動→catch-up実行確認）
 - Codex /review（Scheduler）
+
+---
+
+## 2026-04-11 / Claude Code（30回目）
+
+### やったこと
+- Scheduler catch-upに予定時刻チェックを追加した（P1 finding修正）
+  - getScheduledTimeThisWeek()で今週の予定実行時刻を計算
+  - now < scheduledTimeの場合はcatch-upをスキップ
+- 環境変数のセキュリティ検証を追加した
+  - cron式: 「分 時 * * 曜日」形式のみ許可、範囲チェック
+  - timezone: 9つのホワイトリストのみ許可
+  - projectId: `[a-zA-Z0-9_-]+` のみ許可
+  - 無効値はデフォルトにフォールバック＋console.errorでログ
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- catch-upは予定時刻を過ぎた場合のみ実行（月曜09:00前に起動しても実行しない）
+- timezoneはホワイトリスト方式（任意文字列を受け入れない）
+- 無効値はエラーログ+デフォルトフォールバック（Engineの起動を止めない）
+
+### 未解決・既知リスク
+- engine_jobs.dedupe_keyのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでdedupe_key migration SQLを実行する
+- Scheduler動作確認
+- Codex /review（Scheduler）
