@@ -1417,3 +1417,26 @@
 
 ### 次にやること
 - Codex /review（approve/deny atomic保証）
+
+---
+
+## 2026-04-11 / Claude
+
+### やったこと
+- GET /api/eventsエンドポイントを追加した
+- DashboardにRecent Eventsセクションを追加した
+- packages/cliを作成してbionic status / approvals / approve / denyを実装した
+- approve/denyに404/409・atomic updateを実装した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- CLIはPhase 1.5ではtsx経由起動のみ（binなし）
+- 将来の配布時にdist/配下に移行する（IDEAS.mdに記録済み）
+- approve/denyはselect後のupdateにもstatus条件を追加してatomicな保証にした
+
+### 未解決・既知リスク
+- RLSは開発中無効。本番前に有効化が必要
+- テストコードがまだない
+
+### 次にやること
+- RLS / Security設計

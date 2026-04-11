@@ -65,6 +65,9 @@
 - Codexレビュー完了・問題なし
 - Recent Events表示（GET /api/events + Dashboard Recent Eventsセクション）
 - Codexレビュー完了・問題なし
+- CLI最小実装（bionic status / approvals / approve / deny）
+- approve/deny 404/409・atomic update対応
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -76,8 +79,7 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- 承認待ちAPI / CLI最小実装（次の1手）
-- RLS / Security設計
+- RLS / Security設計（次の1手）
 - Deploy→Watch→Alert（Vercel Webhook連携）
 - bionic-ops MCPサーバー（packages/mcp）
 - Discord Bot
@@ -88,11 +90,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- 承認待ちAPI / CLI最小実装（bionic approvals / approve / deny）
+- RLS / Security設計（本番前ゲート）
 
 ### done条件
-- [ ] 承認待ちAPIが実装されている
-- [ ] CLIから承認・拒否ができる
+- [ ] RLSポリシーが設計されている
+- [ ] セキュリティチェックリストが作成されている
 
 ---
 
@@ -104,8 +106,8 @@ project_bionic / default 混在整理（完了）
 engine_actions実装（完了）
 App UI改善（完了）
 Recent Events表示（完了）
-承認待ちAPI / CLI最小実装（今ここ）
-RLS / Security設計
+承認待ちAPI / CLI最小実装（完了）
+RLS / Security設計（今ここ）
 Deploy→Watch→Alert（Vercel Webhook連携）
 bionic-ops MCPサーバー（packages/mcp として独立）
 Discord Bot（Phase 2後半）
