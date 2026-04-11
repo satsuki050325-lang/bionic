@@ -68,6 +68,8 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
     requestedBy: 'engine',
   })
 
+  let notifyActionId: string | null = null
+
   try {
     await supabase
       .from('engine_jobs')
@@ -84,7 +86,7 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
 
     if (error) throw error
 
-    const notifyActionId = await createAction({
+    notifyActionId = await createAction({
       projectId,
       jobId,
       type: 'notify_discord',
@@ -93,7 +95,7 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
       requestedBy: 'engine',
     })
 
-    const result = await notifyDigest({
+    const notifyResult = await notifyDigest({
       projectId,
       items: (items ?? []).map((row) => ({
         id: row.id,
@@ -105,25 +107,25 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
       })),
     })
 
-    if (result === 'sent') {
+    if (notifyResult === 'sent') {
       if (notifyActionId) {
         await completeAction(notifyActionId, { result: 'sent', itemCount: items?.length ?? 0 })
       }
-    } else if (result === 'skipped') {
+    } else if (notifyResult === 'skipped') {
       if (notifyActionId) {
         await skipAction(notifyActionId, 'no items to digest')
       }
     } else {
       if (notifyActionId) {
         await failAction(notifyActionId, {
-          reason: result === 'misconfigured'
+          reason: notifyResult === 'misconfigured'
             ? 'DISCORD_WEBHOOK_URL not configured'
             : 'notify failed',
         })
       }
     }
 
-    if (result === 'sent' && items && items.length > 0) {
+    if (notifyResult === 'sent' && items && items.length > 0) {
       const markActionId = await createAction({
         projectId,
         jobId,
@@ -143,7 +145,22 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
         if (markActionId) {
           await failAction(markActionId, { message: markError.message, code: markError.code })
         }
-      } else if (markActionId) {
+        // mark失敗: jobをneeds_reviewにして人間の確認を待つ
+        await supabase
+          .from('engine_jobs')
+          .update({ status: 'needs_review' })
+          .eq('id', jobId)
+        if (actionId) {
+          await completeAction(actionId, {
+            result: notifyResult,
+            itemCount: items.length,
+            markDigestSent: 'failed',
+          })
+        }
+        return
+      }
+
+      if (markActionId) {
         await completeAction(markActionId, {
           updatedCount: items.length,
           itemIds: items.map((i: { id: string }) => i.id),
@@ -153,21 +170,21 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
       if (actionId) {
         await completeAction(actionId, { result: 'sent', itemCount: items.length })
       }
-    } else if (result === 'skipped') {
+    } else if (notifyResult === 'skipped') {
       if (actionId) {
         await skipAction(actionId, 'no items to digest')
       }
-    } else if (result === 'misconfigured') {
+    } else if (notifyResult === 'misconfigured') {
       if (actionId) {
         await failAction(actionId, { reason: 'DISCORD_WEBHOOK_URL is not set' })
       }
     } else {
       if (actionId) {
-        await completeAction(actionId, { result, itemCount: 0 })
+        await completeAction(actionId, { result: notifyResult, itemCount: 0 })
       }
     }
 
-    if (result === 'misconfigured') {
+    if (notifyResult === 'misconfigured') {
       await supabase
         .from('engine_jobs')
         .update({ status: 'failed', completed_at: new Date().toISOString() })
@@ -178,10 +195,16 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
         .from('engine_jobs')
         .update({ status: 'completed', completed_at: new Date().toISOString() })
         .eq('id', jobId)
-      console.log(`[digest] completed: result=${result}`)
+      console.log(`[digest] completed: result=${notifyResult}`)
     }
   } catch (err) {
     console.error('[digest] failed:', err)
+    if (notifyActionId) {
+      await failAction(notifyActionId, {
+        message: err instanceof Error ? err.message : 'unknown error',
+        reason: 'notifyDigest threw an exception',
+      })
+    }
     if (actionId) {
       await failAction(actionId, { message: String(err) })
     }

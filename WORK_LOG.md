@@ -1205,3 +1205,24 @@
 
 ### 次にやること
 - Codex /review（engine_actions finding修正）
+
+---
+
+## 2026-04-11 / Claude Code（36回目）
+
+### やったこと
+- engine_actionsのP1/P2 finding 2件を修正した
+  - notifyActionIdをtry外で宣言、catch節で例外時にfailAction呼び出し（P1）
+  - mark_digest_sent失敗時にjobをneeds_reviewに更新（P2）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- notifyDigest例外時: notify_discordとrun_research_digest両方をfailする
+- mark失敗時: Discord送信は成功しているためrun_research_digestはsucceeded（markDigestSent: 'failed'付き）
+- mark失敗時: jobはneeds_reviewにして人間の確認を待つ（completedにしない）
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex /review（engine_actions finding修正）
