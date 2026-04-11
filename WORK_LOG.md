@@ -1062,3 +1062,26 @@
 - Supabase SQL Editorでdedupe_key migration SQLを実行する
 - Scheduler動作確認
 - Codex /review（Scheduler）
+
+---
+
+## 2026-04-11 / Claude Code（31回目）
+
+### やったこと
+- luxonを導入してtimezone計算を正確化した（Intl.DateTimeFormatハック廃止）
+- cron式バリデーションを`^\d+$`完全一致に強化した（'0 9-17 * * 1'等を拒否）
+- 許可timezoneリストを9→17に拡大した（主要タイムゾーンをカバー）
+- `pnpm typecheck` 全4パッケージでエラーなし確認
+
+### 判断したこと
+- luxonのweekdayは1=月〜7=日、cronは0=日〜6=土。変換ロジックを実装
+- getScheduledTimeThisWeekはluxon DateTimeを返すよう変更（Date→DateTime）
+- catch-upの時刻比較もluxon DateTime同士で実施（timezone-aware）
+
+### 未解決・既知リスク
+- engine_jobs.dedupe_keyのmigration SQLがSupabaseに未適用（手動実行待ち）
+
+### 次にやること
+- Supabase SQL Editorでdedupe_key migration SQLを実行する
+- Scheduler動作確認
+- Codex /review（Scheduler）

@@ -1,18 +1,27 @@
 import cron from 'node-cron'
+import { DateTime } from 'luxon'
 import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDigest.js'
 import { runResearchDigest } from '../routes/jobs.js'
 import { supabase } from '../lib/supabase.js'
 
 const ALLOWED_TIMEZONES = new Set([
   'Asia/Tokyo',
-  'UTC',
-  'America/New_York',
-  'America/Los_Angeles',
+  'Asia/Seoul',
+  'Asia/Singapore',
+  'Asia/Shanghai',
+  'Asia/Kolkata',
   'Europe/London',
   'Europe/Berlin',
-  'Asia/Singapore',
-  'Asia/Seoul',
+  'Europe/Paris',
+  'Europe/Amsterdam',
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Sao_Paulo',
   'Australia/Sydney',
+  'Pacific/Auckland',
 ])
 
 function validateCronExpression(expr: string): boolean {
@@ -21,15 +30,16 @@ function validateCronExpression(expr: string): boolean {
 
   const [minute, hour, dom, month, dow] = parts
 
+  if (dom !== '*' || month !== '*') return false
+  if (!/^\d+$/.test(minute) || !/^\d+$/.test(hour) || !/^\d+$/.test(dow)) return false
+
   const minuteNum = parseInt(minute, 10)
   const hourNum = parseInt(hour, 10)
   const dowNum = parseInt(dow, 10)
 
-  if (isNaN(minuteNum) || minuteNum < 0 || minuteNum > 59) return false
-  if (isNaN(hourNum) || hourNum < 0 || hourNum > 23) return false
-  if (dom !== '*') return false
-  if (month !== '*') return false
-  if (isNaN(dowNum) || dowNum < 0 || dowNum > 6) return false
+  if (minuteNum < 0 || minuteNum > 59) return false
+  if (hourNum < 0 || hourNum > 23) return false
+  if (dowNum < 0 || dowNum > 6) return false
 
   return true
 }
@@ -89,49 +99,32 @@ function getConfig() {
 function getScheduledTimeThisWeek(
   cronExpression: string,
   timezone: string
-): Date | null {
+): DateTime | null {
   const parts = cronExpression.trim().split(/\s+/)
   if (parts.length !== 5) return null
 
   const minute = parseInt(parts[0], 10)
   const hour = parseInt(parts[1], 10)
-  const dayOfWeek = parseInt(parts[4], 10)
+  const dowTarget = parseInt(parts[4], 10) // 0=日, 1=月, ..., 6=土
 
-  if (isNaN(minute) || isNaN(hour) || isNaN(dayOfWeek)) return null
-  if (minute < 0 || minute > 59) return null
-  if (hour < 0 || hour > 23) return null
-  if (dayOfWeek < 0 || dayOfWeek > 6) return null
+  const nowInTz = DateTime.now().setZone(timezone)
 
-  // timezone基準で今日の日付と曜日を取得する
-  const now = new Date()
-  const formatter = new Intl.DateTimeFormat('en', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    weekday: 'short',
-  })
-  const fmtParts = formatter.formatToParts(now)
-  const year = fmtParts.find((p) => p.type === 'year')?.value
-  const month = fmtParts.find((p) => p.type === 'month')?.value
-  const day = fmtParts.find((p) => p.type === 'day')?.value
+  // luxonはweekday 1=月, 7=日。cron式は0=日, 1=月
+  const luxonDow = dowTarget === 0 ? 7 : dowTarget
 
-  if (!year || !month || !day) return null
-
-  const todayLocal = new Date(`${year}-${month}-${day}T00:00:00`)
-  const todayDow = todayLocal.getDay()
-
-  // 今週の該当曜日（過去方向に計算）
-  let diffDays = todayDow - dayOfWeek
+  // 今週の指定曜日の日付を取得する
+  const currentLuxonDow = nowInTz.weekday
+  let diffDays = currentLuxonDow - luxonDow
   if (diffDays < 0) diffDays += 7
 
-  const targetDate = new Date(todayLocal)
-  targetDate.setDate(todayLocal.getDate() - diffDays)
+  const targetDate = nowInTz.minus({ days: diffDays }).startOf('day').set({
+    hour,
+    minute,
+    second: 0,
+    millisecond: 0,
+  })
 
-  // timezone基準でhour:minuteの予定時刻文字列を作成する
-  const scheduledStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`
-
-  return new Date(scheduledStr)
+  return targetDate
 }
 
 async function triggerWeeklyDigest(): Promise<void> {
@@ -151,7 +144,7 @@ async function triggerWeeklyDigest(): Promise<void> {
 
 async function catchUpMissedSchedules(): Promise<void> {
   const config = getConfig()
-  const now = new Date()
+  const nowInTz = DateTime.now().setZone(config.timezone)
 
   const scheduledTime = getScheduledTimeThisWeek(
     config.cronExpression,
@@ -163,14 +156,15 @@ async function catchUpMissedSchedules(): Promise<void> {
     return
   }
 
-  if (now < scheduledTime) {
+  if (nowInTz < scheduledTime) {
     console.log(
-      `[scheduler] catch-up skipped: scheduled time not yet reached (${scheduledTime.toISOString()})`
+      `[scheduler] catch-up skipped: scheduled time not yet reached ` +
+      `(${scheduledTime.toISO()} ${config.timezone})`
     )
     return
   }
 
-  const dedupeKey = getWeeklyDigestKey(now, config.timezone)
+  const dedupeKey = getWeeklyDigestKey(nowInTz.toJSDate(), config.timezone)
   console.log(`[scheduler] checking for missed schedules: ${dedupeKey}`)
 
   const { data } = await supabase
