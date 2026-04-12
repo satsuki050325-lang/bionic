@@ -3,6 +3,20 @@
 
 ---
 
+## 2026-04-12 / Claude
+
+### やったこと
+- SECURITY_RELEASE_CHECKLIST.mdを作成した
+- .github/workflows/ci.ymlを作成した（typecheck/test/build 3ジョブ）
+- Codexレビュー完了・問題なし
+
+### 判断したこと
+- CI上でfresh checkoutでpnpm typecheck・test・buildが全て通ることを確認した
+
+担当：Claude
+
+---
+
 ## 2026-04-12 / Claude（SECURITY_RELEASE_CHECKLIST.md + GitHub Actions CI）
 
 ### やったこと

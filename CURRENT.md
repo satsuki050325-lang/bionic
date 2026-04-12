@@ -111,7 +111,8 @@
 - Discord Bot動作確認完了
 - [CRITICAL]アラートのEmbed通知をDiscordで確認
 - SECURITY_RELEASE_CHECKLIST.md作成
-- GitHub Actions CI設定（typecheck/test/build）
+- GitHub Actions CI設定（typecheck/test/build 3ジョブ）
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -130,12 +131,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- GitHub公開準備（OSS公開・README整備）
-  または
-- Medini SDKの改善・rate limit追加
+- （颯紀さんが決定）
 
 ### done条件
-- 上記のいずれかを選択して着手
+- （未定）
 
 ---
 
@@ -155,7 +154,7 @@ bionic-ops MCPサーバー（packages/mcp として独立）（完了）
 Discord Bot（Phase 2後半）（完了）
 Discord Bot動作確認（完了）
 SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（完了）
-GitHub公開準備 or Medini SDK改善（今ここ）
+（次の優先順位は颯紀さんが決定）
 
 
 ---
