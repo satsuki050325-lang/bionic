@@ -39,6 +39,24 @@
 
 ---
 
+## 2026-04-13 / Claude（README起動手順の整備）
+
+### やったこと
+- `README.md` を新規作成（What Bionic does / Prerequisites / Minimum Setup / Full Setup (Discord Bot) / Vercel Webhook / MCP / Verification / Troubleshooting / CLI / Project Structure / Development / License）
+- `docs/ROADMAP.md` の README チェックボックスを完了にマーク
+
+### 判断したこと
+- 最小起動→Discord Bot→Vercel webhook→MCPの順で段階的に有効化できるように章を分けた
+- トラブルシュートはこれまでに実際にハマった項目（Engine起動・Bot不達・MCP未検出・ngrok URL変動）を中心に
+- License は AGPL-3.0 (planned) と明記し、Phase 2.4 で正式化する想定
+
+### 次にやること
+- TECHNICAL_DESIGN.md の実装追従 / secrets scan CI / migration fresh apply確認 の中から次を選択
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（pnpm verify追加）
 
 ### やったこと
