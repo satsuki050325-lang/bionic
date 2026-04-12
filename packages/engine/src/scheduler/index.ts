@@ -1,10 +1,13 @@
 import cron from 'node-cron'
 import { DateTime } from 'luxon'
 import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDigest.js'
-import { runJob } from '../jobs/runner.js'
+import { runJob, runPendingJobs } from '../jobs/runner.js'
 import { supabase } from '../lib/supabase.js'
 import { evaluateWatchingDeployments } from '../decisions/deploymentWatch.js'
 import { getConfig } from '../config.js'
+import { runStaleApprovalCheck } from '../runners/approvals.js'
+import { runCriticalAlertReminders } from '../runners/alertReminders.js'
+import { runApprovedActions } from '../runners/approvedActions.js'
 
 interface SchedulerConfig {
   enabled: boolean
@@ -132,6 +135,22 @@ export function startScheduler(): void {
   cron.schedule('*/5 * * * *', async () => {
     console.log('[scheduler] deployment watch check')
     await evaluateWatchingDeployments()
+  })
+
+  cron.schedule('*/5 * * * *', async () => {
+    await runPendingJobs(5)
+  })
+
+  cron.schedule('*/5 * * * *', async () => {
+    await runApprovedActions()
+  })
+
+  cron.schedule('*/15 * * * *', async () => {
+    await runStaleApprovalCheck()
+  })
+
+  cron.schedule('*/10 * * * *', async () => {
+    await runCriticalAlertReminders()
   })
 
   console.log('[scheduler] started.')

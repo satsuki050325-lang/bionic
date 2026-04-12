@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase.js'
-import type { ActionType, ActionMode } from '@bionic/shared'
+import type { ActionType, ActionMode, EngineAction } from '@bionic/shared'
+import { getDiscordClient } from '../discord/index.js'
+import { sendApprovalNotification } from '../discord/notifications.js'
 
 interface CreateActionParams {
   projectId: string
@@ -92,6 +94,86 @@ export async function failAction(
     }
   } catch (err) {
     console.error('[logAction] unexpected error in failAction:', err)
+  }
+}
+
+interface CreateApprovalActionParams {
+  projectId: string
+  serviceId?: string
+  alertId?: string
+  jobId?: string
+  type: ActionType
+  title: string
+  reason?: string
+  input?: Record<string, unknown>
+  requestedBy?: string
+}
+
+export async function createApprovalAction(
+  params: CreateApprovalActionParams
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('engine_actions')
+      .insert({
+        project_id: params.projectId,
+        service_id: params.serviceId ?? null,
+        alert_id: params.alertId ?? null,
+        job_id: params.jobId ?? null,
+        type: params.type,
+        mode: 'approval_required',
+        status: 'pending_approval',
+        title: params.title,
+        reason: params.reason ?? null,
+        input: params.input ?? {},
+        requested_by: params.requestedBy ?? 'engine',
+        started_at: null,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('[logAction] failed to create approval action:', error)
+      return null
+    }
+
+    const discordClient = getDiscordClient()
+    if (discordClient && data) {
+      const now = new Date().toISOString()
+      const action: EngineAction = {
+        id: data.id,
+        projectId: params.projectId,
+        serviceId: params.serviceId ?? null,
+        eventId: null,
+        alertId: params.alertId ?? null,
+        jobId: params.jobId ?? null,
+        type: params.type,
+        mode: 'approval_required',
+        status: 'pending_approval',
+        title: params.title,
+        reason: params.reason ?? null,
+        input: params.input ?? {},
+        result: {},
+        error: null,
+        requestedBy: params.requestedBy ?? 'engine',
+        approvedBy: null,
+        approvedAt: null,
+        deniedBy: null,
+        deniedAt: null,
+        startedAt: null,
+        completedAt: null,
+        lastNotifiedAt: null,
+        notificationCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      }
+      void sendApprovalNotification(discordClient, action)
+    }
+
+    return data.id
+  } catch (err) {
+    console.error('[logAction] unexpected error in createApprovalAction:', err)
+    return null
   }
 }
 

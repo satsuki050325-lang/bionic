@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { ListActionsResult } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
+import { approveAction, denyAction } from '../actions/service.js'
 
 export const actionsRouter = Router()
 
@@ -52,6 +53,8 @@ actionsRouter.get('/', async (req, res) => {
       deniedAt: row.denied_at ?? null,
       startedAt: row.started_at ?? null,
       completedAt: row.completed_at ?? null,
+      lastNotifiedAt: row.last_notified_at ?? null,
+      notificationCount: row.notification_count ?? 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     })),
@@ -86,27 +89,11 @@ actionsRouter.post('/:id/approve', async (req, res) => {
     return
   }
 
-  const actorId = req.headers['x-actor-id'] as string | undefined
+  const actorId = (req.headers['x-actor-id'] as string | undefined) ?? 'cli'
+  const result = await approveAction({ actionId: id, actorId })
 
-  const { data: updated, error } = await supabase
-    .from('engine_actions')
-    .update({
-      status: 'approved',
-      approved_by: actorId ?? 'cli',
-      approved_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .eq('status', 'pending_approval')
-    .select('id')
-
-  if (error) {
-    res.status(500).json({ error: 'failed to approve action' })
-    return
-  }
-
-  if (!updated || updated.length === 0) {
-    res.status(409).json({ error: 'action is no longer pending approval' })
+  if (!result.success) {
+    res.status(409).json({ error: result.error ?? 'failed to approve action' })
     return
   }
 
@@ -139,27 +126,11 @@ actionsRouter.post('/:id/deny', async (req, res) => {
     return
   }
 
-  const actorId = req.headers['x-actor-id'] as string | undefined
+  const actorId = (req.headers['x-actor-id'] as string | undefined) ?? 'cli'
+  const result = await denyAction({ actionId: id, actorId })
 
-  const { data: updated, error } = await supabase
-    .from('engine_actions')
-    .update({
-      status: 'denied',
-      denied_by: actorId ?? 'cli',
-      denied_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .eq('status', 'pending_approval')
-    .select('id')
-
-  if (error) {
-    res.status(500).json({ error: 'failed to deny action' })
-    return
-  }
-
-  if (!updated || updated.length === 0) {
-    res.status(409).json({ error: 'action is no longer pending approval' })
+  if (!result.success) {
+    res.status(409).json({ error: result.error ?? 'failed to deny action' })
     return
   }
 

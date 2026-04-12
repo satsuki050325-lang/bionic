@@ -20,6 +20,7 @@
 | 20260411000005_actions_team_columns.sql | approved_by/denied_by追加 | 2026-04-11 |
 | 20260412000000_deployments.sql | deploymentsテーブル作成（Deploy→Watch→Alert） | 2026-04-12 |
 | 20260412000001_alert_notification.sql | engine_alertsにlast_notified_at / notification_count追加 | 2026-04-12 |
+| 20260413000000_actions_notification_columns.sql | engine_actionsにlast_notified_at / notification_count追加 | 2026-04-13 |
 
 ## 新しいDB変更を加える手順
 1. supabase/migrations/ に新しいSQLファイルを作成する

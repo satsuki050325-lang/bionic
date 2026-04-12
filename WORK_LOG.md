@@ -71,6 +71,45 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.0 - Runner / Policy / Approval）
+
+### やったこと
+- Migration `20260413000000_actions_notification_columns.sql` 追加（engine_actions に `last_notified_at` / `notification_count`）。migrations/README.md も更新
+- shared `EngineAction` に `lastNotifiedAt` / `notificationCount` を追加
+- `jobs/state.ts` を新規作成（`transitionJobStatus` を `from`条件付きupdateで実装、不正遷移を防止）
+- `actions/state.ts` を新規作成（`transitionActionStatus` 同上、approved/denied時のactor記録含む）
+- `jobs/runner.ts` に `claimPendingJob` / `runPendingJobs` を追加（pending→running をatomic claim）
+- `actions/logAction.ts` に `createApprovalAction` を追加（作成成功後にDiscordへEmbed+Button送信、失敗してもaction作成は成功扱い）
+- `runners/approvals.ts`（24h再通知 + 48h auto-cancel）
+- `runners/alertReminders.ts`（open×critical alertの30分再通知、shouldNotify判定を使用）
+- `runners/approvedActions.ts`（approved retry_job を拾って research_digest を再enqueue、元jobに `retried as ...` を記録）
+- `scheduler/index.ts` に4つのcron: pending jobs（5min）/ approved actions（5min）/ stale approval（15min）/ alert reminder（10min）
+- `routes/actions.ts` の approve/deny を `actions/service.ts` 経由に統合、レスポンス先でlastNotifiedAt / notificationCount をmap
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- from条件付きupdateで遷移の整合を担保し、別runnerとの競合でも重複実行が起きない設計に統一
+- `createApprovalAction` はDB insert成功を真の成功とし、Discord通知は best effort（`void sendApprovalNotification`）。通知失敗でactionを失敗にしない
+- `runApprovedActions` は今はretry_jobのみ扱い、将来他のactionTypeが追加されたときに分岐を増やす
+- `transitionActionStatus` の approved/denied は `actorId` を必須にしてaudit trailの空欄を防ぐ
+- `routes/actions.ts` は既存UI契約を保ったまま service.ts に委譲（二重実装を解消）
+
+### Supabase適用用SQL
+
+```sql
+alter table public.engine_actions
+  add column if not exists last_notified_at timestamptz,
+  add column if not exists notification_count integer not null default 0;
+```
+
+### 次にやること
+- critical alert reminder の `last_notified_at` 更新結線（今は shouldNotify が true でも engine_alerts 側は `sendAlertNotification` 内で更新される想定を利用、挙動を次回Codexレビューで確認）
+- `sendApprovalNotification` のembed内に承認コマンド例を追加する
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと

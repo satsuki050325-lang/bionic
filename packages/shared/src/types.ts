@@ -253,6 +253,8 @@ export interface EngineAction {
   deniedAt: ISODateString | null
   startedAt: ISODateString | null
   completedAt: ISODateString | null
+  lastNotifiedAt: ISODateString | null
+  notificationCount: number
   createdAt: ISODateString
   updatedAt: ISODateString
 }
