@@ -71,6 +71,26 @@
 
 ---
 
+## 2026-04-13 / Claude（Tailwindカスタムトークン追加 + StatusBadge切り出し）
+
+### やったこと
+- Tailwind v4 の `@theme` ブロックに DESIGN.md の全トークンを反映（`bg-hover` / `border-strong` / `accent-muted` / `text-inverse` / `status-critical` / `status-neutral` / `font-body`）。legacy callerのために `status-danger` は `status-critical` の alias として残した
+- `:root` に生のCSS変数も追加（`var(--accent)` 等で直接参照したい場面に備えて）
+- `apps/app/src/components/StatusBadge.tsx` を新規作成し、semantic token経由 (`bg-status-critical/10` など) に変更
+- `apps/app/src/app/diagnostics/page.tsx` からローカル `StatusBadge` を削除して import に置き換え
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- このappはTailwind v4 (`@tailwindcss/postcss`) で `tailwind.config.ts` を持たず `@theme` ブロックを正とする構成なので、v4の方式で追加し、作業内容はspecの意図どおり（semantic token経由でbadgeが色を引く）を満たす
+- `StatusBadge` は将来 Alerts / Actions 画面でも使う想定で `@/components/` に置いた
+
+### 次にやること
+- Phase 2.1: `bionic init` 最小実装 / Appオンボーディング画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（diagnostics P2/P3 finding修正）
 
 ### やったこと

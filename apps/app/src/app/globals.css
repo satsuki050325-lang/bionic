@@ -3,29 +3,69 @@
 @import "tailwindcss";
 
 @theme {
+  /* Background scale (DESIGN.md section 2) */
   --color-bg-base: #0A0A0A;
   --color-bg-surface: #111111;
   --color-bg-elevated: #1A1A1A;
+  --color-bg-hover: #222222;
 
+  /* Border scale */
   --color-border-subtle: #2A2A2A;
   --color-border-default: #333333;
+  --color-border-strong: #444444;
 
+  /* Accent */
   --color-accent: #E8611A;
   --color-accent-dim: #E8611A33;
   --color-accent-hover: #F07030;
+  --color-accent-muted: #A04010;
 
+  /* Text */
   --color-text-primary: #F5F5F5;
   --color-text-secondary: #888888;
-  --color-text-muted: #444444;
+  --color-text-muted: #555555;
+  --color-text-inverse: #0A0A0A;
 
-  --color-status-success: #22C55E;
+  /* Semantic status */
+  --color-status-critical: #E5484D;
   --color-status-warning: #F59E0B;
-  --color-status-danger: #EF4444;
+  --color-status-success: #22C55E;
   --color-status-info: #3B82F6;
+  --color-status-neutral: #64748B;
+  /* Alias for legacy callers */
+  --color-status-danger: #E5484D;
 
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  --bg-base: #0A0A0A;
+  --bg-surface: #111111;
+  --bg-elevated: #1A1A1A;
+  --bg-hover: #222222;
+
+  --border-subtle: #2A2A2A;
+  --border-default: #333333;
+  --border-strong: #444444;
+
+  --accent: #E8611A;
+  --accent-dim: #E8611A20;
+  --accent-hover: #F07030;
+  --accent-muted: #A04010;
+
+  --text-primary: #F5F5F5;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  --text-inverse: #0A0A0A;
+
+  --status-critical: #E5484D;
+  --status-warning: #F59E0B;
+  --status-success: #22C55E;
+  --status-info: #3B82F6;
+  --status-neutral: #64748B;
 }
 
 @layer base {

@@ -1,4 +1,5 @@
 import { getDiagnostics, type Diagnostics } from '@/lib/engine'
+import { StatusBadge } from '@/components/StatusBadge'
 
 export default async function DiagnosticsPage() {
   const diag = await getDiagnostics()
@@ -333,26 +334,3 @@ function formatUptime(seconds: number): string {
   return `${m}m`
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    failed: 'bg-red-500/10 text-red-400 border border-red-500/30',
-    denied: 'bg-red-500/10 text-red-400 border border-red-500/30',
-    critical: 'bg-red-500/10 text-red-400 border border-red-500/30',
-    alerted: 'bg-red-500/10 text-red-400 border border-red-500/30',
-    watching: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
-    running: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
-    pending: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
-    pending_approval: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
-    completed: 'bg-green-500/10 text-green-400 border border-green-500/30',
-    succeeded: 'bg-green-500/10 text-green-400 border border-green-500/30',
-    approved: 'bg-green-500/10 text-green-400 border border-green-500/30',
-  }
-  const style = styles[status] ?? 'bg-white/5 text-gray-400 border border-white/10'
-  return (
-    <span
-      className={`font-mono text-xs uppercase tracking-wider px-2 py-0.5 rounded shrink-0 ${style}`}
-    >
-      {status}
-    </span>
-  )
-}
