@@ -78,7 +78,7 @@ vercelWebhookRouter.post(
       const watchUntil = new Date(now.getTime() + 30 * 60 * 1000)
 
       const baselineStart = new Date(now.getTime() - 30 * 60 * 1000)
-      const { count: baselineCount } = await supabase
+      const { count: baselineCount, error: baselineError } = await supabase
         .from('engine_events')
         .select('id', { count: 'exact', head: true })
         .eq('project_id', projectId)
@@ -86,6 +86,12 @@ vercelWebhookRouter.post(
         .eq('type', 'service.error.reported')
         .gte('created_at', baselineStart.toISOString())
         .lte('created_at', now.toISOString())
+
+      if (baselineError) {
+        console.error('[vercel-webhook] failed to get baseline count:', baselineError)
+        res.status(500).json({ error: 'failed to calculate baseline' })
+        return
+      }
 
       const { error } = await supabase.from('deployments').upsert(
         {

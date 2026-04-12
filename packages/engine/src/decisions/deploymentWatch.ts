@@ -85,8 +85,9 @@ async function evaluateSingleDeployment(
 
   const alreadyAlerted = (deployment.alert_id as string | null) !== null
 
+  let alertCreated = false
   if (shouldAlert && !alreadyAlerted) {
-    await createDeploymentRegressionAlert({
+    alertCreated = await createDeploymentRegressionAlert({
       deployment,
       projectId,
       serviceId,
@@ -98,7 +99,7 @@ async function evaluateSingleDeployment(
     })
   }
 
-  if (now >= watchUntil) {
+  if (now >= watchUntil && !alertCreated) {
     await supabase
       .from('deployments')
       .update({
@@ -121,7 +122,7 @@ async function createDeploymentRegressionAlert(params: {
   increasePercent: number | null
   elapsedMinutes: number
   now: Date
-}): Promise<void> {
+}): Promise<boolean> {
   const {
     deployment, projectId, serviceId,
     currentCount, baselineCount, increasePercent, elapsedMinutes, now,
@@ -172,7 +173,7 @@ async function createDeploymentRegressionAlert(params: {
   if (alertError) {
     console.error('[deploymentWatch] failed to create alert:', alertError)
     if (actionId) await failAction(actionId, { message: alertError.message })
-    return
+    return false
   }
 
   const { error: alertUpdateError } = await supabase
@@ -191,7 +192,7 @@ async function createDeploymentRegressionAlert(params: {
       .update({ watch_status: 'failed', updated_at: now.toISOString() })
       .eq('id', deployment.id)
     if (actionId) await failAction(actionId, { message: alertUpdateError.message })
-    return
+    return false
   }
 
   if (actionId) {
@@ -206,4 +207,5 @@ async function createDeploymentRegressionAlert(params: {
   console.log(
     `[deploymentWatch] alert created: ${alertData.id as string} for deployment ${deploymentId}`
   )
+  return true
 }

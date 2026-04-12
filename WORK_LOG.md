@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-04-12 / Claude Code（finding修正 #2）
+
+### やったこと
+- `createDeploymentRegressionAlert` の戻り値を boolean 化（alert作成有無を返す）
+- `evaluateSingleDeployment` で alert作成時は completed 更新をスキップ（alerted→completed上書き競合の解消）
+- vercel webhook: baseline count取得時の error を捕捉し失敗時は 500 を返す
+- pnpm typecheck 全通過 / pnpm --filter @bionic/engine test 全20通過
+
+### 判断したこと
+- alerted は最終状態として保持する。次回ループでは `alreadyAlerted` で重複を防ぐため completed への遷移は不要
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- bionic-ops MCPサーバー（packages/mcp）
+
+---
+
 ## 2026-04-12 / Claude Code（finding修正）
 
 ### やったこと
