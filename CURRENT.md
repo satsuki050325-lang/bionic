@@ -130,6 +130,9 @@
 - Codexレビュー完了・P2 finding修正済み
 - migration fresh apply確認（Codexによる論理確認・問題なし)
 - Phase 1.8: Stabilize Bionic Core 完了
+- docs/DESIGN.md作成（Bionicデザインシステム正本・9セクション）
+- L1/L2/L3品質層定義
+- AGENTS.mdにDESIGN.md参照ルールを追加
 - Phase 2.0: Runner / Policy / Approvalの完成
 - jobs/state.ts・actions/state.ts（状態遷移一元化）
 - runners/approvals.ts・alertReminders.ts・approvedActions.ts
@@ -159,10 +162,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.1: Engine diagnostics画面
+- Phase 2.1: Engine diagnostics画面実装
 
 ### done条件
-- [ ] Scheduler稼働・Discord接続・DB接続・Webhook状態が1画面で確認できる
+- [x] Scheduler稼働・Discord接続・DB接続・Webhook状態が1画面で確認できる
 
 ---
 

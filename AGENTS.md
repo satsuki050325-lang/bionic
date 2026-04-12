@@ -37,6 +37,7 @@
 2. `AGENTS.md`（このファイル）
 3. `docs/BIONIC_PRODUCT.md`（プロダクト思想）
 4. `docs/TECHNICAL_DESIGN.md`（技術設計）
+5. UIを実装・変更する場合は `docs/DESIGN.md` を必ず参照すること
 
 ---
 

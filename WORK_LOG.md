@@ -71,6 +71,33 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.1 - Engine diagnostics）
+
+### やったこと
+- CURRENT.mdに DESIGN.md 関連の完了項目を追加、次の1手を Phase 2.1 に更新
+- AGENTS.md の「作業開始前に必ず読むこと」に `docs/DESIGN.md` 参照ルールを追加
+- `packages/engine/src/runtime/diagnostics.ts` 新規（runner state をin-memoryで保持、engine再起動でリセット）
+- `packages/engine/src/scheduler/index.ts` の5つのcronに `recordRunnerStart/Success/Error` を結線
+- `packages/engine/src/routes/diagnostics.ts` 新規（engine/db/scheduler/runners/queue/actions/integrations/alerts/recent を集計）
+- `packages/engine/src/index.ts` に `/api/diagnostics` をマウント
+- `apps/app/src/lib/engine.ts` に `getDiagnostics` と `Diagnostics` 型を追加
+- `apps/app/src/app/layout.tsx` のNavに `DIAGNOSTICS` を追加
+- `apps/app/src/app/diagnostics/page.tsx` 新規（DESIGN.md準拠：6ブロック構成・card/badge utility・JetBrains Monoラベル・Space Grotesk値）
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- runner state は DB に出さず in-memory に留めて読み取りコストを抑える（Engine再起動で消えても診断には十分）
+- `redactConfig` を経由してsecretが leak しないようにした
+- App側は既存の `card` / `badge-*` utility クラスを再利用し DESIGN.md の色トークンに整合
+- `status-danger` は既存globals.css の命名（DESIGN.mdの `status-critical` は同色のalias扱い）
+
+### 次にやること
+- Phase 2.1: `bionic init` 最小実装 / Appオンボーディング画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（docs/DESIGN.md作成）
 
 ### やったこと

@@ -35,6 +35,9 @@ export default function RootLayout({
               <a href="/research" className="text-text-secondary hover:text-accent transition-colors">
                 RESEARCH
               </a>
+              <a href="/diagnostics" className="text-text-secondary hover:text-accent transition-colors">
+                DIAGNOSTICS
+              </a>
             </div>
           </div>
         </nav>

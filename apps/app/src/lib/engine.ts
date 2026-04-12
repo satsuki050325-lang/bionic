@@ -84,6 +84,82 @@ export async function getActions(projectId = 'project_bionic'): Promise<ListActi
   }
 }
 
+export interface DiagnosticsRunner {
+  name: string
+  lastRunAt: string | null
+  lastSuccessAt: string | null
+  lastError: string | null
+}
+
+export interface Diagnostics {
+  engine: {
+    status: 'running' | 'degraded'
+    version: string
+    startedAt: string
+    uptimeSeconds: number
+  }
+  config: Record<string, unknown>
+  db: { ok: boolean; checkedAt: string; error: string | null }
+  scheduler: {
+    enabled: boolean
+    digestCron: string
+    digestTimezone: string
+    runners: DiagnosticsRunner[]
+  }
+  queue: {
+    jobs: {
+      pending: number
+      running: number
+      needsReview: number
+      failedRecent: number
+      oldestPendingCreatedAt: string | null
+    }
+    actions: {
+      pendingApproval: number
+      approved: number
+      running: number
+      failedRecent: number
+      staleApproval24h: number
+      autoCancelDue48h: number
+    }
+  }
+  integrations: {
+    discord: {
+      mode: 'bot' | 'webhook' | 'disabled'
+      channelConfigured: boolean
+      approversConfigured: boolean
+    }
+    vercel: {
+      webhookSecretConfigured: boolean
+      mappedProjects: number
+      watchingDeployments: number
+      failedWatches: number
+      latestDeploymentAt: string | null
+    }
+  }
+  alerts: {
+    openCritical: number
+    criticalReminderDue: number
+  }
+  recent: {
+    actions: Array<{ id: string; type: string; status: string; createdAt: string }>
+    deployments: Array<{ id: string; serviceId: string; watchStatus: string; createdAt: string }>
+  }
+}
+
+export async function getDiagnostics(): Promise<Diagnostics | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/diagnostics`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function createResearchItem(
   input: CreateResearchItemInput
 ): Promise<CreateResearchItemResult | null> {

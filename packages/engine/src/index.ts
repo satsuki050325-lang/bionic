@@ -6,6 +6,7 @@ import { alertsRouter } from './routes/alerts.js'
 import { jobsRouter } from './routes/jobs.js'
 import { researchRouter } from './routes/research.js'
 import { actionsRouter } from './routes/actions.js'
+import { diagnosticsRouter } from './routes/diagnostics.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { engineAuthMiddleware } from './middleware/auth.js'
 import { startScheduler } from './scheduler/index.js'
@@ -40,6 +41,7 @@ app.use('/api/alerts', alertsRouter)
 app.use('/api/jobs', jobsRouter)
 app.use('/api/research', researchRouter)
 app.use('/api/actions', actionsRouter)
+app.use('/api/diagnostics', diagnosticsRouter)
 
 app.listen(config.engine.port, config.engine.host, () => {
   console.log(`Bionic Engine running on http://${config.engine.host}:${config.engine.port}`)

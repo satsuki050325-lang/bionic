@@ -8,6 +8,11 @@ import { getConfig } from '../config.js'
 import { runStaleApprovalCheck } from '../runners/approvals.js'
 import { runCriticalAlertReminders } from '../runners/alertReminders.js'
 import { runApprovedActions } from '../runners/approvedActions.js'
+import {
+  recordRunnerStart,
+  recordRunnerSuccess,
+  recordRunnerError,
+} from '../runtime/diagnostics.js'
 
 interface SchedulerConfig {
   enabled: boolean
@@ -133,24 +138,54 @@ export function startScheduler(): void {
   })
 
   cron.schedule('*/5 * * * *', async () => {
-    console.log('[scheduler] deployment watch check')
-    await evaluateWatchingDeployments()
+    recordRunnerStart('deployment_watch')
+    try {
+      console.log('[scheduler] deployment watch check')
+      await evaluateWatchingDeployments()
+      recordRunnerSuccess('deployment_watch')
+    } catch (err) {
+      recordRunnerError('deployment_watch', err instanceof Error ? err.message : String(err))
+    }
   })
 
   cron.schedule('*/5 * * * *', async () => {
-    await runPendingJobs(5)
+    recordRunnerStart('job_runner')
+    try {
+      await runPendingJobs(5)
+      recordRunnerSuccess('job_runner')
+    } catch (err) {
+      recordRunnerError('job_runner', err instanceof Error ? err.message : String(err))
+    }
   })
 
   cron.schedule('*/5 * * * *', async () => {
-    await runApprovedActions()
+    recordRunnerStart('approved_actions')
+    try {
+      await runApprovedActions()
+      recordRunnerSuccess('approved_actions')
+    } catch (err) {
+      recordRunnerError('approved_actions', err instanceof Error ? err.message : String(err))
+    }
   })
 
   cron.schedule('*/15 * * * *', async () => {
-    await runStaleApprovalCheck()
+    recordRunnerStart('stale_approvals')
+    try {
+      await runStaleApprovalCheck()
+      recordRunnerSuccess('stale_approvals')
+    } catch (err) {
+      recordRunnerError('stale_approvals', err instanceof Error ? err.message : String(err))
+    }
   })
 
   cron.schedule('*/10 * * * *', async () => {
-    await runCriticalAlertReminders()
+    recordRunnerStart('critical_alert_reminders')
+    try {
+      await runCriticalAlertReminders()
+      recordRunnerSuccess('critical_alert_reminders')
+    } catch (err) {
+      recordRunnerError('critical_alert_reminders', err instanceof Error ? err.message : String(err))
+    }
   })
 
   console.log('[scheduler] started.')
