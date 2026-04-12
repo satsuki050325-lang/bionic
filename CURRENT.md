@@ -110,6 +110,8 @@
 - Codexレビュー完了・P1 finding全修正済み
 - Discord Bot動作確認完了
 - [CRITICAL]アラートのEmbed通知をDiscordで確認
+- SECURITY_RELEASE_CHECKLIST.md作成
+- GitHub Actions CI設定（typecheck/test/build）
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -128,12 +130,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- SECURITY_RELEASE_CHECKLIST.md作成
-- GitHub Actions CI（typecheck/build必須化）
+- GitHub公開準備（OSS公開・README整備）
+  または
+- Medini SDKの改善・rate limit追加
 
 ### done条件
-- [ ] SECURITY_RELEASE_CHECKLIST.mdが作成され、本番リリース前の確認項目が整理されている
-- [ ] GitHub Actions CIでtypecheck/buildが必須化されている
+- 上記のいずれかを選択して着手
 
 ---
 
@@ -152,7 +154,8 @@ Deploy→Watch→Alert（完了）
 bionic-ops MCPサーバー（packages/mcp として独立）（完了）
 Discord Bot（Phase 2後半）（完了）
 Discord Bot動作確認（完了）
-SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（今ここ）
+SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（完了）
+GitHub公開準備 or Medini SDK改善（今ここ）
 
 
 ---
@@ -171,8 +174,6 @@ SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（今ここ）
 
 - テストコードがまだない（次のタスク）
 - Discord Bot常駐・外部API監視・LLM要約が増えるとコストが発生する（今は実質$0）
-- GitHub ActionsでCI（typecheck/build）を必須化していない
-- SECURITY_RELEASE_CHECKLIST.mdがまだない
 - sendApprovalNotificationはpending_approval action生成時に結線が必要（将来タスク）
 
 ---
