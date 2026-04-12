@@ -71,6 +71,26 @@
 
 ---
 
+## 2026-04-13 / Claude（Bot通知関数をPromise<boolean>化）
+
+### やったこと
+- `discord/notifications.ts`: `sendAlertNotification` / `sendApprovalNotification` の戻り値を `Promise<boolean>` に変更（成功時 true / channel未設定・channel不適合・例外時 false）
+- `runners/approvals.ts`: Bot経路で返り値をそのまま `notified` に代入（try/catchによるラップを撤去）
+- `runners/alertReminders.ts`: 同上
+- `decisions/alerts.ts` / `actions/logAction.ts` の `void sendXxxNotification(...)` は fire-and-forget なので既存のまま維持（戻り値は無視）
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- Bot内部でcatchして false を返す方が呼び出し側の条件分岐が単純になり、`notified=true` の誤報も減る
+- fire-and-forget 箇所は `Promise<boolean>` でも void 呼び出しで問題なし（TypeScriptのvoid contextは戻り値型を強制しない）
+
+### 次にやること
+- Codexレビュー
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.0 finding修正）
 
 ### やったこと

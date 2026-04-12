@@ -8,18 +8,18 @@ import { getConfig } from '../config.js'
 export async function sendAlertNotification(
   client: Client,
   alert: Alert
-): Promise<void> {
+): Promise<boolean> {
   const channelId = getConfig().discord.channelId
   if (!channelId) {
     console.warn('[discord] BIONIC_DISCORD_CHANNEL_ID not set')
-    return
+    return false
   }
 
   try {
     const channel = await client.channels.fetch(channelId)
     if (!channel?.isTextBased()) {
       console.error('[discord] channel is not text based')
-      return
+      return false
     }
 
     const embed = buildAlertEmbed(alert)
@@ -35,8 +35,10 @@ export async function sendAlertNotification(
       .eq('id', alert.id)
 
     console.log(`[discord] alert notification sent: ${alert.id}`)
+    return true
   } catch (err) {
     console.error('[discord] failed to send alert notification:', err)
+    return false
   }
 }
 
@@ -118,16 +120,16 @@ export async function sendAlertNotificationViaWebhook(
 export async function sendApprovalNotification(
   client: Client,
   action: EngineAction
-): Promise<void> {
+): Promise<boolean> {
   const channelId = getConfig().discord.channelId
   if (!channelId) {
     console.warn('[discord] BIONIC_DISCORD_CHANNEL_ID not set')
-    return
+    return false
   }
 
   try {
     const channel = await client.channels.fetch(channelId)
-    if (!channel?.isTextBased()) return
+    if (!channel?.isTextBased()) return false
 
     const embed = buildApprovalEmbed(action)
 
@@ -148,7 +150,9 @@ export async function sendApprovalNotification(
     })
 
     console.log(`[discord] approval notification sent: ${action.id}`)
+    return true
   } catch (err) {
     console.error('[discord] failed to send approval notification:', err)
+    return false
   }
 }

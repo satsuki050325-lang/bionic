@@ -40,13 +40,7 @@ export async function runCriticalAlertReminders(): Promise<void> {
     let notified = false
 
     if (discordClient) {
-      try {
-        await sendAlertNotification(discordClient, alert)
-        notified = true
-      } catch (err) {
-        console.error('[runners/alertReminders] Bot notification failed:', err)
-        notified = false
-      }
+      notified = await sendAlertNotification(discordClient, alert)
     } else if (config.discord.webhookUrl) {
       notified = await sendAlertNotificationViaWebhook(config.discord.webhookUrl, alert)
     }

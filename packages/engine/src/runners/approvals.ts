@@ -57,13 +57,7 @@ export async function runStaleApprovalCheck(): Promise<void> {
     let notified = false
 
     if (discordClient) {
-      try {
-        await sendApprovalNotification(discordClient, engineAction)
-        notified = true
-      } catch (err) {
-        console.error('[runners/approvals] Bot notification failed:', err)
-        notified = false
-      }
+      notified = await sendApprovalNotification(discordClient, engineAction)
     } else if (config.discord.webhookUrl) {
       notified = await sendApprovalNotificationViaWebhook(
         config.discord.webhookUrl,
