@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-13 / Claude（config.ts P1/P2 finding修正）
+
+### やったこと
+- Discord mode判定を修正: `botToken && !channelId` の場合は Webhook にフォールバックし、webhookUrl もなければ `disabled` に落とす（以前は `mode='bot'` のままだった）
+- `validateConfigForStartup` のテストを3件追加（process.exit を spy、production missing / production all set / development）
+- `redactConfig` のテストを追加（secret値がJSON化後に出現しないことを検証）
+- BOT_TOKENのみのテストケースを修正（期待値を 'disabled' / 'webhook' に更新）
+- `pnpm typecheck` 全6パッケージ通過
+- `pnpm --filter @bionic/engine test` 全36件通過（config.test は12→16件）
+
+### 判断したこと
+- channel_id がない状態で `mode='bot'` のままだと `sendAlertNotification` / `sendDigestNotification` が実質動作しないので、早期にWebhookへフォールバックする方が現場で壊れにくい
+- redactConfig はJSON.stringify後の文字列検査でreject。secret名が増えてもテストが検知できる
+
+### 次にやること
+- `pnpm verify` 追加（typecheck + engine test + app build）
+- README起動手順の整備
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 1.8 - config.ts導入）
 
 ### やったこと

@@ -163,11 +163,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
   const channelId = readString(env, 'BIONIC_DISCORD_CHANNEL_ID')
 
   let discordMode: 'bot' | 'webhook' | 'disabled'
-  if (botToken) {
-    if (!channelId) {
-      console.warn('[config] BIONIC_DISCORD_BOT_TOKEN is set but BIONIC_DISCORD_CHANNEL_ID is missing. Discord Bot notifications disabled.')
-    }
+  if (botToken && channelId) {
     discordMode = 'bot'
+  } else if (botToken && !channelId) {
+    console.warn(
+      '[config] BIONIC_DISCORD_BOT_TOKEN is set but BIONIC_DISCORD_CHANNEL_ID is missing. ' +
+      'Falling back to Webhook mode.'
+    )
+    discordMode = webhookUrl ? 'webhook' : 'disabled'
   } else if (webhookUrl) {
     discordMode = 'webhook'
   } else {

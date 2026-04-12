@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { loadConfig } from './config.js'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { loadConfig, validateConfigForStartup, redactConfig } from './config.js'
 
 describe('loadConfig', () => {
   it('デフォルト値が正しく設定される', () => {
@@ -22,12 +22,17 @@ describe('loadConfig', () => {
     expect(config.discord.mode).toBe('bot')
   })
 
-  it('BOT_TOKENのみでCHANNEL_IDなしでもmode=botになる（warningのみ）', () => {
-    const config = loadConfig({
+  it('BOT_TOKENのみでCHANNEL_IDなしはwebhookまたはdisabledになる', () => {
+    const config1 = loadConfig({
       BIONIC_DISCORD_BOT_TOKEN: 'token',
     })
-    expect(config.discord.mode).toBe('bot')
-    expect(config.discord.channelId).toBeNull()
+    expect(config1.discord.mode).toBe('disabled')
+
+    const config2 = loadConfig({
+      BIONIC_DISCORD_BOT_TOKEN: 'token',
+      DISCORD_WEBHOOK_URL: 'https://discord.com/webhook/xxx',
+    })
+    expect(config2.discord.mode).toBe('webhook')
   })
 
   it('WEBHOOK_URLのみあればmode=webhookになる', () => {
@@ -85,5 +90,68 @@ describe('loadConfig', () => {
     const config = loadConfig({ NODE_ENV: 'production' })
     expect(config.engine.isProduction).toBe(true)
     expect(config.engine.token).toBeNull()
+  })
+})
+
+describe('validateConfigForStartup', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('productionでtokenなしの場合process.exit(1)を呼ぶ', () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called')
+    })
+    const config = loadConfig({
+      NODE_ENV: 'production',
+      SUPABASE_URL: 'https://xxx.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'key',
+    })
+    expect(() => validateConfigForStartup(config)).toThrow('process.exit called')
+    expect(exitSpy).toHaveBeenCalledWith(1)
+  })
+
+  it('productionで全必須envが揃っていればexitしない', () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called')
+    })
+    const config = loadConfig({
+      NODE_ENV: 'production',
+      BIONIC_ENGINE_TOKEN: 'token',
+      SUPABASE_URL: 'https://xxx.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'key',
+    })
+    expect(() => validateConfigForStartup(config)).not.toThrow()
+    expect(exitSpy).not.toHaveBeenCalled()
+  })
+
+  it('developmentではtoken未設定でもexitしない', () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called')
+    })
+    const config = loadConfig({ NODE_ENV: 'development' })
+    expect(() => validateConfigForStartup(config)).not.toThrow()
+    expect(exitSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('redactConfig', () => {
+  it('secretが出力されないことを確認する', () => {
+    const config = loadConfig({
+      BIONIC_ENGINE_TOKEN: 'super-secret-token',
+      SUPABASE_URL: 'https://xxx.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'super-secret-key',
+      BIONIC_DISCORD_BOT_TOKEN: 'super-secret-bot-token',
+      VERCEL_WEBHOOK_SECRET: 'super-secret-webhook',
+      BIONIC_DISCORD_CHANNEL_ID: '12345',
+    })
+    const redacted = redactConfig(config)
+    const redactedStr = JSON.stringify(redacted)
+
+    expect(redactedStr).not.toContain('super-secret-token')
+    expect(redactedStr).not.toContain('super-secret-key')
+    expect(redactedStr).not.toContain('super-secret-bot-token')
+    expect(redactedStr).not.toContain('super-secret-webhook')
+    expect(redactedStr).toContain('[set]')
   })
 })
