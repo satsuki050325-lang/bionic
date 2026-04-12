@@ -4,6 +4,7 @@ import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDi
 import { runResearchDigest } from '../routes/jobs.js'
 import { supabase } from '../lib/supabase.js'
 import { validateCronExpression } from './cron.js'
+import { evaluateWatchingDeployments } from '../decisions/deploymentWatch.js'
 
 const ALLOWED_TIMEZONES = new Set([
   'Asia/Tokyo',
@@ -185,6 +186,11 @@ export function startScheduler(): void {
     await triggerWeeklyDigest()
   }, {
     timezone: config.timezone,
+  })
+
+  cron.schedule('*/5 * * * *', async () => {
+    console.log('[scheduler] deployment watch check')
+    await evaluateWatchingDeployments()
   })
 
   console.log('[scheduler] started.')

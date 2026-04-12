@@ -83,6 +83,9 @@
 - validateCronExpressionをcron.tsに切り出し
 - cron.test.ts / researchDigest.test.ts / alerts.test.ts 追加
 - Codexレビュー完了・P2 finding全修正済み
+- Deploy→Watch→Alert実装（Vercel Webhook + 30分監視 + deployment_regression alert）
+- deploymentsテーブル / sources/vercel / routes/webhooks/vercel / decisions/deploymentWatch
+- scheduler に5分間隔のwatch評価cronを追加
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -94,7 +97,6 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- Deploy→Watch→Alert（次の1手）
 - bionic-ops MCPサーバー（packages/mcp）
 - Discord Bot
 - CLI
@@ -104,11 +106,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Deploy→Watch→Alert（Vercel Webhook連携）
+- bionic-ops MCPサーバー（packages/mcp）
 
 ### done条件
-- [ ] Vercel Webhookを受信するエンドポイントが存在する
-- [ ] デプロイ後のエラー率変化を検知する仕組みがある
+- [ ] packages/mcp として独立パッケージが存在する
+- [ ] Claude Desktopから接続できる
 
 ---
 
@@ -123,8 +125,8 @@ Recent Events表示（完了）
 承認待ちAPI / CLI最小実装（完了）
 RLS / Security設計（完了）
 最小テスト追加（完了）
-Deploy→Watch→Alert（今ここ）
-bionic-ops MCPサーバー（packages/mcp として独立）
+Deploy→Watch→Alert（完了）
+bionic-ops MCPサーバー（packages/mcp として独立）（今ここ）
 Discord Bot（Phase 2後半）
 
 
@@ -162,4 +164,4 @@ Discord Bot（Phase 2後半）
 
 ## 最終更新
 
-2026-04-11 / Claude
+2026-04-12 / Claude Code

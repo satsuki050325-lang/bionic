@@ -11,6 +11,13 @@ export type EventType =
   | 'job.completed'
   | 'job.failed'
 
+export type AlertType =
+  | 'service_health'
+  | 'service_error'
+  | 'research_digest'
+  | 'job_failure'
+  | 'deployment_regression'
+
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 export type AlertStatus = 'open' | 'resolved'
 export type EngineRuntimeStatus = 'idle' | 'running' | 'degraded'
@@ -63,7 +70,7 @@ export interface Alert {
   id: string
   projectId: string
   serviceId: string | null
-  type: 'service_health' | 'service_error' | 'research_digest' | 'job_failure'
+  type: AlertType
   severity: AlertSeverity
   title: string
   message: string
@@ -166,6 +173,39 @@ export type ActionType =
   | 'run_research_digest'
   | 'mark_digest_sent'
   | 'retry_job'
+  | 'evaluate_deployment_watch'
+
+export type DeploymentWatchStatus =
+  | 'pending'
+  | 'watching'
+  | 'alerted'
+  | 'completed'
+  | 'failed'
+
+export interface Deployment {
+  id: string
+  projectId: string
+  serviceId: string
+  provider: string
+  providerProjectId: string
+  providerDeploymentId: string
+  deploymentUrl: string
+  target: string | null
+  gitCommitSha: string | null
+  gitCommitMessage: string | null
+  dashboardUrl: string | null
+  status: string
+  readyAt: ISODateString | null
+  watchStartedAt: ISODateString | null
+  watchUntil: ISODateString | null
+  watchStatus: DeploymentWatchStatus
+  baselineErrorCount: number
+  currentErrorCount: number
+  errorIncreasePercent: number | null
+  alertId: string | null
+  createdAt: ISODateString
+  updatedAt: ISODateString
+}
 
 export type ActionMode = 'automatic' | 'approval_required' | 'manual'
 

@@ -6,10 +6,17 @@ import { alertsRouter } from './routes/alerts.js'
 import { jobsRouter } from './routes/jobs.js'
 import { researchRouter } from './routes/research.js'
 import { actionsRouter } from './routes/actions.js'
+import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { engineAuthMiddleware } from './middleware/auth.js'
 import { startScheduler } from './scheduler/index.js'
 
 const app = express()
+
+app.use(
+  '/api/webhooks/vercel',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  vercelWebhookRouter
+)
 
 app.use(express.json({ limit: '1mb' }))
 app.use(cors({

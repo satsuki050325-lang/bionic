@@ -3,6 +3,38 @@
 
 ---
 
+## 2026-04-12 / Claude Code
+
+### やったこと
+- Deploy→Watch→Alert実装
+  - shared型: AlertType / ActionType拡張・DeploymentWatchStatus・Deployment追加
+  - supabase/migrations/20260412000000_deployments.sql 作成
+  - packages/engine/src/sources/vercel.ts 新規（payload正規化・project mapping）
+  - packages/engine/src/routes/webhooks/vercel.ts 新規（HMAC SHA1検証・baseline集計・upsert）
+  - packages/engine/src/decisions/deploymentWatch.ts 新規（5min cron評価・deployment_regression alert発火）
+  - scheduler/index.ts に */5 cronを追加
+  - index.tsで `/api/webhooks/vercel` をengineAuthMiddlewareより前にraw bodyでmount
+  - .env.exampleにVERCEL_WEBHOOK_SECRET / BIONIC_VERCEL_PROJECT_MAP追加
+- pnpm typecheck 全通過
+- pnpm --filter @bionic/engine test 全20テスト通過
+
+### 判断したこと
+- IDEAS.md確認：Deploy→Watch→Alertのアイデアはタスク仕様に既に反映済み。追加変更なし
+- syntheticEvent / evaluateAlertForEvent はspecどおり残しつつ未使用警告を出さないよう `void` で吸収
+- baselineは直前30分のerror件数を採用、watch期間は30分
+
+### 未解決・既知リスク
+- Supabase本番への migration適用は手動SQL Editorで実施が必要
+- ngrokでのローカル受信動作確認は別途実施
+- VERCEL_WEBHOOK_SECRET未設定時は署名検証スキップ（開発時のみ許可）
+
+### 次にやること
+- Supabaseに 20260412000000_deployments.sql を適用する
+- Vercelプロジェクト側でWebhook設定 + ngrok起動
+- bionic-ops MCPサーバー（packages/mcp）
+
+---
+
 ## 書き方
 
 ```markdown
