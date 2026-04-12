@@ -71,6 +71,20 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- GitHub Actions CIにgitleaksによるsecrets scanを追加した
+- .gitleaks.tomlを作成してallowlist pathsで.env.exampleを除外した
+- Codexレビュー完了・P2 finding修正済み
+
+### 次にやること
+- migration fresh apply確認
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（gitleaks設定修正）
 
 ### やったこと
