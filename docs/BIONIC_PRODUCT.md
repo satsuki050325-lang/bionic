@@ -39,6 +39,13 @@ For solo developers and small teams, the biggest bottleneck is operations, maint
 
 ## Design Principles
 
+### Quality Standard
+Bionic is built to the standard of software shipped by top-tier engineers.
+- Every feature is designed for correctness, not just functionality
+- Security, observability, and recoverability are first-class concerns
+- Technical debt is tracked and addressed, not accumulated silently
+- The codebase should be something a senior engineer would be proud to review
+
 ### Two-Axis Alert Design
 - Axis 1: Severity (critical / warning / info) → affects notification intensity
 - Axis 2: Repair mode (automatic / approval_required / manual) → affects action taken
