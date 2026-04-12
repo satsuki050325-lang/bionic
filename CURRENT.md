@@ -113,6 +113,8 @@
 - SECURITY_RELEASE_CHECKLIST.md作成
 - GitHub Actions CI設定（typecheck/test/build 3ジョブ）
 - Codexレビュー完了・問題なし
+- ロードマップ確定（docs/ROADMAP.md作成）
+- 第一指示「いいものを作る」をAGENTS.mdに追記
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -131,10 +133,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- （颯紀さんが決定）
+- Phase 1.8: config.ts導入（env一元管理・validation）
 
 ### done条件
-- （未定）
+- [ ] env読み取り・validation・default値が `config.ts` に一元化されている
+- [ ] 本番起動時に必須envが揃っていない場合は起動拒否される
+- [ ] typecheck / test / build 全通過
 
 ---
 
@@ -154,7 +158,8 @@ bionic-ops MCPサーバー（packages/mcp として独立）（完了）
 Discord Bot（Phase 2後半）（完了）
 Discord Bot動作確認（完了）
 SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（完了）
-（次の優先順位は颯紀さんが決定）
+ロードマップ確定（完了）
+Phase 1.8: config.ts導入（今ここ）
 
 
 ---
