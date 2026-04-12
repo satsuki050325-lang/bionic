@@ -1,3 +1,5 @@
+import { getConfig } from '../config.js'
+
 export interface VercelWebhookBody {
   type:
     | 'deployment.created'
@@ -55,12 +57,6 @@ export function normalizeVercelPayload(
 }
 
 export function resolveServiceId(providerProjectId: string): string | null {
-  const mapStr = process.env.BIONIC_VERCEL_PROJECT_MAP ?? ''
-  if (!mapStr) return null
-
-  for (const entry of mapStr.split(',')) {
-    const [projectId, serviceId] = entry.trim().split(':')
-    if (projectId === providerProjectId) return serviceId ?? null
-  }
-  return null
+  const map = getConfig().vercel.projectMap
+  return map.get(providerProjectId) ?? null
 }

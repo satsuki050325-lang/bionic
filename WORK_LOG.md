@@ -3,6 +3,37 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 1.8 - config.ts導入）
+
+### やったこと
+- `packages/engine/src/config.ts` を新規作成（env読み取り・validation・default値・singletonを一元化）
+- `packages/engine/src/config.test.ts` を追加（12ケース、デフォルト/Discord mode判定/フォールバック/CSV・Vercel projectMapパース/production判定）
+- Engine全体で `process.env` 直読みを撲滅し `getConfig()` 経由に統一
+  - `index.ts`（`validateEnvironment` を `validateConfigForStartup` に置換）
+  - `lib/supabase.ts` / `middleware/auth.ts` / `actions/notify.ts`
+  - `discord/index.ts` / `discord/interactions.ts` / `discord/notifications.ts`
+  - `policies/notification.ts`（`getQuietHoursConfig` のvalidationは config.ts に一元化）
+  - `scheduler/index.ts`（ローカル `getConfig` と `ALLOWED_TIMEZONES` を削除）
+  - `routes/webhooks/vercel.ts` / `sources/vercel.ts`
+- `redactConfig` を用意（secretを出さないdiagnostics用）
+- `pnpm typecheck` 全6パッケージ通過
+- `pnpm --filter @bionic/engine test` 全32件通過（config.test.ts含む）
+
+### 判断したこと
+- envのvalidationはload時に行い、invalidな値は warning を出してデフォルトにフォールバックする（cron式・timezone・projectId・int range）
+- production必須チェックは起動時のみ（`validateConfigForStartup` で `process.exit(1)`）。middlewareは毎回のrequestで起動拒否しない
+- Discord mode判定は load時に一回だけ（bot > webhook > disabled）。bot_tokenがあればchannel_id不足でも `mode='bot'` とし起動時に警告を出す方針
+- singletonは `getConfig()`、テストは `loadConfig(env)` で引数注入
+- `policies/notification.ts` のローカル `parseHour` は config.ts に吸収して重複を排除
+
+### 次にやること
+- `pnpm verify` 追加（typecheck + engine test + app build を一発実行）
+- README起動手順の整備
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（ロードマップ確定）
 
 ### やったこと

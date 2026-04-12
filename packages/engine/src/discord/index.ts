@@ -1,13 +1,13 @@
 import { createDiscordClient } from './client.js'
 import { handleInteraction } from './interactions.js'
+import { getConfig } from '../config.js'
 import type { Client } from 'discord.js'
-
-const BOT_TOKEN = process.env.BIONIC_DISCORD_BOT_TOKEN
 
 let discordClient: Client | null = null
 
 export async function startDiscordBot(): Promise<Client | null> {
-  if (!BOT_TOKEN) {
+  const botToken = getConfig().discord.botToken
+  if (!botToken) {
     console.log('[discord] BIONIC_DISCORD_BOT_TOKEN not set. Using Webhook mode.')
     return null
   }
@@ -22,7 +22,7 @@ export async function startDiscordBot(): Promise<Client | null> {
     await handleInteraction(interaction)
   })
 
-  await client.login(BOT_TOKEN)
+  await client.login(botToken)
   discordClient = client
   return client
 }

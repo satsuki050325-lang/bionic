@@ -1,14 +1,16 @@
 import type { Request, Response, NextFunction } from 'express'
-
-const ENGINE_TOKEN = process.env.BIONIC_ENGINE_TOKEN
+import { getConfig } from '../config.js'
 
 export function engineAuthMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ): void {
-  if (!ENGINE_TOKEN) {
-    if (process.env.NODE_ENV === 'production') {
+  const config = getConfig()
+  const token = config.engine.token
+
+  if (!token) {
+    if (config.engine.isProduction) {
       res.status(500).json({ error: 'BIONIC_ENGINE_TOKEN is required in production' })
       return
     }
@@ -22,8 +24,8 @@ export function engineAuthMiddleware(
     return
   }
 
-  const token = authHeader.slice(7)
-  if (token !== ENGINE_TOKEN) {
+  const provided = authHeader.slice(7)
+  if (provided !== token) {
     res.status(401).json({ error: 'Invalid token' })
     return
   }

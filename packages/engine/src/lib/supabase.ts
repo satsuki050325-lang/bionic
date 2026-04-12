@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import { getConfig } from '../config.js'
 
-const url = process.env.SUPABASE_URL
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+const config = getConfig()
 
-if (!url || !key) {
+if (!config.supabase.url || !config.supabase.serviceRoleKey) {
   throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
 }
 
-export const supabase = createClient(url, key, {
+export const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,

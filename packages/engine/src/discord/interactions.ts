@@ -1,17 +1,14 @@
 import type { Interaction } from 'discord.js'
 import { approveAction, denyAction } from '../actions/service.js'
-
-const ALLOWED_USER_IDS = (process.env.BIONIC_DISCORD_APPROVER_IDS ?? '')
-  .split(',')
-  .map((id) => id.trim())
-  .filter(Boolean)
+import { getConfig } from '../config.js'
 
 export async function handleInteraction(interaction: Interaction): Promise<void> {
   if (!interaction.isButton()) return
 
   const { customId, user } = interaction
+  const allowedUserIds = getConfig().discord.approverIds
 
-  if (ALLOWED_USER_IDS.length === 0) {
+  if (allowedUserIds.length === 0) {
     await interaction.reply({
       content: '❌ No approvers configured. Set BIONIC_DISCORD_APPROVER_IDS in .env.local',
       ephemeral: true,
@@ -19,7 +16,7 @@ export async function handleInteraction(interaction: Interaction): Promise<void>
     return
   }
 
-  if (!ALLOWED_USER_IDS.includes(user.id)) {
+  if (!allowedUserIds.includes(user.id)) {
     await interaction.reply({
       content: '❌ You are not authorized to approve/deny actions.',
       ephemeral: true,

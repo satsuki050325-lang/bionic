@@ -3,20 +3,20 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import type { Alert, EngineAction } from '@bionic/shared'
 import { buildAlertEmbed, buildApprovalEmbed } from './embeds.js'
 import { supabase } from '../lib/supabase.js'
-
-const CHANNEL_ID = process.env.BIONIC_DISCORD_CHANNEL_ID
+import { getConfig } from '../config.js'
 
 export async function sendAlertNotification(
   client: Client,
   alert: Alert
 ): Promise<void> {
-  if (!CHANNEL_ID) {
+  const channelId = getConfig().discord.channelId
+  if (!channelId) {
     console.warn('[discord] BIONIC_DISCORD_CHANNEL_ID not set')
     return
   }
 
   try {
-    const channel = await client.channels.fetch(CHANNEL_ID)
+    const channel = await client.channels.fetch(channelId)
     if (!channel?.isTextBased()) {
       console.error('[discord] channel is not text based')
       return
@@ -45,11 +45,12 @@ export async function sendDigestNotification(
   items: Array<{ title: string; summary: string; importanceScore: number }>,
   projectId: string
 ): Promise<'sent' | 'skipped' | 'failed'> {
-  if (!CHANNEL_ID) return 'failed'
+  const channelId = getConfig().discord.channelId
+  if (!channelId) return 'failed'
   if (items.length === 0) return 'skipped'
 
   try {
-    const channel = await client.channels.fetch(CHANNEL_ID)
+    const channel = await client.channels.fetch(channelId)
     if (!channel?.isTextBased()) return 'failed'
 
     const topItems = items.slice(0, 3)
@@ -78,13 +79,14 @@ export async function sendApprovalNotification(
   client: Client,
   action: EngineAction
 ): Promise<void> {
-  if (!CHANNEL_ID) {
+  const channelId = getConfig().discord.channelId
+  if (!channelId) {
     console.warn('[discord] BIONIC_DISCORD_CHANNEL_ID not set')
     return
   }
 
   try {
-    const channel = await client.channels.fetch(CHANNEL_ID)
+    const channel = await client.channels.fetch(channelId)
     if (!channel?.isTextBased()) return
 
     const embed = buildApprovalEmbed(action)

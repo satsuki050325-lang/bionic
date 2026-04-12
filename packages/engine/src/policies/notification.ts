@@ -1,3 +1,5 @@
+import { getConfig } from '../config.js'
+
 export type NotificationKind =
   | 'alert_created'
   | 'alert_reminder'
@@ -18,35 +20,9 @@ export interface NotificationPolicyInput {
   now: Date
 }
 
-function getQuietHoursConfig() {
-  const parseHour = (value: string | undefined, defaultValue: number): number => {
-    if (!value) return defaultValue
-    if (!/^\d+$/.test(value)) {
-      console.warn(
-        `[notification-policy] invalid hour value: "${value}". Using default: ${defaultValue}`
-      )
-      return defaultValue
-    }
-    const parsed = parseInt(value, 10)
-    if (parsed < 0 || parsed > 23) {
-      console.warn(
-        `[notification-policy] hour out of range: "${value}". Using default: ${defaultValue}`
-      )
-      return defaultValue
-    }
-    return parsed
-  }
-
-  return {
-    start: parseHour(process.env.BIONIC_QUIET_HOURS_START, 23),
-    end: parseHour(process.env.BIONIC_QUIET_HOURS_END, 7),
-    timezone: process.env.BIONIC_QUIET_HOURS_TIMEZONE ?? 'Asia/Tokyo',
-  }
-}
-
 export function isQuietHours(now: Date, timezone?: string): boolean {
-  const config = getQuietHoursConfig()
-  const tz = timezone ?? config.timezone
+  const notification = getConfig().notification
+  const tz = timezone ?? notification.quietHoursTimezone
 
   const formatter = new Intl.DateTimeFormat('en', {
     timeZone: tz,
@@ -55,10 +31,13 @@ export function isQuietHours(now: Date, timezone?: string): boolean {
   })
   const hour = parseInt(formatter.format(now), 10)
 
-  if (config.start > config.end) {
-    return hour >= config.start || hour < config.end
+  const start = notification.quietHoursStart
+  const end = notification.quietHoursEnd
+
+  if (start > end) {
+    return hour >= start || hour < end
   }
-  return hour >= config.start && hour < config.end
+  return hour >= start && hour < end
 }
 
 const CRITICAL_REMINDER_INTERVAL_MINUTES = 30

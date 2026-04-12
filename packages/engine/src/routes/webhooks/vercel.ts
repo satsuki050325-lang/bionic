@@ -7,18 +7,18 @@ import {
   resolveServiceId,
   type VercelWebhookBody,
 } from '../../sources/vercel.js'
+import { getConfig } from '../../config.js'
 
 export const vercelWebhookRouter = Router()
 
-const WEBHOOK_SECRET = process.env.VERCEL_WEBHOOK_SECRET
-
 function verifySignature(rawBody: Buffer, signature: string): boolean {
-  if (!WEBHOOK_SECRET) {
+  const secret = getConfig().vercel.webhookSecret
+  if (!secret) {
     console.error('[vercel-webhook] VERCEL_WEBHOOK_SECRET is not set. Rejecting request.')
     return false
   }
   const expected = crypto
-    .createHmac('sha1', WEBHOOK_SECRET)
+    .createHmac('sha1', secret)
     .update(rawBody)
     .digest('hex')
   try {
@@ -73,7 +73,7 @@ vercelWebhookRouter.post(
         return
       }
 
-      const projectId = process.env.BIONIC_PROJECT_ID ?? 'project_bionic'
+      const projectId = getConfig().projectId
       const now = new Date()
       const watchUntil = new Date(now.getTime() + 30 * 60 * 1000)
 

@@ -1,3 +1,5 @@
+import { getConfig } from '../config.js'
+
 export interface DigestItem {
   id: string
   title: string
@@ -15,7 +17,7 @@ export interface NotifyDigestInput {
 export type NotifyResult = 'sent' | 'skipped' | 'misconfigured'
 
 export async function notifyDigest(input: NotifyDigestInput): Promise<NotifyResult> {
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  const webhookUrl = getConfig().discord.webhookUrl
   if (!webhookUrl) {
     console.warn('[notify] DISCORD_WEBHOOK_URL is not set')
     return 'misconfigured'
