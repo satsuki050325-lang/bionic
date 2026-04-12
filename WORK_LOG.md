@@ -39,6 +39,21 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- README.mdを作成した（最小起動・Discord Botあり・Vercel webhook・MCPあり・Troubleshooting）
+- BIONIC_ENGINE_TOKENの扱いを明記した（開発中は空・設定時は全クライアントで同じtoken）
+- CLIのtoken設定手順を追加した（Linux/Mac・Windows PowerShell）
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 次にやること
+- TECHNICAL_DESIGN.mdの実装追従
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（README P1/P2 finding修正）
 
 ### やったこと
