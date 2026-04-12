@@ -54,6 +54,31 @@
 
 ---
 
+## 2026-04-13 / Claude（TECHNICAL_DESIGN.mdの実装追従）
+
+### やったこと
+- `docs/TECHNICAL_DESIGN.md` を現在の実装に追従
+  - アーキテクチャ図: App/CLI/SDK/MCP/Supabase/Discord/Vercel Webhookを明示
+  - 技術スタック: GitHub Actions Cron/Vercel Cron → node-cron に修正、TailwindCSS v4 / discord.js / Vitest / GitHub Actions CIを追加
+  - エンジン5層 → 実装ファイルへの逆引きマップを追加（sources/routes/decisions/policies/actions/discord/jobs）
+  - モジュール構成: config.ts / jobs/types.ts・repository.ts・runner.ts / policies/ / discord/ / decisions/deploymentWatch.ts / sources/vercel.ts / routes/webhooks/ / actions/service.ts / mcp を反映
+  - データモデル: engine_actions（approved_by 等）/ engine_alerts（fingerprint / last_notified_at / notification_count 等）/ engine_jobs（dedupe_key）/ research_items（source default='manual' / category）/ deployments を追加
+  - 設計原則: Centralized config / Centralized notification policy / Fail-closed / Phase 1.8以降のROADMAP整合 を追加
+  - 実装済み主要機能リストを末尾に追加
+  - 最終更新日: 2026-04-13
+
+### 判断したこと
+- Phase定義は TECHNICAL_DESIGN.md では概略だけ書き、詳細は ROADMAP.md に委ねる（単一の正にする）
+- engine_actions は Phase 1.5 として実装済みなので「Phase 2で追加」の旧記述は削除
+- コスト設計セクションの「競合との差別化」は BIONIC_PRODUCT.md と重複するが、技術的コスト試算の文脈として簡潔に残した
+
+### 次にやること
+- secrets scan CI追加 / migration fresh apply確認 のどちらかを次に選択
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（README P1/P2 finding修正）
 
 ### やったこと
