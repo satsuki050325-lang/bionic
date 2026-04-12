@@ -101,7 +101,7 @@ diagnosticsRouter.get('/', async (_req, res) => {
 
   const { data: recentDeployments } = await supabase
     .from('deployments')
-    .select('id, project_id, watch_status, created_at')
+    .select('id, service_id, watch_status, created_at')
     .order('created_at', { ascending: false })
     .limit(5)
 
@@ -173,7 +173,7 @@ diagnosticsRouter.get('/', async (_req, res) => {
       })),
       deployments: (recentDeployments ?? []).map((d) => ({
         id: d.id,
-        serviceId: d.project_id,
+        serviceId: d.service_id,
         watchStatus: d.watch_status,
         createdAt: d.created_at,
       })),

@@ -71,6 +71,25 @@
 
 ---
 
+## 2026-04-13 / Claude（diagnostics P2/P3 finding修正）
+
+### やったこと
+- `routes/diagnostics.ts`: recentDeployments の select と mapping を `project_id` → `service_id` に修正
+- `diagnostics/page.tsx`: Recent Actions / Deployments の status 表示を DESIGN.md 準拠の `StatusBadge` component に統一（失敗=red / 進行中=amber / 成功=green / その他=neutral）
+- 旧 `statusToColor` / `watchStatusToColor` を削除（badge側に吸収）
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- DESIGN.md の Badge / Status Chip 定義に沿い、色 + border + 背景 を揃えた1関数に集約
+- Section 8 の「rounded-full を使わない・box-shadow を使わない」に合わせて `rounded` + flat border
+
+### 次にやること
+- Phase 2.1: `bionic init` 最小実装 / Appオンボーディング画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.1 - Engine diagnostics）
 
 ### やったこと

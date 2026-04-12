@@ -223,11 +223,7 @@ export default async function DiagnosticsPage() {
                     className="flex items-center gap-2 py-1 border-b border-border-subtle last:border-b-0"
                   >
                     <span className="badge-muted font-mono shrink-0">{a.type}</span>
-                    <span
-                      className={`font-mono text-xs shrink-0 ${statusToColor(a.status)}`}
-                    >
-                      {a.status.toUpperCase()}
-                    </span>
+                    <StatusBadge status={a.status} />
                     <span className="font-mono text-xs text-text-muted ml-auto shrink-0">
                       {formatTime(a.createdAt)}
                     </span>
@@ -250,11 +246,7 @@ export default async function DiagnosticsPage() {
                     className="flex items-center gap-2 py-1 border-b border-border-subtle last:border-b-0"
                   >
                     <span className="badge-muted font-mono shrink-0">{d.serviceId}</span>
-                    <span
-                      className={`font-mono text-xs shrink-0 ${watchStatusToColor(d.watchStatus)}`}
-                    >
-                      {d.watchStatus.toUpperCase()}
-                    </span>
+                    <StatusBadge status={d.watchStatus} />
                     <span className="font-mono text-xs text-text-muted ml-auto shrink-0">
                       {formatTime(d.createdAt)}
                     </span>
@@ -341,35 +333,26 @@ function formatUptime(seconds: number): string {
   return `${m}m`
 }
 
-function statusToColor(status: string): string {
-  switch (status) {
-    case 'succeeded':
-    case 'approved':
-      return 'text-status-success'
-    case 'failed':
-    case 'denied':
-    case 'cancelled':
-      return 'text-status-danger'
-    case 'pending_approval':
-    case 'running':
-      return 'text-accent'
-    case 'skipped':
-      return 'text-text-muted'
-    default:
-      return 'text-text-secondary'
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    failed: 'bg-red-500/10 text-red-400 border border-red-500/30',
+    denied: 'bg-red-500/10 text-red-400 border border-red-500/30',
+    critical: 'bg-red-500/10 text-red-400 border border-red-500/30',
+    alerted: 'bg-red-500/10 text-red-400 border border-red-500/30',
+    watching: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+    running: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+    pending: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+    pending_approval: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+    completed: 'bg-green-500/10 text-green-400 border border-green-500/30',
+    succeeded: 'bg-green-500/10 text-green-400 border border-green-500/30',
+    approved: 'bg-green-500/10 text-green-400 border border-green-500/30',
   }
-}
-
-function watchStatusToColor(status: string): string {
-  switch (status) {
-    case 'completed':
-      return 'text-status-success'
-    case 'alerted':
-    case 'failed':
-      return 'text-status-danger'
-    case 'watching':
-      return 'text-accent'
-    default:
-      return 'text-text-secondary'
-  }
+  const style = styles[status] ?? 'bg-white/5 text-gray-400 border border-white/10'
+  return (
+    <span
+      className={`font-mono text-xs uppercase tracking-wider px-2 py-0.5 rounded shrink-0 ${style}`}
+    >
+      {status}
+    </span>
+  )
 }
