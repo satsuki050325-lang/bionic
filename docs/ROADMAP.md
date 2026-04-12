@@ -17,7 +17,7 @@
 土台を締める。ここをやると今後の機能追加が安全になる。
 
 - [x] ✅ `config.ts` 導入（env読み取り・validation・default値を一元化）
-- [ ] `pnpm verify` 追加（typecheck + engine test + app build を一発実行）
+- [x] `pnpm verify` 追加（typecheck + engine test + app build を一発実行）
 - [ ] README起動手順の整備（最小起動・Discord Botあり・MCPあり・Vercel webhook/ngrokあり）
 - [ ] `TECHNICAL_DESIGN.md` の実装追従（既に実装済みなのに古い記述が残っている箇所を更新）
 - [ ] secrets scan CI追加（gitleaksをCIに組み込む）

@@ -25,6 +25,24 @@
 
 ---
 
+## 2026-04-13 / Claude（pnpm verify追加）
+
+### やったこと
+- `package.json` に `verify` スクリプトを追加（typecheck && engine test && app build）
+- `pnpm verify` の実行を確認: typecheck 6/6 通過 / engine test 36/36 通過 / Next.js app build 成功
+- `docs/ROADMAP.md` の `pnpm verify` チェックボックスを完了にマーク
+
+### 判断したこと
+- `&&` で直列実行し、いずれかが失敗したら以降をスキップ（失敗を見逃さない）
+- engine testとapp buildのみ対象（他のパッケージはtypecheckで十分）
+
+### 次にやること
+- README起動手順の整備
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（config.ts P1/P2 finding修正）
 
 ### やったこと
