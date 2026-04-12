@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-04-12 / Claude Code（quiet hoursバリデーション強化）
+
+### やったこと
+- `policies/notification.ts#parseHour` に `^\d+$` 完全一致チェックを追加
+- `'9abc'` のような `parseInt` で部分的にパースできてしまう値もデフォルトにフォールバック
+- 範囲外・パース失敗でログメッセージを分離（`invalid hour value` / `hour out of range`）
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- `parseInt('9abc', 10)` は `9` を返すため `isNaN` だけでは不足。正規表現で厳格化
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Discord Bot 実装
+
+---
+
 ## 2026-04-12 / Claude Code（Engine責務分離 finding修正）
 
 ### やったこと

@@ -21,10 +21,16 @@ export interface NotificationPolicyInput {
 function getQuietHoursConfig() {
   const parseHour = (value: string | undefined, defaultValue: number): number => {
     if (!value) return defaultValue
-    const parsed = parseInt(value, 10)
-    if (isNaN(parsed) || parsed < 0 || parsed > 23) {
+    if (!/^\d+$/.test(value)) {
       console.warn(
         `[notification-policy] invalid hour value: "${value}". Using default: ${defaultValue}`
+      )
+      return defaultValue
+    }
+    const parsed = parseInt(value, 10)
+    if (parsed < 0 || parsed > 23) {
+      console.warn(
+        `[notification-policy] hour out of range: "${value}". Using default: ${defaultValue}`
       )
       return defaultValue
     }
