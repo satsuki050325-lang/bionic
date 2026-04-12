@@ -3,6 +3,27 @@
 
 ---
 
+## 2026-04-12 / Claude Code（MCP P1 finding修正）
+
+### やったこと
+- `run_research_digest` のbodyに `requestedBy: 'mcp'` を追加
+- `EventSource` 型に `'mcp'` を追加
+- Engine `routes/jobs.ts` の `VALID_SOURCES` に `'mcp'` を追加
+- `packages/mcp/tsconfig.json` に `"types": ["node"]` を追加
+- typecheck/build 全成功、engine test 20/20 通過
+
+### 判断したこと
+- `EventSource` を共通型として拡張し、SDK/CLI/MCP/Engine 全てで一貫性を保つ
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Codex 再レビュー
+- Claude Desktop 設定で接続テスト
+
+---
+
 ## 2026-04-12 / Claude Code
 
 ### やったこと

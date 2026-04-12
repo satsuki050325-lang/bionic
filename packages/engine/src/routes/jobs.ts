@@ -14,7 +14,7 @@ jobsRouter.post('/', async (req, res) => {
     return
   }
 
-  const VALID_SOURCES = ['sdk', 'app', 'cli', 'engine', 'scheduler'] as const
+  const VALID_SOURCES = ['sdk', 'app', 'cli', 'engine', 'scheduler', 'mcp'] as const
 
   if (!input.requestedBy || !VALID_SOURCES.includes(input.requestedBy as typeof VALID_SOURCES[number])) {
     res.status(400).json({ error: 'invalid requestedBy' })

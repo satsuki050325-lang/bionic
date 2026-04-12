@@ -23,7 +23,7 @@ export type AlertStatus = 'open' | 'resolved'
 export type EngineRuntimeStatus = 'idle' | 'running' | 'degraded'
 export type JobType = 'research_digest'
 export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'needs_review' | 'cancelled'
-export type EventSource = 'sdk' | 'app' | 'cli' | 'engine' | 'scheduler'
+export type EventSource = 'sdk' | 'app' | 'cli' | 'engine' | 'scheduler' | 'mcp'
 
 // ── EngineEvent ────────────────────────────────────────────────────
 export interface EngineEvent {

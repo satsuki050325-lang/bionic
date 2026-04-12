@@ -14,6 +14,7 @@ export function registerJobsTool(server: McpServer): void {
           body: JSON.stringify({
             type: 'research_digest',
             projectId: DEFAULT_PROJECT_ID,
+            requestedBy: 'mcp',
           }),
         })
 
