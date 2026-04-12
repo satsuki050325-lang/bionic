@@ -39,6 +39,23 @@
 
 ---
 
+## 2026-04-13 / Claude（README P1/P2 finding修正）
+
+### やったこと
+- Minimum Setupに `BIONIC_ENGINE_TOKEN=` を空で記載する手順と、設定時は全クライアント（App/CLI/MCP）で同じtokenを使う注記を追加
+- CLI UsageにtokenをCLI側に渡すLinux/Mac・Windows PowerShellの手順を追加
+
+### 判断したこと
+- 「Engineだけtokenを設定してCLIで叩けない」ハマりが起きやすいので、初期設定側で明示的に空にしてもらう方針
+- token有りのCLI手順はWindows PowerShellでも動くよう2例並記
+
+### 次にやること
+- TECHNICAL_DESIGN.md の実装追従 / secrets scan CI / migration fresh apply確認 の中から次を選択
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（README起動手順の整備）
 
 ### やったこと

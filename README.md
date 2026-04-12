@@ -51,9 +51,15 @@ Edit `.env.local` with the minimum required values:
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
+# Leave empty during development (token auth is disabled when not set)
+BIONIC_ENGINE_TOKEN=
+
 # Optional: Discord Webhook for digest notifications
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx
 ```
+
+> **Note**: When `BIONIC_ENGINE_TOKEN` is set, all clients (App, CLI, MCP) must use the same token.
+> For local development, leave it empty to disable authentication.
 
 ### 3. Apply database migrations
 
@@ -220,6 +226,16 @@ npx tsx packages/cli/src/index.ts approve <actionId>
 # Deny an action
 npx tsx packages/cli/src/index.ts deny <actionId>
 ```
+
+> **Note**: If `BIONIC_ENGINE_TOKEN` is set in Engine, pass the same token to CLI:
+>
+> ```bash
+> # Linux/Mac
+> BIONIC_ENGINE_TOKEN=your-token npx tsx packages/cli/src/index.ts status
+>
+> # Windows PowerShell
+> $env:BIONIC_ENGINE_TOKEN='your-token'; npx tsx packages/cli/src/index.ts status
+> ```
 
 ---
 
