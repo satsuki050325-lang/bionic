@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-04-12 / Claude Code
+
+### やったこと
+- bionic-ops MCPサーバーを `packages/mcp` として実装した
+- 6ツール登録: `get_status` / `get_alerts` / `get_actions` / `get_events` / `get_research_items` / `run_research_digest`
+- Engine HTTP API クライアント（`lib/engineClient.ts`）と format helper を実装
+- StdioServerTransport で Claude Desktop から接続可能
+- `docs/MCP.md` を作成（セットアップ手順・claude_desktop_config 例）
+- pnpm install / typecheck / build 全成功
+
+### 判断したこと
+- MCPはSupabaseに直接接続せず、必ず Engine HTTP API を経由する（権限分離）
+- 401時はBIONIC_ENGINE_TOKEN設定を促すメッセージ
+- fetch失敗時はEngineオフライン判定し起動コマンドを案内
+- pnpm-workspace.yaml は既に `packages/*` を含むため変更不要
+
+### 未解決・既知リスク
+- Codexレビュー未実施
+- Claude Desktopでの接続実機テストは未実施
+
+### 次にやること
+- Claude Desktop 設定で接続テスト
+- Codex レビュー
+
+---
+
 ## 2026-04-12 / Claude
 
 ### やったこと
