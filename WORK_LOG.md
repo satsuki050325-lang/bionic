@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-12 / Claude
+
+### やったこと
+- Discord Botをpackages/engine/src/discord/に実装した
+- alert新規作成時にshouldNotify判定を経由してDiscord通知を結線した
+- digest通知をDiscord.js経由に移行した（Bot未起動時はWebhook継続）
+- allowlist未設定時はfail-closedにした
+- Bot通知失敗時はdigest job自体をfailedにしない設計にした
+- actions/service.tsを作成してapproveAction/denyActionを切り出した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- Discord承認ボタンは補助手段（正式承認導線はCLI/App）
+- BIONIC_DISCORD_APPROVER_IDS未設定時はfail-closed（全員拒否）
+- Bot通知失敗はnotify_discord actionをfailedにしてjobはneeds_reviewにする
+- sendApprovalNotificationの結線はpending_approval action実装時に追加する
+
+### 未解決・既知リスク
+- sendApprovalNotificationはpending_approval action生成時に結線が必要
+
+### 次にやること
+- Discord Botの動作確認
+
+---
+
 ## 2026-04-12 / Claude Code（Digest Bot通知失敗時の状態分離）
 
 ### やったこと

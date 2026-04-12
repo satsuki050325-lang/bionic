@@ -101,6 +101,13 @@
 - policies/approval.ts実装（48h auto-cancel）
 - engine_alertsにlast_notified_at・notification_count追加
 - Codexレビュー完了・P1/P2 finding全修正済み
+- Discord Bot実装（packages/engine/src/discord/）
+- alert新規作成時のDiscord通知結線（shouldNotify判定あり）
+- digest通知のDiscord.js移行（Bot未起動時はWebhook継続）
+- allowlist fail-closed実装
+- Bot通知失敗時のjob状態分離
+- actions/service.ts実装（approveAction/denyAction）
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -112,20 +119,19 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- Discord Bot
-- CLI
+- CLI拡張
 
 ---
 
 ## 次の1手
 
 ### 今すぐやること
-- Discord Bot実装
+- Discord Botの動作確認
 
 ### done条件
-- [ ] Discord Botが常駐してスラッシュコマンドを受け付ける
-- [ ] アラート確認・承認操作がDiscordからできる
-- [ ] policies/notificationと結線されている
+- [ ] BIONIC_DISCORD_BOT_TOKEN設定でBotが起動する
+- [ ] テストalertを発火してDiscordチャンネルに通知される
+- [ ] 承認ボタン（Approve/Deny）がengine_actionsを更新する
 
 ---
 
@@ -142,7 +148,8 @@ RLS / Security設計（完了）
 最小テスト追加（完了）
 Deploy→Watch→Alert（完了）
 bionic-ops MCPサーバー（packages/mcp として独立）（完了）
-Discord Bot（Phase 2後半）（今ここ）
+Discord Bot（Phase 2後半）（完了）
+Discord Bot動作確認（今ここ）
 
 
 ---
@@ -163,6 +170,7 @@ Discord Bot（Phase 2後半）（今ここ）
 - Discord Bot常駐・外部API監視・LLM要約が増えるとコストが発生する（今は実質$0）
 - GitHub ActionsでCI（typecheck/build）を必須化していない
 - SECURITY_RELEASE_CHECKLIST.mdがまだない
+- sendApprovalNotificationはpending_approval action生成時に結線が必要（将来タスク）
 
 ---
 
