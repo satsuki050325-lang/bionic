@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-12 / Claude
+
+### やったこと
+- bionic-ops MCPサーバーをpackages/mcpとして実装した
+- Claude Desktop登録・動作確認を完了した
+- 「Bionicのステータスを見せて」でEngine状態・アラート一覧を取得できることを確認した
+- Codexレビュー完了・P1 finding全修正済み
+
+### 判断したこと
+- approve_action/deny_actionはPhase 1.5では含めない（承認はCLI/Appで行う思想を維持）
+- tool出力は英語（英語市場メイン）
+- Claude Desktop設定はdocs/MCP.mdに記載
+- WindowsのMSIXインストーラーでは設定ファイルのパスが異なる
+  （%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\）
+
+### 次にやること
+- Discord Bot実装（Phase 2後半）
+
+---
+
 ## 2026-04-12 / Claude Code（MCP P1 finding修正）
 
 ### やったこと

@@ -91,6 +91,10 @@
 - Codexレビュー完了・P1/P2 finding全修正済み
 - Deploy→Watch→Alert動作確認完了（ngrok + curl）
 - Webhook受信・署名検証・deployment保存を確認
+- bionic-ops MCPサーバー実装（packages/mcp）
+- Claude Desktop登録・動作確認完了
+- 6ツール（get_status/get_alerts/get_actions/get_events/get_research_items/run_research_digest）
+- Codexレビュー完了・P1 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -102,7 +106,6 @@
 - RLS：本番前ゲートとして設計を早めに固める
 
 ### 未着手（Phase 2）
-- bionic-ops MCPサーバー（packages/mcp）
 - Discord Bot
 - CLI
 
@@ -111,11 +114,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- bionic-ops MCPサーバー（packages/mcp として独立）
+- Discord Bot実装（Phase 2後半）
 
 ### done条件
-- [ ] packages/mcp として独立パッケージが存在する
-- [ ] Claude Desktopから接続できる
+- [ ] Discord Botが常駐してスラッシュコマンドを受け付ける
+- [ ] アラート確認・承認操作がDiscordからできる
 
 ---
 
@@ -131,8 +134,8 @@ Recent Events表示（完了）
 RLS / Security設計（完了）
 最小テスト追加（完了）
 Deploy→Watch→Alert（完了）
-bionic-ops MCPサーバー（packages/mcp として独立）（今ここ）
-Discord Bot（Phase 2後半）
+bionic-ops MCPサーバー（packages/mcp として独立）（完了）
+Discord Bot（Phase 2後半）（今ここ）
 
 
 ---
