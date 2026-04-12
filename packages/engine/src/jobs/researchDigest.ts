@@ -29,31 +29,35 @@ export function getWeeklyDigestKey(date: Date, timezone: string): string {
 export async function enqueueResearchDigestJob(params: {
   projectId: string
   requestedBy: string
-  dedupeKey: string
+  dedupeKey?: string
 }): Promise<{ created: boolean; jobId?: string }> {
+  const insertPayload: Record<string, unknown> = {
+    project_id: params.projectId,
+    type: 'research_digest',
+    status: 'pending',
+    requested_by: params.requestedBy,
+    payload: {},
+  }
+  if (params.dedupeKey) {
+    insertPayload.dedupe_key = params.dedupeKey
+  }
+
   const { data, error } = await supabase
     .from('engine_jobs')
-    .insert({
-      project_id: params.projectId,
-      type: 'research_digest',
-      status: 'pending',
-      requested_by: params.requestedBy,
-      payload: {},
-      dedupe_key: params.dedupeKey,
-    })
+    .insert(insertPayload)
     .select('id')
     .single()
 
   if (error) {
     if (error.code === '23505') {
-      console.log(`[scheduler] digest job already exists for ${params.dedupeKey}`)
+      console.log(`[scheduler] digest job already exists for ${params.dedupeKey ?? '(no dedupe)'}`)
       return { created: false }
     }
     console.error('[scheduler] failed to enqueue job:', error)
     return { created: false }
   }
 
-  console.log(`[scheduler] digest job created: ${data.id} (${params.dedupeKey})`)
+  console.log(`[scheduler] digest job created: ${data.id} (${params.dedupeKey ?? 'no-dedupe'})`)
   return { created: true, jobId: data.id }
 }
 

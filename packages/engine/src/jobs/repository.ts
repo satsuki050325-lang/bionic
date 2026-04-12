@@ -34,7 +34,6 @@ export async function markJobNeedsReview(jobId: string, reason?: string): Promis
     .update({
       status: 'needs_review',
       resolution_reason: reason ?? null,
-      completed_at: new Date().toISOString(),
     })
     .eq('id', jobId)
   if (error) console.error('[jobs/repository] markJobNeedsReview failed:', error)

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import type { RunJobResult } from '@bionic/shared'
-import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDigest.js'
+import { enqueueResearchDigestJob } from '../jobs/researchDigest.js'
 import { runJob } from '../jobs/runner.js'
 
 export const jobsRouter = Router()
@@ -27,12 +27,11 @@ jobsRouter.post('/', async (req, res) => {
   }
 
   const targetProjectId = projectId ?? 'project_bionic'
-  const dk = dedupeKey ?? getWeeklyDigestKey(new Date(), 'Asia/Tokyo')
 
   const result = await enqueueResearchDigestJob({
     projectId: targetProjectId,
     requestedBy,
-    dedupeKey: dk,
+    dedupeKey,
   })
 
   if (!result.created || !result.jobId) {

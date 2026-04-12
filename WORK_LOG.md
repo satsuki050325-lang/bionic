@@ -3,6 +3,27 @@
 
 ---
 
+## 2026-04-12 / Claude Code（Engine責務分離 finding修正）
+
+### やったこと
+- `routes/jobs.ts`: `dedupeKey` 未指定時は補完せず `undefined` のまま渡す
+- `jobs/researchDigest.ts#enqueueResearchDigestJob`: `dedupeKey` を optional 化し、未指定時は insert payload から `dedupe_key` を除外
+- `jobs/repository.ts#markJobNeedsReview`: `completed_at` を削除（中間状態）
+- `policies/notification.ts#getQuietHoursConfig`: `parseHour` で 0-23 範囲バリデーションを追加し、不正値はデフォルトにフォールバック
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- dedupe は caller（scheduler）側の責務。HTTP API は明示指定がなければ dedupe を強制しない
+- needs_review は人間の確認待ち状態なので completed_at を打刻しない
+
+### 未解決・既知リスク
+- なし
+
+### 次にやること
+- Discord Bot 実装で policies/notification を結線
+
+---
+
 ## 2026-04-12 / Claude Code（Engine責務分離 + 通知ポリシー）
 
 ### やったこと

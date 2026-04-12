@@ -19,9 +19,21 @@ export interface NotificationPolicyInput {
 }
 
 function getQuietHoursConfig() {
+  const parseHour = (value: string | undefined, defaultValue: number): number => {
+    if (!value) return defaultValue
+    const parsed = parseInt(value, 10)
+    if (isNaN(parsed) || parsed < 0 || parsed > 23) {
+      console.warn(
+        `[notification-policy] invalid hour value: "${value}". Using default: ${defaultValue}`
+      )
+      return defaultValue
+    }
+    return parsed
+  }
+
   return {
-    start: parseInt(process.env.BIONIC_QUIET_HOURS_START ?? '23', 10),
-    end: parseInt(process.env.BIONIC_QUIET_HOURS_END ?? '7', 10),
+    start: parseHour(process.env.BIONIC_QUIET_HOURS_START, 23),
+    end: parseHour(process.env.BIONIC_QUIET_HOURS_END, 7),
     timezone: process.env.BIONIC_QUIET_HOURS_TIMEZONE ?? 'Asia/Tokyo',
   }
 }
