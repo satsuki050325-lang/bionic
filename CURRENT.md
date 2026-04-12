@@ -119,6 +119,8 @@
 - Engine内のprocess.env直読みを全て廃止
 - config.test.ts 36件通過（validateConfigForStartup・redactConfig含む）
 - Codexレビュー完了・P1/P2 finding全修正済み
+- pnpm verify追加（typecheck + engine test + app build一発実行）
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -137,11 +139,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 1.8: pnpm verify追加（typecheck + engine test + app build を一発実行）
+- Phase 1.8: README起動手順の整備
 
 ### done条件
-- [ ] `pnpm verify` が単一コマンドで typecheck / engine test / app build を実行する
-- [ ] いずれかが失敗したら verify 全体が失敗する
+- [ ] READMEに最小起動手順・Discord Botあり・MCPあり・Vercel webhook/ngrokありの各パターンが記載されている
 
 ---
 
@@ -163,7 +164,8 @@ Discord Bot動作確認（完了）
 SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（完了）
 ロードマップ確定（完了）
 Phase 1.8: config.ts導入（完了）
-Phase 1.8: pnpm verify追加（今ここ）
+Phase 1.8: pnpm verify追加（完了）
+Phase 1.8: README起動手順の整備（今ここ）
 
 
 ---

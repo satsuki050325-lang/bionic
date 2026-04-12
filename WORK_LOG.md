@@ -25,6 +25,20 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- pnpm verifyをroot package.jsonに追加した
+- typecheck + engine test + app buildを一発実行できるようにした
+- CIのci.ymlと整合していることをCodexで確認した
+
+### 次にやること
+- README起動手順の整備
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（pnpm verify追加）
 
 ### やったこと
