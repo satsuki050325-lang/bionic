@@ -71,6 +71,37 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.0 finding修正）
+
+### やったこと
+- Migration `20260413000001_jobs_updated_at.sql` 追加（`transitionJobStatus` が書く `updated_at` をDBに存在させる）
+- `scheduler/index.ts`: `triggerWeeklyDigest` / `catchUpMissedSchedules` を enqueue のみに変更。`runPendingJobs` が拾う前提にして二重実行と scheduler内での同期実行を排除（`runJob` import削除）
+- `runners/approvedActions.ts`: 承認済み retry_job 実行前に元job検証を追加（`jobId` 必須 / 存在 / status ∈ [failed, needs_review] / type一致）。失敗時は理由付きで action を failed に遷移
+- `discord/notifications.ts`: `sendApprovalNotificationViaWebhook` / `sendAlertNotificationViaWebhook` を追加（Bot未起動時のfallback用、booleanで送信成否を返す）
+- `runners/approvals.ts`: Bot → Webhook の順で fallback、`notified=true` のときのみ `last_notified_at` / `notification_count` を更新
+- `runners/alertReminders.ts`: 同じく fallback と conditional update。`discordClient` / `config` はループ外で1度だけ取得
+- `pnpm verify` 全通過（typecheck 6/6・test 36/36・app build 成功）
+
+### 判断したこと
+- cron からの同期実行をやめると retryやbackoffの責務が `runPendingJobs` に集約され、状態遷移の正が1箇所に集まる
+- approvedActions は claim 前に検証することで「invalid retry → running → failed」という余分な遷移を回避（validation-then-claim の順）
+- notified boolean は Bot の内部catchで false を返さない既存の `sendApprovalNotification` の制約があるため、Botパスは `try/catch` でwrap。Webhookパスは `res.ok` ベースの明確な真偽を返す
+- `sendAlertNotification` は内部でDB書き込み（last_notified_at）を既に行うが、今回のreminder pathでも外側から明示的に更新して冪等性を担保（Botが内部更新した場合は同じ値を上書きするだけで害はない）
+
+### Supabase適用用SQL
+
+```sql
+alter table public.engine_jobs
+  add column if not exists updated_at timestamptz not null default now();
+```
+
+### 次にやること
+- Codexレビュー
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.0 - Runner / Policy / Approval）
 
 ### やったこと

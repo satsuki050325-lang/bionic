@@ -3,11 +3,17 @@ import { shouldNotify } from '../policies/notification.js'
 import { evaluateApprovalLifecycle } from '../policies/approval.js'
 import { transitionActionStatus } from '../actions/state.js'
 import { getDiscordClient } from '../discord/index.js'
-import { sendApprovalNotification } from '../discord/notifications.js'
+import {
+  sendApprovalNotification,
+  sendApprovalNotificationViaWebhook,
+} from '../discord/notifications.js'
+import { getConfig } from '../config.js'
 import type { EngineAction } from '@bionic/shared'
 
 export async function runStaleApprovalCheck(): Promise<void> {
   const now = new Date()
+  const config = getConfig()
+  const discordClient = getDiscordClient()
 
   const { data: actions, error } = await supabase
     .from('engine_actions')
@@ -47,11 +53,25 @@ export async function runStaleApprovalCheck(): Promise<void> {
 
     if (!notifyDecision.shouldNotify) continue
 
-    const discordClient = getDiscordClient()
-    if (discordClient) {
-      const engineAction = action as unknown as EngineAction
-      void sendApprovalNotification(discordClient, engineAction)
+    const engineAction = action as unknown as EngineAction
+    let notified = false
 
+    if (discordClient) {
+      try {
+        await sendApprovalNotification(discordClient, engineAction)
+        notified = true
+      } catch (err) {
+        console.error('[runners/approvals] Bot notification failed:', err)
+        notified = false
+      }
+    } else if (config.discord.webhookUrl) {
+      notified = await sendApprovalNotificationViaWebhook(
+        config.discord.webhookUrl,
+        engineAction
+      )
+    }
+
+    if (notified) {
       await supabase
         .from('engine_actions')
         .update({

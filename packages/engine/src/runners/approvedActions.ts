@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 import { transitionActionStatus } from '../actions/state.js'
 import { enqueueResearchDigestJob } from '../jobs/researchDigest.js'
-import { runJob } from '../jobs/runner.js'
 
 export async function runApprovedActions(): Promise<void> {
   const { data: actions, error } = await supabase
@@ -24,7 +23,53 @@ export async function runApprovedActions(): Promise<void> {
     const originalJobId = input['jobId'] as string | undefined
 
     if (retryType !== 'research_digest') {
-      console.warn(`[runners/approvedActions] unknown retryType: ${retryType}`)
+      await transitionActionStatus(actionId, {
+        to: 'failed',
+        error: { reason: `unknown retryType: ${retryType}` },
+      })
+      continue
+    }
+
+    if (!originalJobId) {
+      await transitionActionStatus(actionId, {
+        to: 'failed',
+        error: { reason: 'input.jobId is required for retry_job' },
+      })
+      continue
+    }
+
+    const { data: originalJob, error: jobError } = await supabase
+      .from('engine_jobs')
+      .select('id, type, status, project_id')
+      .eq('id', originalJobId)
+      .maybeSingle()
+
+    if (jobError || !originalJob) {
+      await transitionActionStatus(actionId, {
+        to: 'failed',
+        error: { reason: `original job not found: ${originalJobId}` },
+      })
+      continue
+    }
+
+    const retryableStatuses = ['failed', 'needs_review']
+    if (!retryableStatuses.includes(originalJob['status'] as string)) {
+      await transitionActionStatus(actionId, {
+        to: 'failed',
+        error: {
+          reason: `original job status is not retryable: ${originalJob['status']}`,
+        },
+      })
+      continue
+    }
+
+    if (originalJob['type'] !== retryType) {
+      await transitionActionStatus(actionId, {
+        to: 'failed',
+        error: {
+          reason: `job type mismatch: expected ${retryType}, got ${originalJob['type']}`,
+        },
+      })
       continue
     }
 
@@ -50,14 +95,10 @@ export async function runApprovedActions(): Promise<void> {
         continue
       }
 
-      void runJob(result.jobId, 'research_digest', row['project_id'] as string)
-
-      if (originalJobId) {
-        await supabase
-          .from('engine_jobs')
-          .update({ resolution_reason: `retried as ${result.jobId}` })
-          .eq('id', originalJobId)
-      }
+      await supabase
+        .from('engine_jobs')
+        .update({ resolution_reason: `retried as ${result.jobId}` })
+        .eq('id', originalJobId)
 
       await transitionActionStatus(actionId, {
         to: 'succeeded',

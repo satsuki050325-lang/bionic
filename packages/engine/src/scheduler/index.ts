@@ -1,7 +1,7 @@
 import cron from 'node-cron'
 import { DateTime } from 'luxon'
 import { enqueueResearchDigestJob, getWeeklyDigestKey } from '../jobs/researchDigest.js'
-import { runJob, runPendingJobs } from '../jobs/runner.js'
+import { runPendingJobs } from '../jobs/runner.js'
 import { supabase } from '../lib/supabase.js'
 import { evaluateWatchingDeployments } from '../decisions/deploymentWatch.js'
 import { getConfig } from '../config.js'
@@ -65,8 +65,8 @@ async function triggerWeeklyDigest(overrideDedupeKey?: string): Promise<void> {
     dedupeKey,
   })
 
-  if (result.created && result.jobId) {
-    void runJob(result.jobId, 'research_digest', config.projectId)
+  if (result.created) {
+    console.log(`[scheduler] digest job enqueued: ${result.jobId}. runPendingJobs will pick it up.`)
   }
 }
 

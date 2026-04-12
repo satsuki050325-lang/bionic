@@ -75,6 +75,46 @@ export async function sendDigestNotification(
   }
 }
 
+export async function sendApprovalNotificationViaWebhook(
+  webhookUrl: string,
+  action: EngineAction
+): Promise<boolean> {
+  try {
+    const payload = {
+      content: `⏳ **Approval Required**: ${action.title}\nType: ${action.type} | ID: \`${action.id}\`\nApprove via CLI: \`bionic approve ${action.id}\``,
+    }
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+export async function sendAlertNotificationViaWebhook(
+  webhookUrl: string,
+  alert: Alert
+): Promise<boolean> {
+  try {
+    const severityEmoji =
+      alert.severity === 'critical' ? '🔴' : alert.severity === 'warning' ? '🟡' : '🔵'
+    const payload = {
+      content: `${severityEmoji} **[${alert.severity.toUpperCase()}] ${alert.title}**\n${alert.message}\nService: ${alert.serviceId ?? 'unknown'} | Count: ${alert.count ?? 1}`,
+    }
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 export async function sendApprovalNotification(
   client: Client,
   action: EngineAction
