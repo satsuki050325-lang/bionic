@@ -107,9 +107,10 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
     }))
 
     const discordClient = getDiscordClient()
+    const transport: 'discord_bot' | 'webhook' = discordClient ? 'discord_bot' : 'webhook'
     let notifyResult: 'sent' | 'skipped' | 'misconfigured' | 'failed'
     if (discordClient) {
-      const botResult = await sendDigestNotification(
+      notifyResult = await sendDigestNotification(
         discordClient,
         mappedItems.map((i) => ({
           title: i.title,
@@ -118,14 +119,36 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
         })),
         projectId
       )
-      notifyResult = botResult === 'failed' ? 'misconfigured' : botResult
     } else {
       notifyResult = await notifyDigest({ projectId, items: mappedItems })
     }
 
+    // Bot通知失敗: notify_discord actionをfailed、digest job本体はneeds_reviewにする
+    if (notifyResult === 'failed' && transport === 'discord_bot') {
+      if (notifyActionId) {
+        await failAction(notifyActionId, {
+          reason: 'Discord Bot notification failed',
+          transport,
+        })
+      }
+      await markJobNeedsReview(jobId, 'Discord Bot notification failed')
+      if (actionId) {
+        await completeAction(actionId, {
+          result: 'bot_notify_failed',
+          itemCount: items?.length ?? 0,
+          notifyTransport: transport,
+        })
+      }
+      return
+    }
+
     if (notifyResult === 'sent') {
       if (notifyActionId) {
-        await completeAction(notifyActionId, { result: 'sent', itemCount: items?.length ?? 0 })
+        await completeAction(notifyActionId, {
+          result: 'sent',
+          itemCount: items?.length ?? 0,
+          transport,
+        })
       }
     } else if (notifyResult === 'skipped') {
       if (notifyActionId) {
@@ -137,6 +160,7 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
           reason: notifyResult === 'misconfigured'
             ? 'DISCORD_WEBHOOK_URL not configured'
             : 'notify failed',
+          transport,
         })
       }
     }

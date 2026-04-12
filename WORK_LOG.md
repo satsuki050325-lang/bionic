@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-12 / Claude Code（Digest Bot通知失敗時の状態分離）
+
+### やったこと
+- `jobs/researchDigest.ts`: Bot通知失敗を `misconfigured` に押し込まず `'failed'` のまま保持
+- transport（`discord_bot` / `webhook`）を action の result/error に記録
+- Bot通知失敗時: `notify_discord` action を `failAction`、`markJobNeedsReview(jobId)`、`run_research_digest` action は `result='bot_notify_failed'` で `completeAction` → 早期 return
+- Webhook `misconfigured` の既存パス（job failed）は維持
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- Bot通知失敗は一過性のネットワーク/Discord API 障害の可能性が高いため job 全体を failed にせず needs_review にして人間の確認を促す
+- Webhook 未設定は構成ミスなので失敗状態を維持
+
+### 未解決・既知リスク
+- needs_review 状態の job を再実行する UI/CLI は未実装
+
+### 次にやること
+- needs_review job 再実行導線
+- pending_approval を生成する action 設計
+
+---
+
 ## 2026-04-12 / Claude Code（Discord Bot P1 finding修正）
 
 ### やったこと
