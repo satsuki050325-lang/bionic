@@ -54,6 +54,27 @@
 
 ---
 
+## 2026-04-13 / Claude（TECHNICAL_DESIGN.md P2 finding修正）
+
+### やったこと
+- BionicEngineService の例を現状のshared型（captureEvent / getStatus / listAlerts / runJob）に合わせて4メソッドに訂正。approveAction / retryAction は内部実装として補足
+- projects / services テーブルを「将来のmulti-tenant対応として予定」セクションに分離（現在は `project_bionic` 固定 + `service_id` 文字列運用）
+- client_event_id を「再送の検知・検索用index」と正確に記述し、UNIQUE化 + 409/upsert方針を将来タスクとして明記
+- engine_alerts.type を `service_health / service_error / research_digest / job_failure / deployment_regression` に訂正
+- engine_actions.type / status / mode を shared 型の値に揃えた（status: pending / running / succeeded / failed / skipped / pending_approval / approved / denied / cancelled）
+- deployments.watch_status を `pending / watching / alerted / completed / failed` に訂正、`error_increase_percent` を追加
+
+### 判断したこと
+- 実装は変更せずドキュメントのみを正に合わせる
+- projects / services は「予定あり」であることは残し、実装済みテーブル一覧と混ぜない
+
+### 次にやること
+- secrets scan CI追加 / migration fresh apply確認
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（TECHNICAL_DESIGN.mdの実装追従）
 
 ### やったこと
