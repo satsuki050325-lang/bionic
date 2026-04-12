@@ -3,11 +3,18 @@ import { program } from 'commander'
 import { statusCommand } from './commands/status.js'
 import { approvalsCommand } from './commands/approvals.js'
 import { approveCommand, denyCommand } from './commands/approve.js'
+import { initCommand } from './commands/init.js'
 
 program
   .name('bionic')
   .description('Bionic Engine CLI')
   .version('0.0.1')
+
+program
+  .command('init')
+  .description('Create .env.local for Bionic')
+  .option('--force', 'Overwrite existing .env.local without confirmation')
+  .action((options: { force?: boolean }) => initCommand(options))
 
 program
   .command('status')

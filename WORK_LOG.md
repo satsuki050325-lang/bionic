@@ -71,6 +71,28 @@
 
 ---
 
+## 2026-04-13 / Claude（bionic init最小実装）
+
+### やったこと
+- `packages/cli/src/lib/prompts.ts` を新規作成（readline/promisesベースのask/askYesNo/askChoice/closeReadline）
+- `packages/cli/src/lib/envFile.ts` を新規作成（findRepoRoot/generateToken/generateWebhookSecret/buildEnvContent/writeEnvFile/envFileExists）
+- `packages/cli/src/commands/init.ts` を新規作成（Supabase→Engine→Scheduler→Discord→Vercelの対話フロー、Summary表示でsecretは `[set]` に伏せる）
+- `packages/cli/src/index.ts` に `init --force` を追加
+- `pnpm typecheck` 全通過。`npx tsx packages/cli/src/index.ts init --help` が期待どおり表示されることを確認
+
+### 判断したこと
+- 既存.env.localはmergeせず上書き確認のみ（設定の混在を避ける・`--force` で抑止可能）
+- BIONIC_ENGINE_TOKEN・VERCEL_WEBHOOK_SECRETはnode:cryptoで自動生成（ユーザーに入力させない）
+- Discord未設定（skip）はコメントアウト行で出力し、あとから手で有効化しやすくする
+- secretはSummaryで `[set]` / `[auto-generated]` 表示、画面とログに実値を出さない
+
+### 次にやること
+- Phase 2.1: Appオンボーディング画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと
