@@ -89,6 +89,8 @@
 - 5分ごとのdeployment watch scheduler
 - deployment_regression alert生成
 - Codexレビュー完了・P1/P2 finding全修正済み
+- Deploy→Watch→Alert動作確認完了（ngrok + curl）
+- Webhook受信・署名検証・deployment保存を確認
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -109,12 +111,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Deploy→Watch→Alert動作確認（ngrok + Vercel Webhook設定）
+- bionic-ops MCPサーバー（packages/mcp として独立）
 
 ### done条件
-- [ ] ngrokトンネル経由でVercel Webhookを受信できる
-- [ ] deploymentsテーブルにレコードが入る
-- [ ] watch期間中にerror件数が記録される
+- [ ] packages/mcp として独立パッケージが存在する
+- [ ] Claude Desktopから接続できる
 
 ---
 

@@ -6,6 +6,22 @@
 ## 2026-04-12 / Claude
 
 ### やったこと
+- Deploy→Watch→Alertの動作確認を完了した
+- ngrok + curlでWebhook受信・署名検証・deployment保存を確認した
+- Engineログで「deployment saved: dpl_test123 watching until ...」を確認した
+
+### 判断したこと
+- ngrok無料プランで動作確認は十分できた
+- Vercel ProプランなしでもcurlでWebhookをシミュレートできる
+
+### 次にやること
+- bionic-ops MCPサーバー（packages/mcp として独立）
+
+---
+
+## 2026-04-12 / Claude
+
+### やったこと
 - Deploy→Watch→Alertを実装した
 - deploymentsテーブルを作成した（RLS有効化済み）
 - Vercel Webhook受信（HMAC-SHA1署名検証・raw body処理）を実装した
