@@ -14,8 +14,8 @@ const WEBHOOK_SECRET = process.env.VERCEL_WEBHOOK_SECRET
 
 function verifySignature(rawBody: Buffer, signature: string): boolean {
   if (!WEBHOOK_SECRET) {
-    console.warn('[vercel-webhook] VERCEL_WEBHOOK_SECRET not set. Skipping verification.')
-    return true
+    console.error('[vercel-webhook] VERCEL_WEBHOOK_SECRET is not set. Rejecting request.')
+    return false
   }
   const expected = crypto
     .createHmac('sha1', WEBHOOK_SECRET)

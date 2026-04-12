@@ -38,4 +38,4 @@ create index if not exists deployments_watch_status_idx
 create index if not exists deployments_project_service_ready_idx
   on public.deployments(project_id, service_id, ready_at desc);
 
-alter table public.deployments disable row level security;
+alter table public.deployments enable row level security;

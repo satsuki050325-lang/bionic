@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-04-12 / Claude Code（finding修正）
+
+### やったこと
+- Deploy→Watch→Alert P1/P2 finding 4件修正
+  - vercel webhook: `VERCEL_WEBHOOK_SECRET` 未設定時は常時401（開発例外を撤去）
+  - migration: `deployments` テーブルRLSを `enable` に変更
+  - deploymentWatch: alert判定を監視終了チェックの前に移動（境界時点でも発火するように）
+  - deploymentWatch: error count取得・update・alert後update のDBエラーを捕捉して `watch_status='failed'` に遷移
+  - alert発火処理を `createDeploymentRegressionAlert` に切り出し
+- 不要だった `evaluateAlertForEvent` / `EngineEvent` import削除
+- pnpm typecheck 全通過 / pnpm --filter @bionic/engine test 全20通過
+
+### 判断したこと
+- secret未設定時に通すと本番混入リスクが大きすぎるため開発でも拒否する方針に統一
+- alert後のdeployments update失敗時は alert は残したまま `failed` に遷移させ、次回ループで重複alertを生まないようにする
+
+### 未解決・既知リスク
+- 既存DBに対しては手動で `alter table public.deployments enable row level security;` を実行する必要がある
+
+### 次にやること
+- bionic-ops MCPサーバー（packages/mcp）
+
+---
+
 ## 2026-04-12 / Claude Code
 
 ### やったこと

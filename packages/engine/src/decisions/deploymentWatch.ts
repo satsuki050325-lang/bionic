@@ -1,7 +1,5 @@
 import { supabase } from '../lib/supabase.js'
 import { createAction, completeAction, failAction } from '../actions/logAction.js'
-import { evaluateAlertForEvent } from './alerts.js'
-import type { EngineEvent } from '@bionic/shared'
 
 const ERROR_THRESHOLD_COUNT = 5
 const ERROR_THRESHOLD_PERCENT = 200
@@ -34,7 +32,7 @@ async function evaluateSingleDeployment(
   const serviceId = deployment.service_id as string
   const readyAt = new Date(deployment.ready_at as string)
 
-  const { count: postDeployCount } = await supabase
+  const { count: postDeployCount, error: countError } = await supabase
     .from('engine_events')
     .select('id', { count: 'exact', head: true })
     .eq('project_id', projectId)
@@ -42,6 +40,15 @@ async function evaluateSingleDeployment(
     .eq('type', 'service.error.reported')
     .gte('created_at', readyAt.toISOString())
     .lte('created_at', now.toISOString())
+
+  if (countError) {
+    console.error('[deploymentWatch] failed to count errors:', countError)
+    await supabase
+      .from('deployments')
+      .update({ watch_status: 'failed', updated_at: now.toISOString() })
+      .eq('id', deployment.id)
+    return
+  }
 
   const baselineCount = deployment.baseline_error_count as number
   const currentCount = postDeployCount ?? 0
@@ -56,7 +63,7 @@ async function evaluateSingleDeployment(
     )
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('deployments')
     .update({
       current_error_count: currentCount,
@@ -64,6 +71,32 @@ async function evaluateSingleDeployment(
       updated_at: now.toISOString(),
     })
     .eq('id', deployment.id)
+
+  if (updateError) {
+    console.error('[deploymentWatch] failed to update deployment:', updateError)
+  }
+
+  const shouldAlert =
+    currentCount >= ERROR_THRESHOLD_COUNT &&
+    (baselineCount === 0
+      ? currentCount >= ERROR_THRESHOLD_COUNT
+      : increasePercent !== null &&
+        increasePercent >= ERROR_THRESHOLD_PERCENT)
+
+  const alreadyAlerted = (deployment.alert_id as string | null) !== null
+
+  if (shouldAlert && !alreadyAlerted) {
+    await createDeploymentRegressionAlert({
+      deployment,
+      projectId,
+      serviceId,
+      currentCount,
+      baselineCount,
+      increasePercent,
+      elapsedMinutes,
+      now,
+    })
+  }
 
   if (now >= watchUntil) {
     await supabase
@@ -76,27 +109,30 @@ async function evaluateSingleDeployment(
     console.log(
       `[deploymentWatch] watch completed: ${deployment.provider_deployment_id as string}`
     )
-    return
   }
+}
 
-  const shouldAlert =
-    currentCount >= ERROR_THRESHOLD_COUNT &&
-    (baselineCount === 0
-      ? currentCount >= ERROR_THRESHOLD_COUNT
-      : increasePercent !== null &&
-        increasePercent >= ERROR_THRESHOLD_PERCENT)
+async function createDeploymentRegressionAlert(params: {
+  deployment: Record<string, unknown>
+  projectId: string
+  serviceId: string
+  currentCount: number
+  baselineCount: number
+  increasePercent: number | null
+  elapsedMinutes: number
+  now: Date
+}): Promise<void> {
+  const {
+    deployment, projectId, serviceId,
+    currentCount, baselineCount, increasePercent, elapsedMinutes, now,
+  } = params
 
-  if (!shouldAlert) return
-
-  if ((deployment.alert_id as string | null) !== null) return
-
+  const deploymentId = deployment.provider_deployment_id as string
   const severity =
-    currentCount >= 10 &&
-    (increasePercent === null || increasePercent >= 300)
+    currentCount >= 10 && (increasePercent === null || increasePercent >= 300)
       ? 'critical'
       : 'warning'
 
-  const deploymentId = deployment.provider_deployment_id as string
   const title = `${serviceId} errors increased after deploy`
   const message =
     baselineCount === 0
@@ -112,34 +148,9 @@ async function evaluateSingleDeployment(
     serviceId,
     type: 'evaluate_deployment_watch',
     title: `Evaluate deployment watch: ${deploymentId}`,
-    input: {
-      deploymentId,
-      baselineCount,
-      currentCount,
-      increasePercent,
-      elapsedMinutes,
-    },
+    input: { deploymentId, baselineCount, currentCount, increasePercent, elapsedMinutes },
     requestedBy: 'scheduler',
   })
-
-  const _syntheticEvent: EngineEvent = {
-    id: `synthetic_dw_${deployment.id as string}`,
-    projectId,
-    serviceId,
-    type: 'service.error.reported',
-    source: 'engine',
-    occurredAt: now.toISOString(),
-    payload: {
-      code: 'DEPLOYMENT_REGRESSION',
-      message,
-      deploymentId,
-      baselineCount,
-      currentCount,
-      increasePercent,
-    },
-  }
-  void _syntheticEvent
-  void evaluateAlertForEvent
 
   const { data: alertData, error: alertError } = await supabase
     .from('engine_alerts')
@@ -164,7 +175,7 @@ async function evaluateSingleDeployment(
     return
   }
 
-  await supabase
+  const { error: alertUpdateError } = await supabase
     .from('deployments')
     .update({
       alert_id: alertData.id,
@@ -172,6 +183,16 @@ async function evaluateSingleDeployment(
       updated_at: now.toISOString(),
     })
     .eq('id', deployment.id)
+
+  if (alertUpdateError) {
+    console.error('[deploymentWatch] failed to update deployment after alert:', alertUpdateError)
+    await supabase
+      .from('deployments')
+      .update({ watch_status: 'failed', updated_at: now.toISOString() })
+      .eq('id', deployment.id)
+    if (actionId) await failAction(actionId, { message: alertUpdateError.message })
+    return
+  }
 
   if (actionId) {
     await completeAction(actionId, {
