@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- config.tsを実装してEngine内のenv一元管理を実現した
+- 全10ファイルのprocess.env直読みをgetConfig()経由に置換した
+- validateConfigForStartup・redactConfigを実装した
+- config.test.ts 36件全通過を確認した
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- BOT_TOKEN+CHANNEL_IDなし時はwebhook/disabledにフォールバック（起動拒否しない）
+- VERCEL_WEBHOOK_SECRET未設定時はrouteだけ401（起動拒否しない）
+- singletonで起動時固定・テスト用はloadConfig(env)を使う
+- zodは使わない（独自バリデーションで十分）
+
+### 次にやること
+- pnpm verify追加
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（config.ts P1/P2 finding修正）
 
 ### やったこと
