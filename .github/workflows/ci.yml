@@ -71,3 +71,16 @@ jobs:
         run: pnpm --filter @bionic/app build
         env:
           NEXT_PUBLIC_ENGINE_URL: http://localhost:3001
+
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

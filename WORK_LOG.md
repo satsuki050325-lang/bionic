@@ -71,6 +71,25 @@
 
 ---
 
+## 2026-04-13 / Claude（secrets scan CI追加）
+
+### やったこと
+- `.github/workflows/ci.yml` に `secrets-scan` ジョブを追加（gitleaks/gitleaks-action@v2、fetch-depth: 0）
+- `.gitleaksignore` を新規作成（`.env.example` はプレースホルダのみなので除外）
+- `docs/ROADMAP.md` の secrets scan チェックボックスを完了にマーク
+
+### 判断したこと
+- fetch-depth: 0 でfull historyをscan（過去コミットの漏洩も検出できるように）
+- `.env.example` は placeholder 値のみでリアル secret は書かない運用なので除外
+- 既存の typecheck / test / build 3ジョブは変更せず並列に追加
+
+### 次にやること
+- migration fresh apply確認（Phase 1.8の残件）
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（TECHNICAL_DESIGN.md P2 finding修正）
 
 ### やったこと
