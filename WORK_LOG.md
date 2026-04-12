@@ -3,6 +3,40 @@
 
 ---
 
+## 2026-04-12 / Claude Code（Engine責務分離 + 通知ポリシー）
+
+### やったこと
+- IDEAS.md確認: Discord Bot実装前の整理 / quiet hours / 承認stale / 通知優先度のアイデアを反映
+- `packages/engine/src/jobs/` にrunner・repository・researchDigest・typesを集約
+  - `jobs/types.ts`（EnqueueJobParams・JobExecutionResult）
+  - `jobs/repository.ts`（markJobRunning/Completed/Failed/NeedsReview）
+  - `jobs/researchDigest.ts` に `runResearchDigest` を移動し repository helper を利用
+  - `jobs/runner.ts` で type dispatch
+- `routes/jobs.ts` を HTTP受付・validation・enqueue・runner起動 のみに縮小
+  - `RunJobResult` を `{ jobId, status, message }` に再設計
+- scheduler の import を `runJob('research_digest', ...)` に変更
+- `supabase/migrations/20260412000001_alert_notification.sql`（engine_alerts に last_notified_at / notification_count 追加）
+- shared Alert 型に `lastNotifiedAt` / `notificationCount` 追加、routes/alerts.ts のマッピング更新
+- `packages/engine/src/policies/notification.ts`（quiet hours・digest・alert_created・alert_reminder・approval_stale）
+- `packages/engine/src/policies/approval.ts`（48h auto-cancel）
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- `RunJobResult` を Job ラッパーから軽量な start/skipped 応答に変更（非同期起動に合わせる）
+- Discord Bot から共通で使えるよう通知判断を純関数に分離
+- quiet hours は `BIONIC_QUIET_HOURS_START/END/TIMEZONE` で設定、critical は例外で通す
+- stale approval 閾値は 48h（IDEAS.md 24/48/72h のうち中央値を採用）
+
+### 未解決・既知リスク
+- Supabase への `20260412000001_alert_notification.sql` 手動適用が必要
+- policies のユニットテストは未追加（Discord Bot 実装時に組み込み予定）
+
+### 次にやること
+- Discord Bot 実装で policies/notification を呼び出す結線
+- policies のテスト追加
+
+---
+
 ## 2026-04-12 / Claude
 
 ### やったこと

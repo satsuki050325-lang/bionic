@@ -78,6 +78,8 @@ export interface Alert {
   fingerprint: string
   count: number
   lastSeenAt: ISODateString
+  lastNotifiedAt: ISODateString | null
+  notificationCount: number
   createdAt: ISODateString
   updatedAt: ISODateString
 }
@@ -110,7 +112,9 @@ export interface RunJobInput {
 }
 
 export interface RunJobResult {
-  job: Job
+  jobId: string | null
+  status: 'started' | 'skipped'
+  message: string
 }
 
 // ── ResearchItem ───────────────────────────────────────────────────

@@ -37,6 +37,8 @@ alertsRouter.get('/', async (req, res) => {
       fingerprint: row.fingerprint ?? '',
       count: row.count ?? 1,
       lastSeenAt: row.last_seen_at ?? row.created_at,
+      lastNotifiedAt: row.last_notified_at ?? null,
+      notificationCount: row.notification_count ?? 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     })),

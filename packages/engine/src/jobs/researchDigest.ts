@@ -1,4 +1,7 @@
 import { supabase } from '../lib/supabase.js'
+import { notifyDigest } from '../actions/notify.js'
+import { createAction, completeAction, failAction, skipAction } from '../actions/logAction.js'
+import { markJobRunning, markJobCompleted, markJobFailed, markJobNeedsReview } from './repository.js'
 
 export function getWeeklyDigestKey(date: Date, timezone: string): string {
   const formatter = new Intl.DateTimeFormat('en', {
@@ -12,7 +15,6 @@ export function getWeeklyDigestKey(date: Date, timezone: string): string {
   const month = parts.find((p) => p.type === 'month')?.value
   const day = parts.find((p) => p.type === 'day')?.value
 
-  // ISO週番号を計算する
   const localDate = new Date(`${year}-${month}-${day}`)
   const startOfYear = new Date(localDate.getFullYear(), 0, 1)
   const weekNum = Math.ceil(
@@ -43,7 +45,6 @@ export async function enqueueResearchDigestJob(params: {
     .single()
 
   if (error) {
-    // 23505 = unique violation = 今週分は作成済み
     if (error.code === '23505') {
       console.log(`[scheduler] digest job already exists for ${params.dedupeKey}`)
       return { created: false }
@@ -54,4 +55,145 @@ export async function enqueueResearchDigestJob(params: {
 
   console.log(`[scheduler] digest job created: ${data.id} (${params.dedupeKey})`)
   return { created: true, jobId: data.id }
+}
+
+export async function runResearchDigest(jobId: string, projectId: string): Promise<void> {
+  const actionId = await createAction({
+    projectId,
+    jobId,
+    type: 'run_research_digest',
+    title: 'Run weekly research digest',
+    reason: 'Scheduled weekly digest job',
+    requestedBy: 'engine',
+  })
+
+  let notifyActionId: string | null = null
+
+  try {
+    await markJobRunning(jobId)
+
+    const { data: items, error } = await supabase
+      .from('research_items')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('is_digest_sent', false)
+      .order('importance_score', { ascending: false })
+      .limit(3)
+
+    if (error) throw error
+
+    notifyActionId = await createAction({
+      projectId,
+      jobId,
+      type: 'notify_discord',
+      title: 'Send research digest to Discord',
+      reason: 'Weekly research digest notification',
+      requestedBy: 'engine',
+    })
+
+    const notifyResult = await notifyDigest({
+      projectId,
+      items: (items ?? []).map((row) => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        url: row.url ?? null,
+        source: row.source,
+        importanceScore: row.importance_score,
+      })),
+    })
+
+    if (notifyResult === 'sent') {
+      if (notifyActionId) {
+        await completeAction(notifyActionId, { result: 'sent', itemCount: items?.length ?? 0 })
+      }
+    } else if (notifyResult === 'skipped') {
+      if (notifyActionId) {
+        await skipAction(notifyActionId, 'no items to digest')
+      }
+    } else {
+      if (notifyActionId) {
+        await failAction(notifyActionId, {
+          reason: notifyResult === 'misconfigured'
+            ? 'DISCORD_WEBHOOK_URL not configured'
+            : 'notify failed',
+        })
+      }
+    }
+
+    if (notifyResult === 'sent' && items && items.length > 0) {
+      const markActionId = await createAction({
+        projectId,
+        jobId,
+        type: 'mark_digest_sent',
+        title: 'Mark research items as digest sent',
+        input: { itemIds: items.map((i: { id: string }) => i.id) },
+        requestedBy: 'engine',
+      })
+
+      const { error: markError } = await supabase
+        .from('research_items')
+        .update({ is_digest_sent: true })
+        .in('id', items.map((i: { id: string }) => i.id))
+
+      if (markError) {
+        console.error('[digest] failed to mark items as sent:', markError)
+        if (markActionId) {
+          await failAction(markActionId, { message: markError.message, code: markError.code })
+        }
+        await markJobNeedsReview(jobId, 'mark_digest_sent failed')
+        if (actionId) {
+          await completeAction(actionId, {
+            result: notifyResult,
+            itemCount: items.length,
+            markDigestSent: 'failed',
+          })
+        }
+        return
+      }
+
+      if (markActionId) {
+        await completeAction(markActionId, {
+          updatedCount: items.length,
+          itemIds: items.map((i: { id: string }) => i.id),
+        })
+      }
+
+      if (actionId) {
+        await completeAction(actionId, { result: 'sent', itemCount: items.length })
+      }
+    } else if (notifyResult === 'skipped') {
+      if (actionId) {
+        await skipAction(actionId, 'no items to digest')
+      }
+    } else if (notifyResult === 'misconfigured') {
+      if (actionId) {
+        await failAction(actionId, { reason: 'DISCORD_WEBHOOK_URL is not set' })
+      }
+    } else {
+      if (actionId) {
+        await completeAction(actionId, { result: notifyResult, itemCount: 0 })
+      }
+    }
+
+    if (notifyResult === 'misconfigured') {
+      await markJobFailed(jobId, 'DISCORD_WEBHOOK_URL is not set')
+      console.error('[digest] failed: DISCORD_WEBHOOK_URL is not set')
+    } else {
+      await markJobCompleted(jobId)
+      console.log(`[digest] completed: result=${notifyResult}`)
+    }
+  } catch (err) {
+    console.error('[digest] failed:', err)
+    if (notifyActionId) {
+      await failAction(notifyActionId, {
+        message: err instanceof Error ? err.message : 'unknown error',
+        reason: 'notifyDigest threw an exception',
+      })
+    }
+    if (actionId) {
+      await failAction(actionId, { message: String(err) })
+    }
+    await markJobFailed(jobId, err instanceof Error ? err.message : 'unknown error')
+  }
 }
