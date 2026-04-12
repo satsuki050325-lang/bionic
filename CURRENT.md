@@ -108,6 +108,8 @@
 - Bot通知失敗時のjob状態分離
 - actions/service.ts実装（approveAction/denyAction）
 - Codexレビュー完了・P1 finding全修正済み
+- Discord Bot動作確認完了
+- [CRITICAL]アラートのEmbed通知をDiscordで確認
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -126,12 +128,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- Discord Botの動作確認
+- SECURITY_RELEASE_CHECKLIST.md作成
+- GitHub Actions CI（typecheck/build必須化）
 
 ### done条件
-- [ ] BIONIC_DISCORD_BOT_TOKEN設定でBotが起動する
-- [ ] テストalertを発火してDiscordチャンネルに通知される
-- [ ] 承認ボタン（Approve/Deny）がengine_actionsを更新する
+- [ ] SECURITY_RELEASE_CHECKLIST.mdが作成され、本番リリース前の確認項目が整理されている
+- [ ] GitHub Actions CIでtypecheck/buildが必須化されている
 
 ---
 
@@ -149,7 +151,8 @@ RLS / Security設計（完了）
 Deploy→Watch→Alert（完了）
 bionic-ops MCPサーバー（packages/mcp として独立）（完了）
 Discord Bot（Phase 2後半）（完了）
-Discord Bot動作確認（今ここ）
+Discord Bot動作確認（完了）
+SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（今ここ）
 
 
 ---

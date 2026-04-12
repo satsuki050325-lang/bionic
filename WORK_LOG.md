@@ -6,6 +6,25 @@
 ## 2026-04-12 / Claude
 
 ### やったこと
+- Discord Botの動作確認を完了した
+- [CRITICAL] medini-api error reportedのEmbed通知がDiscordに届くことを確認した
+- プライベートチャンネルへのBot追加が必要だったことを確認した
+
+### 判断したこと
+- チャンネルIDとBot権限の設定が正しければ通知が届く
+- プライベートチャンネルの場合はBotをメンバーに追加する必要がある
+
+### 次にやること
+- SECURITY_RELEASE_CHECKLIST.md作成
+- GitHub Actions CI設定
+
+担当：Claude
+
+---
+
+## 2026-04-12 / Claude
+
+### やったこと
 - Discord Botをpackages/engine/src/discord/に実装した
 - alert新規作成時にshouldNotify判定を経由してDiscord通知を結線した
 - digest通知をDiscord.js経由に移行した（Bot未起動時はWebhook継続）
