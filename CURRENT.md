@@ -95,6 +95,12 @@
 - Claude Desktop登録・動作確認完了
 - 6ツール（get_status/get_alerts/get_actions/get_events/get_research_items/run_research_digest）
 - Codexレビュー完了・P1 finding全修正済み
+- Engineの実行責務分離（jobs/runner.ts・jobs/repository.ts・jobs/researchDigest.ts）
+- routes/jobs.tsをHTTP受付のみに縮小
+- policies/notification.ts実装（quiet hours・alert_created・alert_reminder・approval_stale）
+- policies/approval.ts実装（48h auto-cancel）
+- engine_alertsにlast_notified_at・notification_count追加
+- Codexレビュー完了・P1/P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -114,11 +120,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- Discord Bot実装（Phase 2後半）
+- Discord Bot実装
 
 ### done条件
 - [ ] Discord Botが常駐してスラッシュコマンドを受け付ける
 - [ ] アラート確認・承認操作がDiscordからできる
+- [ ] policies/notificationと結線されている
 
 ---
 

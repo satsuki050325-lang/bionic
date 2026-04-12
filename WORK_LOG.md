@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-04-12 / Claude
+
+### やったこと
+- Engineの実行責務分離を実施した
+- jobs/runner.ts・jobs/repository.ts・jobs/types.tsを新規作成した
+- runResearchDigestをroutes/jobs.tsからjobs/researchDigest.tsに移動した
+- routes/jobs.tsをHTTP受付・validation・enqueue・runner起動のみに縮小した
+- policies/notification.tsを実装した（quiet hours・alert_created・alert_reminder 30min・approval_stale 24h）
+- policies/approval.tsを実装した（48h auto-cancel）
+- engine_alertsにlast_notified_at・notification_countを追加した
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- Engineの責務分離はDiscord Bot実装前に必須と判断して先に実施した
+- dedupeKeyは明示された場合のみ使用する（手動/MCP実行が週次dedupeでskipされるバグを修正）
+- needs_reviewはcompleted_atを設定しない（中間状態のため）
+- quiet hours環境変数は完全一致バリデーション付き
+- 48h auto-cancelは通知ポリシーと分離してpolicies/approval.tsに置いた
+- Discord BotはEngine内部からjobs/runner.tsを直接呼ぶ方針
+
+### 未解決・既知リスク
+- Discord Bot実装がまだ
+
+### 次にやること
+- Discord Bot実装
+
+---
+
 ## 2026-04-12 / Claude Code（quiet hoursバリデーション強化）
 
 ### やったこと
