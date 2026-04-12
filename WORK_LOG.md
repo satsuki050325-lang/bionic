@@ -71,6 +71,23 @@
 
 ---
 
+## 2026-04-13 / Claude（gitleaks設定修正）
+
+### やったこと
+- `.gitleaksignore` を削除し `.gitleaks.toml` に置き換え
+- `.env.example` を allowlist.paths で除外する構成に統一
+
+### 判断したこと
+- `.gitleaksignore` はcommit hash指定のfinding除外用で、パス除外はtomlのallowlist.pathsが正しい使い方
+- 今後追加するplaceholderファイルはtoml側で一元管理する
+
+### 次にやること
+- migration fresh apply確認
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（secrets scan CI追加）
 
 ### やったこと

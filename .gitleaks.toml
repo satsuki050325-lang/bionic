@@ -1,0 +1,7 @@
+title = "Bionic gitleaks config"
+
+[allowlist]
+  description = "Allow placeholder values in example files"
+  paths = [
+    ".env.example",
+  ]
