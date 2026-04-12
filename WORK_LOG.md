@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-04-12 / Claude Code（Discord Bot実装）
+
+### やったこと
+- `discord.js` を engine パッケージに追加
+- `actions/service.ts` に `approveAction` / `denyAction` を実装（`status='pending_approval'` guard 付き atomic update）
+- `discord/` 以下に client / embeds / notifications / interactions / index を実装
+- `discord/notifications.ts`: alert/approval 送信と `last_notified_at` / `notification_count` 更新
+- `discord/interactions.ts`: ボタン押下時の承認/却下、`BIONIC_DISCORD_APPROVER_IDS` allowlist
+- `index.ts`: `BIONIC_DISCORD_BOT_TOKEN` 設定時のみ `startDiscordBot()` を起動（未設定時は Webhook モード継続のログ）
+- `.env.example` に `BIONIC_DISCORD_BOT_TOKEN` / `BIONIC_DISCORD_CHANNEL_ID` / `BIONIC_DISCORD_APPROVER_IDS` を追記
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- 承認導線の正本は CLI/App（Discord ボタンは補助手段）
+- approve/deny は `.eq('status', 'pending_approval')` で atomic guard し、二重承認・race を防止
+- Bot は Engine プロセス内で共存（MCP と違い別プロセス化しない）
+- `ALLOWED_USER_IDS` 空の場合は全員許可（個人開発中の利便性優先・本番は allowlist 必須）
+
+### 未解決・既知リスク
+- sendAlertNotification / sendApprovalNotification の呼び出し結線（Decision 側）は次タスク
+- Bot プロセス停止シグナル（SIGTERM）ハンドラは未実装
+
+### 次にやること
+- Alert/Approval 発火地点から Discord 通知を呼ぶ結線
+- policies/notification を結線する
+
+---
+
 ## 2026-04-12 / Claude
 
 ### やったこと

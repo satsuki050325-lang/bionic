@@ -9,6 +9,7 @@ import { actionsRouter } from './routes/actions.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { engineAuthMiddleware } from './middleware/auth.js'
 import { startScheduler } from './scheduler/index.js'
+import { startDiscordBot } from './discord/index.js'
 
 const app = express()
 
@@ -57,4 +58,5 @@ validateEnvironment()
 app.listen(Number(PORT), HOST, () => {
   console.log(`Bionic Engine running on http://${HOST}:${PORT}`)
   startScheduler()
+  void startDiscordBot()
 })
