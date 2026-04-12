@@ -71,6 +71,31 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.0: Runner / Policy / Approvalの完成
+- jobs/state.ts・actions/state.tsで状態遷移を一元化した
+- runners/ディレクトリを作成してapprovals・alertReminders・approvedActionsを実装した
+- createApprovalActionを実装してsendApprovalNotificationを結線した
+- DB job runner（claimPendingJob・runPendingJobs）を実装した
+- SchedulerをenqueueのみにしてrunPendingJobsに実行を委ねた
+- Webhook fallbackをapproval・alert reminderの両方に実装した
+- Bot通知関数をPromise<boolean>に変更して通知成功時のみDB更新するようにした
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- retryは新jobを作る方針（元jobは再利用しない）
+- 通知成功時のみlast_notified_atを更新する
+- Bot通知失敗でaction作成は失敗させない
+
+### 次にやること
+- Phase 2.1: Engine diagnostics画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Bot通知関数をPromise<boolean>化）
 
 ### やったこと

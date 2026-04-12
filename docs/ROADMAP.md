@@ -29,13 +29,13 @@
 
 Bionicが「ただ通知するツール」から「運用エンジン」になる。
 
-- [ ] DB job runnerの明確化（`pending` jobを拾って実行する専用runner）
-- [ ] job/action状態遷移の一元化（`transitionJobStatus` / `transitionActionStatus`）
-- [ ] stale approval runner（24h再通知・48h auto-cancel）
-- [ ] critical alert reminder（30分後再通知）
-- [ ] `sendApprovalNotification` の結線(pending_approval action生成時にDiscord通知)
-- [ ] approved action runner（`approved` になったactionを誰が再開するか決める）
-- [ ] retry_job最小実装（冪等なjobだけ再試行）
+- [x] DB job runnerの明確化（`pending` jobを拾って実行する専用runner）
+- [x] job/action状態遷移の一元化（`transitionJobStatus` / `transitionActionStatus`）
+- [x] stale approval runner（24h再通知・48h auto-cancel）
+- [x] critical alert reminder（30分後再通知）
+- [x] `sendApprovalNotification` の結線(pending_approval action生成時にDiscord通知)
+- [x] approved action runner（`approved` になったactionを誰が再開するか決める）
+- [x] retry_job最小実装（冪等なjobだけ再試行）
 
 ---
 
