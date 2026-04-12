@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-04-12 / Claude
+
+### やったこと
+- Deploy→Watch→Alertを実装した
+- deploymentsテーブルを作成した（RLS有効化済み）
+- Vercel Webhook受信（HMAC-SHA1署名検証・raw body処理）を実装した
+- 5分ごとのdeployment watch schedulerを追加した
+- deployment_regression alertの生成を実装した
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- VERCEL_WEBHOOK_SECRET未設定時は常時401（開発中も例外なし）
+- baselineは直前30分のerror件数
+- alert判定は監視終了チェックより前に実行する
+- alert作成済みの場合はcompleted更新をスキップする
+- ngrokで動作確認する（無料プラン・URLは毎回変わる）
+
+### 未解決・既知リスク
+- ngrok動作確認はまだ未実施
+- BIONIC_VERCEL_PROJECT_MAPの設定が必要
+
+### 次にやること
+- ngrokでトンネルを開いてVercel Webhookを設定して動作確認する
+
+---
+
 ## 2026-04-12 / Claude Code（finding修正 #2）
 
 ### やったこと

@@ -83,9 +83,12 @@
 - validateCronExpressionをcron.tsに切り出し
 - cron.test.ts / researchDigest.test.ts / alerts.test.ts 追加
 - Codexレビュー完了・P2 finding全修正済み
-- Deploy→Watch→Alert実装（Vercel Webhook + 30分監視 + deployment_regression alert）
-- deploymentsテーブル / sources/vercel / routes/webhooks/vercel / decisions/deploymentWatch
-- scheduler に5分間隔のwatch評価cronを追加
+- Deploy→Watch→Alert実装（Vercel Webhook連携）
+- deploymentsテーブル作成・RLS有効化
+- HMAC-SHA1署名検証・raw body処理
+- 5分ごとのdeployment watch scheduler
+- deployment_regression alert生成
+- Codexレビュー完了・P1/P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -106,11 +109,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- bionic-ops MCPサーバー（packages/mcp）
+- Deploy→Watch→Alert動作確認（ngrok + Vercel Webhook設定）
 
 ### done条件
-- [ ] packages/mcp として独立パッケージが存在する
-- [ ] Claude Desktopから接続できる
+- [ ] ngrokトンネル経由でVercel Webhookを受信できる
+- [ ] deploymentsテーブルにレコードが入る
+- [ ] watch期間中にerror件数が記録される
 
 ---
 
