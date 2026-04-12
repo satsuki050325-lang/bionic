@@ -21,7 +21,7 @@
 - [x] README起動手順の整備（最小起動・Discord Botあり・MCPあり・Vercel webhook/ngrokあり）
 - [x] `TECHNICAL_DESIGN.md` の実装追従（既に実装済みなのに古い記述が残っている箇所を更新）
 - [x] secrets scan CI追加（gitleaksをCIに組み込む）
-- [ ] migration fresh apply確認（空DBにmigration適用してEngineが動くことを確認）
+- [x] migration fresh apply確認（空DBにmigration適用してEngineが動くことを確認）
 
 ---
 

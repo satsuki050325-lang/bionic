@@ -74,6 +74,32 @@
 ## 2026-04-13 / Claude
 
 ### やったこと
+- migration fresh apply確認をCodexの論理確認で実施した
+- 全10migrationの適用順・依存関係・実装整合性に問題がないことを確認した
+- Phase 1.8: Stabilize Bionic Core 全タスク完了
+
+### 判断したこと
+- fresh DB確認は本番DBと同じSupabaseプロジェクトを使えないため論理確認で実施
+- 将来GitHub公開前に改めてfresh DBで確認する
+
+### Phase 1.8完了サマリー
+- config.ts導入（env一元管理）
+- pnpm verify追加
+- README起動手順整備
+- TECHNICAL_DESIGN.md実装追従
+- secrets scan CI追加（gitleaks）
+- migration fresh apply確認
+
+### 次にやること
+- Phase 2.0: DB job runnerの明確化
+
+担当：Claude
+
+---
+
+## 2026-04-13 / Claude
+
+### やったこと
 - GitHub Actions CIにgitleaksによるsecrets scanを追加した
 - .gitleaks.tomlを作成してallowlist pathsで.env.exampleを除外した
 - Codexレビュー完了・P2 finding修正済み
