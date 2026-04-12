@@ -40,6 +40,40 @@ export async function sendAlertNotification(
   }
 }
 
+export async function sendDigestNotification(
+  client: Client,
+  items: Array<{ title: string; summary: string; importanceScore: number }>,
+  projectId: string
+): Promise<'sent' | 'skipped' | 'failed'> {
+  if (!CHANNEL_ID) return 'failed'
+  if (items.length === 0) return 'skipped'
+
+  try {
+    const channel = await client.channels.fetch(CHANNEL_ID)
+    if (!channel?.isTextBased()) return 'failed'
+
+    const topItems = items.slice(0, 3)
+    const embed = {
+      title: '📋 Weekly Research Digest',
+      description: `${items.length} research item(s) this week`,
+      color: 0xe8611a,
+      fields: topItems.map((item, i) => ({
+        name: `${i + 1}. [Score: ${item.importanceScore}] ${item.title}`,
+        value: item.summary.slice(0, 200) + (item.summary.length > 200 ? '...' : ''),
+        inline: false,
+      })),
+      footer: { text: `Bionic Research Digest · ${projectId}` },
+      timestamp: new Date().toISOString(),
+    }
+
+    await (channel as TextChannel).send({ embeds: [embed] })
+    return 'sent'
+  } catch (err) {
+    console.error('[discord] failed to send digest notification:', err)
+    return 'failed'
+  }
+}
+
 export async function sendApprovalNotification(
   client: Client,
   action: EngineAction

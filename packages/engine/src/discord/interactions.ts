@@ -11,7 +11,15 @@ export async function handleInteraction(interaction: Interaction): Promise<void>
 
   const { customId, user } = interaction
 
-  if (ALLOWED_USER_IDS.length > 0 && !ALLOWED_USER_IDS.includes(user.id)) {
+  if (ALLOWED_USER_IDS.length === 0) {
+    await interaction.reply({
+      content: '❌ No approvers configured. Set BIONIC_DISCORD_APPROVER_IDS in .env.local',
+      ephemeral: true,
+    })
+    return
+  }
+
+  if (!ALLOWED_USER_IDS.includes(user.id)) {
     await interaction.reply({
       content: '❌ You are not authorized to approve/deny actions.',
       ephemeral: true,

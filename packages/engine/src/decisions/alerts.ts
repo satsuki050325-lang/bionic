@@ -1,6 +1,9 @@
 import type { EngineEvent } from '@bionic/shared'
 import { supabase } from '../lib/supabase.js'
 import { createAction, completeAction, failAction, skipAction } from '../actions/logAction.js'
+import { getDiscordClient } from '../discord/index.js'
+import { sendAlertNotification } from '../discord/notifications.js'
+import { shouldNotify } from '../policies/notification.js'
 
 const CRITICAL_CODES = new Set([
   'DB_CONNECTION_FAILED',
@@ -161,11 +164,45 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
             await failAction(actionId, { message: 'insert failed', code: insertError.code })
           }
         }
-      } else if (actionId) {
-        await completeAction(actionId, {
-          operation: 'created',
-          alertId: inserted?.id ?? null,
-        })
+      } else {
+        if (actionId) {
+          await completeAction(actionId, {
+            operation: 'created',
+            alertId: inserted?.id ?? null,
+          })
+        }
+
+        const discordClient = getDiscordClient()
+        if (discordClient && inserted?.id) {
+          const now = new Date()
+          const decision = shouldNotify({
+            kind: 'alert_created',
+            severity,
+            status: 'open',
+            now,
+          })
+          if (decision.shouldNotify) {
+            void sendAlertNotification(discordClient, {
+              id: inserted.id,
+              projectId: event.projectId,
+              serviceId: event.serviceId,
+              type: alertType,
+              severity,
+              title,
+              message,
+              status: 'open',
+              fingerprint,
+              count: 1,
+              lastSeenAt: now.toISOString(),
+              createdAt: now.toISOString(),
+              updatedAt: now.toISOString(),
+              lastNotifiedAt: null,
+              notificationCount: 0,
+            })
+          } else {
+            console.log(`[decision] alert notification suppressed: ${decision.reason}`)
+          }
+        }
       }
     }
   } catch (err) {

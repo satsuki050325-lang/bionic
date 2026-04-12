@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabase.js'
 import { notifyDigest } from '../actions/notify.js'
 import { createAction, completeAction, failAction, skipAction } from '../actions/logAction.js'
 import { markJobRunning, markJobCompleted, markJobFailed, markJobNeedsReview } from './repository.js'
+import { getDiscordClient } from '../discord/index.js'
+import { sendDigestNotification } from '../discord/notifications.js'
 
 export function getWeeklyDigestKey(date: Date, timezone: string): string {
   const formatter = new Intl.DateTimeFormat('en', {
@@ -95,17 +97,31 @@ export async function runResearchDigest(jobId: string, projectId: string): Promi
       requestedBy: 'engine',
     })
 
-    const notifyResult = await notifyDigest({
-      projectId,
-      items: (items ?? []).map((row) => ({
-        id: row.id,
-        title: row.title,
-        summary: row.summary,
-        url: row.url ?? null,
-        source: row.source,
-        importanceScore: row.importance_score,
-      })),
-    })
+    const mappedItems = (items ?? []).map((row) => ({
+      id: row.id,
+      title: row.title,
+      summary: row.summary,
+      url: row.url ?? null,
+      source: row.source,
+      importanceScore: row.importance_score,
+    }))
+
+    const discordClient = getDiscordClient()
+    let notifyResult: 'sent' | 'skipped' | 'misconfigured' | 'failed'
+    if (discordClient) {
+      const botResult = await sendDigestNotification(
+        discordClient,
+        mappedItems.map((i) => ({
+          title: i.title,
+          summary: i.summary,
+          importanceScore: i.importanceScore,
+        })),
+        projectId
+      )
+      notifyResult = botResult === 'failed' ? 'misconfigured' : botResult
+    } else {
+      notifyResult = await notifyDigest({ projectId, items: mappedItems })
+    }
 
     if (notifyResult === 'sent') {
       if (notifyActionId) {

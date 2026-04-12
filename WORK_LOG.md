@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-12 / Claude Code（Discord Bot P1 finding修正）
+
+### やったこと
+- `discord/interactions.ts`: allowlist 未設定時は全員拒否（fail-closed）。メッセージで `BIONIC_DISCORD_APPROVER_IDS` 設定を促す
+- `decisions/alerts.ts`: 新規alert作成成功時のみ `shouldNotify({kind:'alert_created'})` で判定し `sendAlertNotification` を非同期発火（update時は通知しない）
+- `discord/notifications.ts` に `sendDigestNotification` を追加
+- `jobs/researchDigest.ts`: Bot起動中は `sendDigestNotification` を使用、未起動時は既存 Webhook `notifyDigest` を使用
+- typecheck 全通過 / engine test 20/20 通過
+
+### 判断したこと
+- pending_approval はまだ Engine 側で生成箇所がないため、`sendApprovalNotification` の結線は今回スキップ（Claude 確認事項として CURRENT.md に残す）
+- alert_reminder は Scheduler 経由で将来実装（今回は `alert_created` のみ）
+- Discord Bot 送信失敗は `misconfigured` にマッピングして既存の状態機械を壊さない
+- 通知は `void` で発火してメイン処理を止めない
+
+### 未解決・既知リスク
+- `sendApprovalNotification` を呼び出す pending_approval 生成箇所の設計が未着手
+- alert_reminder Scheduler 未実装
+
+### 次にやること
+- pending_approval を生成する action の設計（Level 2 承認導線）
+- alert_reminder 用 Scheduler を追加
+
+---
+
 ## 2026-04-12 / Claude Code（Discord Bot実装）
 
 ### やったこと
