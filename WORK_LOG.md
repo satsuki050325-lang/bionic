@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-12 / Claude（SECURITY_RELEASE_CHECKLIST.md + GitHub Actions CI）
+
+### やったこと
+- `SECURITY_RELEASE_CHECKLIST.md` を作成（環境変数 / RLS / Engine API / Discord Bot / MCP / リリース前チェック / Supabase key漏洩対応手順）
+- `.github/workflows/ci.yml` を作成（typecheck / test / build の3ジョブ、push & PR to main トリガー）
+- ルート `package.json` の typecheck スクリプトは既に存在することを確認
+- `pnpm typecheck` が全6パッケージで通ることを確認
+
+### 判断したこと
+- CIは typecheck / test / build を独立ジョブにして並列実行、いずれかが落ちればmergeを止める方針
+- App buildは `NEXT_PUBLIC_ENGINE_URL` のダミー値で実行（CI環境でEngineを起動しないため）
+- Webhook secret等のCI実行時に不要な秘密はジョブに渡さない
+- セルフレビュー：CIファイルのpnpm/setup-node action versionは現行（v4）、ジョブが3つに分かれているため install が3回走る点はキャッシュで許容範囲
+
+### 次にやること
+- needs_review job 再実行導線
+- json-rules-engine導入検討（Phase 2後半）
+
+担当：Claude
+
+---
+
 ## 2026-04-12 / Claude
 
 ### やったこと
