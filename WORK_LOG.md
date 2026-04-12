@@ -54,6 +54,23 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- TECHNICAL_DESIGN.mdを現在の実装に追従させた
+- BionicEngineServiceをshared型と一致させた
+- projects/servicesを将来のmulti-tenant対応として分離した
+- client_event_idを正確に「検索用index」として説明した
+- Alert/Action/Deploymentの状態値を現在の型に合わせた
+- Codexレビュー完了・P2 finding全修正済み
+
+### 次にやること
+- secrets scan CI追加（gitleaks）
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（TECHNICAL_DESIGN.md P2 finding修正）
 
 ### やったこと

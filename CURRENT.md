@@ -124,6 +124,8 @@
 - README.md作成（最小起動・Discord Bot・Vercel webhook・MCP・Troubleshooting）
 - README P1/P2 finding修正（token設定の明確化）
 - Codexレビュー完了・問題なし
+- TECHNICAL_DESIGN.mdの実装追従
+- Codexレビュー完了・P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -142,10 +144,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 1.8: TECHNICAL_DESIGN.mdの実装追従
+- Phase 1.8: secrets scan CI追加（gitleaks）
 
 ### done条件
-- [ ] 既に実装済みなのに古い記述が残っている箇所がTECHNICAL_DESIGN.mdで更新されている
+- [ ] gitleaks が GitHub Actions CI に組み込まれている
+- [ ] push / PR で secrets scan が実行される
 
 ---
 
@@ -169,7 +172,8 @@ SECURITY_RELEASE_CHECKLIST.md作成 / GitHub Actions CI（完了）
 Phase 1.8: config.ts導入（完了）
 Phase 1.8: pnpm verify追加（完了）
 Phase 1.8: README起動手順の整備（完了）
-Phase 1.8: TECHNICAL_DESIGN.mdの実装追従（今ここ）
+Phase 1.8: TECHNICAL_DESIGN.mdの実装追従（完了）
+Phase 1.8: secrets scan CI追加（今ここ）
 
 
 ---
