@@ -71,6 +71,27 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Engine diagnostics画面を実装した（/api/diagnostics + /diagnostics page）
+- runtime/diagnostics.tsでrunner stateをin-memoryで記録するようにした
+- Tailwind v4の@themeにDESIGN.mdのsemantic tokenを追加した
+- StatusBadgeを共通コンポーネントとして切り出した
+- Codexレビュー完了・P2/P3 finding全修正済み
+
+### 判断したこと
+- Scheduler last runはin-memoryで十分（テーブル追加不要）
+- StatusBadgeはcomponents/に切り出して全画面で再利用できるようにした
+- Tailwind v4では@themeブロックを使用（tailwind.config.tsなし）
+
+### 次にやること
+- Phase 2.1: bionic init最小実装
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Tailwindカスタムトークン追加 + StatusBadge切り出し）
 
 ### やったこと

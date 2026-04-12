@@ -133,6 +133,11 @@
 - docs/DESIGN.md作成（Bionicデザインシステム正本・9セクション）
 - L1/L2/L3品質層定義
 - AGENTS.mdにDESIGN.md参照ルールを追加
+- Engine diagnostics画面実装（/api/diagnostics + /diagnostics page）
+- runtime/diagnostics.ts（runner state in-memory記録）
+- Tailwindカスタムトークン追加（DESIGN.mdのsemantic token）
+- StatusBadge共通コンポーネント作成
+- Codexレビュー完了・P2/P3 finding全修正済み
 - Phase 2.0: Runner / Policy / Approvalの完成
 - jobs/state.ts・actions/state.ts（状態遷移一元化）
 - runners/approvals.ts・alertReminders.ts・approvedActions.ts
@@ -162,10 +167,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.1: Engine diagnostics画面実装
+- Phase 2.1: bionic init最小実装
 
 ### done条件
-- [x] Scheduler稼働・Discord接続・DB接続・Webhook状態が1画面で確認できる
+- [ ] `bionic init` で `.env.local` 生成・Discord Bot設定確認・Supabase接続確認ができる
 
 ---
 
@@ -194,7 +199,8 @@ Phase 1.8: secrets scan CI追加（完了）
 Phase 1.8: migration fresh apply確認（完了）
 Phase 1.8: Stabilize Bionic Core 完了
 Phase 2.0: Runner / Policy / Approvalの完成（完了）
-Phase 2.1: Engine diagnostics画面（今ここ）
+Phase 2.1: Engine diagnostics画面（完了）
+Phase 2.1: bionic init最小実装（今ここ）
 
 
 ---
