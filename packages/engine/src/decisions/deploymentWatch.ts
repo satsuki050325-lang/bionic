@@ -1,8 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 import { createAction, completeAction, failAction } from '../actions/logAction.js'
-
-const ERROR_THRESHOLD_COUNT = 5
-const ERROR_THRESHOLD_PERCENT = 200
+import { getConfig } from '../config.js'
 
 export async function evaluateWatchingDeployments(): Promise<void> {
   const now = new Date()
@@ -27,19 +25,52 @@ async function evaluateSingleDeployment(
   deployment: Record<string, unknown>,
   now: Date
 ): Promise<void> {
+  const config = getConfig()
+  const watchMinutes = config.deploymentWatch.watchMinutes
+  const thresholdErrorCount = config.deploymentWatch.thresholdErrorCount
+  const thresholdIncreasePercent = config.deploymentWatch.thresholdIncreasePercent
+
   const watchUntil = new Date(deployment.watch_until as string)
   const projectId = deployment.project_id as string
   const serviceId = deployment.service_id as string
   const readyAt = new Date(deployment.ready_at as string)
 
-  const { count: postDeployCount, error: countError } = await supabase
+  const elapsedMs = Math.max(0, now.getTime() - readyAt.getTime())
+  const watchMs = watchMinutes * 60 * 1000
+  const windowMs = Math.min(elapsedMs, watchMs)
+  const elapsedMinutes = Math.max(1, Math.floor(windowMs / 60000))
+
+  const baselineStart = new Date(readyAt.getTime() - windowMs)
+  const baselineEnd = readyAt
+  const currentStart = readyAt
+  const currentEnd = new Date(readyAt.getTime() + windowMs)
+
+  const { count: baselineCountRaw, error: baselineError } = await supabase
     .from('engine_events')
     .select('id', { count: 'exact', head: true })
     .eq('project_id', projectId)
     .eq('service_id', serviceId)
     .eq('type', 'service.error.reported')
-    .gte('created_at', readyAt.toISOString())
-    .lte('created_at', now.toISOString())
+    .gte('created_at', baselineStart.toISOString())
+    .lt('created_at', baselineEnd.toISOString())
+
+  if (baselineError) {
+    console.error('[deploymentWatch] failed to count baseline:', baselineError)
+    await supabase
+      .from('deployments')
+      .update({ watch_status: 'failed', updated_at: now.toISOString() })
+      .eq('id', deployment.id)
+    return
+  }
+
+  const { count: currentCountRaw, error: countError } = await supabase
+    .from('engine_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+    .eq('service_id', serviceId)
+    .eq('type', 'service.error.reported')
+    .gte('created_at', currentStart.toISOString())
+    .lte('created_at', currentEnd.toISOString())
 
   if (countError) {
     console.error('[deploymentWatch] failed to count errors:', countError)
@@ -50,11 +81,8 @@ async function evaluateSingleDeployment(
     return
   }
 
-  const baselineCount = deployment.baseline_error_count as number
-  const currentCount = postDeployCount ?? 0
-  const elapsedMinutes = Math.round(
-    (now.getTime() - readyAt.getTime()) / 60000
-  )
+  const baselineCount = baselineCountRaw ?? 0
+  const currentCount = currentCountRaw ?? 0
 
   let increasePercent: number | null = null
   if (baselineCount > 0) {
@@ -66,6 +94,7 @@ async function evaluateSingleDeployment(
   const { error: updateError } = await supabase
     .from('deployments')
     .update({
+      baseline_error_count: baselineCount,
       current_error_count: currentCount,
       error_increase_percent: increasePercent,
       updated_at: now.toISOString(),
@@ -77,11 +106,11 @@ async function evaluateSingleDeployment(
   }
 
   const shouldAlert =
-    currentCount >= ERROR_THRESHOLD_COUNT &&
+    currentCount >= thresholdErrorCount &&
     (baselineCount === 0
-      ? currentCount >= ERROR_THRESHOLD_COUNT
+      ? currentCount >= thresholdErrorCount
       : increasePercent !== null &&
-        increasePercent >= ERROR_THRESHOLD_PERCENT)
+        increasePercent >= thresholdIncreasePercent)
 
   const alreadyAlerted = (deployment.alert_id as string | null) !== null
 
@@ -95,6 +124,8 @@ async function evaluateSingleDeployment(
       baselineCount,
       increasePercent,
       elapsedMinutes,
+      thresholdErrorCount,
+      thresholdIncreasePercent,
       now,
     })
   }
@@ -121,27 +152,31 @@ async function createDeploymentRegressionAlert(params: {
   baselineCount: number
   increasePercent: number | null
   elapsedMinutes: number
+  thresholdErrorCount: number
+  thresholdIncreasePercent: number
   now: Date
 }): Promise<boolean> {
   const {
     deployment, projectId, serviceId,
-    currentCount, baselineCount, increasePercent, elapsedMinutes, now,
+    currentCount, baselineCount, increasePercent, elapsedMinutes,
+    thresholdErrorCount, thresholdIncreasePercent, now,
   } = params
 
   const deploymentId = deployment.provider_deployment_id as string
   const severity =
-    currentCount >= 10 && (increasePercent === null || increasePercent >= 300)
+    currentCount >= thresholdErrorCount * 2 &&
+    (increasePercent === null || increasePercent >= thresholdIncreasePercent * 1.5)
       ? 'critical'
       : 'warning'
 
   const title = `${serviceId} errors increased after deploy`
-  const message =
-    baselineCount === 0
-      ? `${elapsedMinutes} minutes after deployment ${deploymentId}, ` +
-        `${currentCount} errors detected (baseline: 0).`
-      : `${elapsedMinutes} minutes after deployment ${deploymentId}, ` +
-        `service.error.reported increased from ${baselineCount} to ${currentCount} ` +
-        `(+${increasePercent ?? 0}%).`
+  const message = [
+    `Error event count increased from ${baselineCount} to ${currentCount}`,
+    `within ${elapsedMinutes} minutes after deployment.`,
+    `Increase: ${increasePercent !== null ? `+${increasePercent}%` : 'n/a (baseline=0)'}`,
+    `Threshold: count>=${thresholdErrorCount} && increase>=${thresholdIncreasePercent}%`,
+    `Deployment: ${deploymentId}`,
+  ].join(' ')
   const fingerprint = `${projectId}:${serviceId}:deployment_regression:${deploymentId}`
 
   const actionId = await createAction({
@@ -149,7 +184,16 @@ async function createDeploymentRegressionAlert(params: {
     serviceId,
     type: 'evaluate_deployment_watch',
     title: `Evaluate deployment watch: ${deploymentId}`,
-    input: { deploymentId, baselineCount, currentCount, increasePercent, elapsedMinutes },
+    input: {
+      deploymentId,
+      baselineWindowMinutes: elapsedMinutes,
+      elapsedMinutes,
+      baselineCount,
+      currentCount,
+      increasePercent,
+      thresholdErrorCount,
+      thresholdIncreasePercent,
+    },
     requestedBy: 'scheduler',
   })
 

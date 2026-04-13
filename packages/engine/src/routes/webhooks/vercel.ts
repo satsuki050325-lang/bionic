@@ -75,9 +75,10 @@ vercelWebhookRouter.post(
 
       const projectId = getConfig().projectId
       const now = new Date()
-      const watchUntil = new Date(now.getTime() + 30 * 60 * 1000)
+      const watchMs = getConfig().deploymentWatch.watchMinutes * 60 * 1000
+      const watchUntil = new Date(now.getTime() + watchMs)
 
-      const baselineStart = new Date(now.getTime() - 30 * 60 * 1000)
+      const baselineStart = new Date(now.getTime() - watchMs)
       const { count: baselineCount, error: baselineError } = await supabase
         .from('engine_events')
         .select('id', { count: 'exact', head: true })

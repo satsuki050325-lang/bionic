@@ -193,6 +193,12 @@ export interface EngineConfig {
     serviceId: string
     enabled: boolean
   }
+
+  deploymentWatch: {
+    watchMinutes: number
+    thresholdErrorCount: number
+    thresholdIncreasePercent: number
+  }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
@@ -273,6 +279,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       serviceId: readString(env, 'BIONIC_SENTRY_SERVICE_ID') ?? 'sentry',
       enabled: !!readString(env, 'SENTRY_WEBHOOK_SECRET'),
     },
+
+    deploymentWatch: {
+      watchMinutes: readInt(env, 'BIONIC_DEPLOYMENT_WATCH_MINUTES', 30, { min: 5, max: 120 }),
+      thresholdErrorCount: readInt(env, 'BIONIC_DEPLOYMENT_THRESHOLD_ERROR_COUNT', 5, { min: 1, max: 1000 }),
+      thresholdIncreasePercent: readInt(env, 'BIONIC_DEPLOYMENT_THRESHOLD_INCREASE_PERCENT', 200, { min: 10, max: 10000 }),
+    },
   }
 }
 
@@ -340,6 +352,7 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
       serviceId: config.sentry.serviceId,
       enabled: config.sentry.enabled,
     },
+    deploymentWatch: config.deploymentWatch,
   }
 }
 

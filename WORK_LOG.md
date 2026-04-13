@@ -25,6 +25,34 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 Deploy→Watch判定精度向上）
+
+### やったこと
+- config.ts に `deploymentWatch` を追加（watchMinutes / thresholdErrorCount / thresholdIncreasePercent）
+- decisions/deploymentWatch.ts のbaseline比較を「同じ経過時間ウィンドウ」に書き換え
+  - baseline: `[readyAt - elapsedMs, readyAt)` （deploy前同等時間）
+  - current: `[readyAt, readyAt + elapsedMs]`
+  - elapsed = min(now - readyAt, watchWindow)
+- baseline_error_count を毎回再計算してDB更新
+- threshold値（5件・200%）を config 経由に置き換え、severity判定もthresholdの倍数で計算
+- routes/webhooks/vercel.ts の30分ハードコードを config.deploymentWatch.watchMinutes に置き換え
+- alert message に判定メタデータ（baseline / current / increase / threshold / deploymentId）を含める
+- action.input に baselineWindowMinutes と threshold値を追加
+- .env.example に BIONIC_DEPLOYMENT_WATCH_MINUTES / THRESHOLD_ERROR_COUNT / THRESHOLD_INCREASE_PERCENT を追加
+- `pnpm verify` 全通過
+
+### 判断したこと
+- 同じ経過時間ウィンドウ比較で「開始5分時点は直前5分 vs デプロイ後5分」になり早期判定のノイズが減る
+- baseline_error_count を毎回更新することで「baselineが古い」問題を解消
+- severity critical条件は `count >= threshold*2 && increase >= threshold*1.5` （旧10件/300%のハードコード相当）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Sentry finding修正）
 
 ### やったこと
