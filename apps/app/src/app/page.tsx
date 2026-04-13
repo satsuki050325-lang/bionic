@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getStatus, getEvents, getIncidentBrief } from '@/lib/engine'
+import { getStatus, getEvents, getIncidentBrief, getAlerts } from '@/lib/engine'
 import { StatusBadge } from '@/components/StatusBadge'
 
 function eventTypeColor(type: string): string {
@@ -10,11 +10,16 @@ function eventTypeColor(type: string): string {
 }
 
 export default async function DashboardPage() {
-  const [status, eventsResult, brief] = await Promise.all([
+  const [status, eventsResult, brief, alertsResult] = await Promise.all([
     getStatus(),
     getEvents(),
     getIncidentBrief(),
+    getAlerts(),
   ])
+
+  const hasDemoData = !!alertsResult?.alerts.some(
+    (a) => a.serviceId === 'demo-api'
+  )
 
   if (!status) {
     return (
@@ -89,6 +94,20 @@ export default async function DashboardPage() {
           </span>
         </div>
       </div>
+
+      {hasDemoData && (
+        <div className="bg-status-info/10 border border-status-info/30 rounded px-4 py-2 mb-4 flex items-center justify-between gap-4">
+          <div className="font-mono text-xs text-status-info uppercase tracking-widest">
+            Demo Mode · Showing simulated signals
+          </div>
+          <span className="font-mono text-xs text-status-info">
+            Clean up:{' '}
+            <code className="text-accent">
+              npx tsx packages/cli/src/index.ts demo --cleanup
+            </code>
+          </span>
+        </div>
+      )}
 
       {/* Operational Brief */}
       {openAlerts > 0 && (

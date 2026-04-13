@@ -1,19 +1,12 @@
 import type { Alert } from '@bionic/shared'
 import { getAlerts } from '@/lib/engine'
+import { formatRelativeTime } from '@/lib/time'
 import { ResolveButton } from './ResolveButton'
 
 const SEVERITY_ORDER: Record<string, number> = {
   critical: 0,
   warning: 1,
   info: 2,
-}
-
-function formatRelativeTime(date: string): string {
-  const diff = Date.now() - new Date(date).getTime()
-  if (diff < 60_000) return 'just now'
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`
-  return `${Math.floor(diff / 86_400_000)}d ago`
 }
 
 function formatAbsoluteShort(date: string): string {

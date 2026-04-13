@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Phase 2.4: Actions / Research / Onboarding / 共通 の UI を改善した
+- apps/app/src/lib/time.ts を新設し、Alerts から formatRelativeTime を移動して共通化。Actions / Onboarding / Dashboard からも利用
+- Actions: ページヘッダーを Audit Log 表記に統一、pending_approval を Awaiting Approval 専用セクションとして最上部に表示（CLI approve コマンドを提示）、その他行には requestedBy・linked alert 抜粋・相対時間を追加し、succeeded/skipped は opacity-60 で弱める
+- Research: ページヘッダーを uppercase + saved件数のサブラベルに刷新。保存済みアイテムを上部へ、フォームを `<details>+ Add Research Item</details>` で折りたたみ、既存の入力UIはそのまま格納。空状態は ◈ アイコンに変更。デフォルトボタンの text-white を text-inverse に変更
+- Onboarding: All good state に `Run Demo ↗` CTA を追加（クライアントコンポーネントの RunDemoButton でクリップボードコピー + 「Copied ✓」表示）。ターミナル向けコマンドも併記
+- Dashboard: `alertsResult` を取得して `service_id === 'demo-api'` の open alert があるときに Demo Mode バナーを Operational Brief の上に表示（status-info 系）。cleanup コマンドを併記
+- hex直書きなし、semantic token のみ
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- pending_approval の CLI approve 提示は id 先頭8桁（視認性優先。衝突時はフル ID で代替する設計余地あり）
+- Research のフォームは折りたたみデフォルト close にした（Saved の閲覧が主、追加は目的駆動で開く）
+- Onboarding の Run Demo は `navigator.clipboard.writeText` でコピーのみ。Web UIから terminal実行はできないのでコマンドコピー+案内のUXに統一
+- Dashboard の Demo Mode バナーは getAlerts() の結果で判定（getStatus() には serviceId情報が無いため）。追加ラウンドトリップは許容（Dashboard は n=1 のSSR）
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク（README整備・LICENSE確定・GitHub公開準備）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { StatusBadge } from '@/components/StatusBadge'
+import { RunDemoButton } from './RunDemoButton'
 
 interface DiagnosticsData {
   engine: { status: string; version: string; uptimeSeconds: number }
@@ -239,12 +240,19 @@ export default function OnboardingPage() {
               Bionic is ready to observe, decide, and record.
             </p>
           </div>
-          <Link
-            href="/"
-            className="inline-block font-mono text-sm uppercase tracking-widest px-6 py-3 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors"
-          >
-            Enter Dashboard →
-          </Link>
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              href="/"
+              className="inline-block font-mono text-sm uppercase tracking-widest px-6 py-3 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors"
+            >
+              Enter Dashboard →
+            </Link>
+            <RunDemoButton />
+          </div>
+          <p className="font-mono text-xs text-text-muted">
+            Run demo in terminal:{' '}
+            <code className="text-accent">npx tsx packages/cli/src/index.ts demo</code>
+          </p>
         </div>
       )}
     </div>
