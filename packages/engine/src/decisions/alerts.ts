@@ -4,6 +4,7 @@ import { createAction, completeAction, failAction, skipAction } from '../actions
 import { getDiscordClient } from '../discord/index.js'
 import { sendAlertNotification } from '../discord/notifications.js'
 import { shouldNotify } from '../policies/notification.js'
+import { autoResolveHealthAlerts } from '../alerts/service.js'
 
 const CRITICAL_CODES = new Set([
   'DB_CONNECTION_FAILED',
@@ -14,18 +15,46 @@ const CRITICAL_CODES = new Set([
   'INTERNAL_ERROR',
 ])
 
-function buildFingerprint(
+export function normalizeMessage(message: string): string {
+  return message
+    .toLowerCase()
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '{id}')
+    .replace(/https?:\/\/[^\s]+/g, '{url}')
+    .replace(/\/[a-zA-Z0-9_\-./]+/g, '{path}')
+    .replace(/\b\d+\b/g, '{num}')
+    .slice(0, 120)
+}
+
+export function buildFingerprint(
   projectId: string,
-  serviceId: string,
+  serviceId: string | null,
   alertType: string,
-  problemKey: string
+  payload: Record<string, unknown>
 ): string {
-  const normalized = problemKey
-    .trim()
-    .replace(/\s+/g, '_')
-    .slice(0, 80)
-    .toUpperCase()
-  return `${projectId}:${serviceId}:${alertType}:${normalized}`
+  const parts = ['v2', projectId, serviceId ?? 'unknown', alertType]
+
+  if (alertType === 'service_error') {
+    const stableKey =
+      (payload.fingerprint as string | undefined) ??
+      (payload.code as string | undefined) ??
+      (payload.name as string | undefined) ??
+      (payload.message ? normalizeMessage(payload.message as string) : null) ??
+      'unknown_error'
+    parts.push(stableKey)
+  } else if (alertType === 'service_health') {
+    const status = (payload.status as string | undefined) ?? 'unknown'
+    const reason =
+      (payload.reason as string | undefined) ??
+      (payload.check as string | undefined) ??
+      'general'
+    parts.push(`health:${status}:${reason}`)
+  } else if (alertType === 'deployment_regression') {
+    parts.push((payload.deploymentId as string | undefined) ?? 'unknown')
+  } else {
+    parts.push('default')
+  }
+
+  return parts.join(':')
 }
 
 function getSeverityForError(code?: string): 'critical' | 'warning' {
@@ -34,6 +63,15 @@ function getSeverityForError(code?: string): 'critical' | 'warning' {
 }
 
 export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
+  // service.health.reported with status=ok → auto resolve open health alerts
+  if (event.type === 'service.health.reported') {
+    const payload = event.payload as Record<string, unknown>
+    if (payload.status === 'ok' && event.serviceId) {
+      await autoResolveHealthAlerts(event.projectId, event.serviceId)
+    }
+    return
+  }
+
   if (
     event.type !== 'service.health.degraded' &&
     event.type !== 'service.error.reported'
@@ -63,7 +101,7 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
       event.projectId,
       event.serviceId,
       'service_health',
-      status
+      payload
     )
   } else {
     const code = payload.code as string | undefined
@@ -77,7 +115,7 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
       event.projectId,
       event.serviceId,
       'service_error',
-      code ?? msg
+      payload
     )
   }
 
@@ -198,6 +236,9 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
               updatedAt: now.toISOString(),
               lastNotifiedAt: null,
               notificationCount: 0,
+              resolvedAt: null,
+              resolvedBy: null,
+              resolvedReason: null,
             })
           } else {
             console.log(`[decision] alert notification suppressed: ${decision.reason}`)

@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.2 Signal Quality）
+
+### やったこと
+- migration 2件追加（engine_alerts resolve columns / engine_events.client_event_id unique index）
+- shared型に Alert.resolvedAt/resolvedBy/resolvedReason と ActionType='resolve_alert' を追加
+- packages/engine/src/alerts/service.ts を新規作成（resolveAlert / autoResolveHealthAlerts + audit log）
+- POST /api/alerts/:id/resolve を追加（projectId自動解決・404/409対応）
+- decisions/alerts.ts で service.health.reported status=ok の自動解決を実装
+- fingerprint v2 を実装（v2: プレフィックス・normalizeMessage で数値/UUID/URL/pathを抽象化・alertType毎の stableKey）
+- SDK に rate limit (60/min) / dedupe window (30s) / health-ok dedupe (60s) を実装、sendEvent戻り値を SendEventResult に変更
+- `pnpm verify` 全通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- fingerprint v2 は新規alertのみ適用（既存open alertは resolve で閉じてから次で新fingerprintに遷移）
+- health.reported with status=ok は同一serviceのopen service_health alert を engine名義で resolve する
+- SDK の rate limit 超過・dedupe hit は throw せず SendEventResult.reason で返す（呼び出し元のUXを壊さない）
+- client_event_id unique index 適用前に重複削除（id が大きい方を削除）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと

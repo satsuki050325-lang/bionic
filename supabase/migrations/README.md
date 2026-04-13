@@ -22,6 +22,8 @@
 | 20260412000001_alert_notification.sql | engine_alertsにlast_notified_at / notification_count追加 | 2026-04-12 |
 | 20260413000000_actions_notification_columns.sql | engine_actionsにlast_notified_at / notification_count追加 | 2026-04-13 |
 | 20260413000001_jobs_updated_at.sql | engine_jobsにupdated_at追加 | 2026-04-13 |
+| 20260413000002_alert_resolve.sql | engine_alertsにresolved_at/resolved_by/resolved_reason追加 | 2026-04-13 |
+| 20260413000003_client_event_id_unique.sql | engine_events.client_event_idにunique index（NULL除く） | 2026-04-13 |
 
 ## 新しいDB変更を加える手順
 1. supabase/migrations/ に新しいSQLファイルを作成する

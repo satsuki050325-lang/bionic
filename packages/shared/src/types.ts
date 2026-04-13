@@ -80,6 +80,9 @@ export interface Alert {
   lastSeenAt: ISODateString
   lastNotifiedAt: ISODateString | null
   notificationCount: number
+  resolvedAt: ISODateString | null
+  resolvedBy: string | null
+  resolvedReason: string | null
   createdAt: ISODateString
   updatedAt: ISODateString
 }
@@ -178,6 +181,7 @@ export type ActionType =
   | 'mark_digest_sent'
   | 'retry_job'
   | 'evaluate_deployment_watch'
+  | 'resolve_alert'
 
 export type DeploymentWatchStatus =
   | 'pending'
