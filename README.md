@@ -143,6 +143,29 @@ BIONIC_VERCEL_PROJECT_MAP=prj_xxx:your-service-id
 
 ---
 
+## GitHub Webhook Setup (CI Failure Detection)
+
+Detects CI failures from GitHub Actions and creates alerts.
+
+### Setup
+
+1. Add to `.env.local`:
+```bash
+GITHUB_WEBHOOK_SECRET=your-webhook-secret
+BIONIC_GITHUB_REPO_MAP=owner/repo:your-service-id
+```
+
+2. Configure GitHub Webhook:
+   - Repository → Settings → Webhooks → Add webhook
+   - Payload URL: `https://your-ngrok-url/api/webhooks/github`
+   - Content type: `application/json`
+   - Secret: same as `GITHUB_WEBHOOK_SECRET`
+   - Events: Select "Workflow runs"
+
+3. Restart Engine.
+
+---
+
 ## MCP Setup (Claude Desktop)
 
 Query Bionic from Claude Desktop in natural language.

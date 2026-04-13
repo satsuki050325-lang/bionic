@@ -8,6 +8,7 @@ import { researchRouter } from './routes/research.js'
 import { actionsRouter } from './routes/actions.js'
 import { diagnosticsRouter } from './routes/diagnostics.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
+import { githubWebhookRouter } from './routes/webhooks/github.js'
 import { engineAuthMiddleware } from './middleware/auth.js'
 import { startScheduler } from './scheduler/index.js'
 import { startDiscordBot } from './discord/index.js'
@@ -22,6 +23,12 @@ app.use(
   '/api/webhooks/vercel',
   express.raw({ type: 'application/json', limit: '1mb' }),
   vercelWebhookRouter
+)
+
+app.use(
+  '/api/webhooks/github',
+  express.raw({ type: 'application/json', limit: '5mb' }),
+  githubWebhookRouter
 )
 
 app.use(express.json({ limit: '1mb' }))

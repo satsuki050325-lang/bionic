@@ -10,6 +10,10 @@ export type EventType =
   | 'job.started'
   | 'job.completed'
   | 'job.failed'
+  | 'github.workflow.failed'
+  | 'github.issue.opened'
+  | 'github.pull_request.merged'
+  | 'github.release.published'
 
 export type AlertType =
   | 'service_health'
@@ -17,6 +21,7 @@ export type AlertType =
   | 'research_digest'
   | 'job_failure'
   | 'deployment_regression'
+  | 'ci_failure'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 export type AlertStatus = 'open' | 'resolved'

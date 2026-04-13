@@ -99,6 +99,26 @@ function readCron(
   return val
 }
 
+function readGitHubRepoMap(
+  env: NodeJS.ProcessEnv,
+  name: string
+): Map<string, string> {
+  const val = env[name]
+  const map = new Map<string, string>()
+  if (!val) return map
+  for (const entry of val.split(',')) {
+    const trimmed = entry.trim()
+    const colonIdx = trimmed.lastIndexOf(':')
+    if (colonIdx <= 0) continue
+    const repo = trimmed.slice(0, colonIdx)
+    const serviceId = trimmed.slice(colonIdx + 1)
+    if (repo && serviceId) {
+      map.set(repo, serviceId)
+    }
+  }
+  return map
+}
+
 function readVercelProjectMap(
   env: NodeJS.ProcessEnv,
   name: string
@@ -154,6 +174,12 @@ export interface EngineConfig {
   vercel: {
     webhookSecret: string | null
     projectMap: Map<string, string>
+  }
+
+  github: {
+    webhookSecret: string | null
+    repoMap: Map<string, string>
+    enabled: boolean
   }
 }
 
@@ -217,6 +243,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       webhookSecret: readString(env, 'VERCEL_WEBHOOK_SECRET'),
       projectMap: readVercelProjectMap(env, 'BIONIC_VERCEL_PROJECT_MAP'),
     },
+
+    github: {
+      webhookSecret: readString(env, 'GITHUB_WEBHOOK_SECRET'),
+      repoMap: readGitHubRepoMap(env, 'BIONIC_GITHUB_REPO_MAP'),
+      enabled: !!readString(env, 'GITHUB_WEBHOOK_SECRET'),
+    },
   }
 }
 
@@ -268,6 +300,11 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
     vercel: {
       webhookSecret: config.vercel.webhookSecret ? '[set]' : '[not set]',
       projectMapSize: config.vercel.projectMap.size,
+    },
+    github: {
+      webhookSecret: config.github.webhookSecret ? '[set]' : '[not set]',
+      repoMapSize: config.github.repoMap.size,
+      enabled: config.github.enabled,
     },
   }
 }

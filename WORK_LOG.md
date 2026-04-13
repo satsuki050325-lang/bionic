@@ -3,6 +3,33 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 GitHub連携）
+
+### やったこと
+- config.ts に github 設定を追加（webhookSecret / repoMap / enabled + redactConfig 対応）
+- shared 型に AlertType='ci_failure' と EventType='github.*' を追加
+- packages/engine/src/sources/github.ts 新規作成（HMAC-SHA256署名検証 / severity分類 / fingerprint v2）
+- packages/engine/src/decisions/github.ts 新規作成（workflow_run failure → ci_failure alert・audit log結線）
+- packages/engine/src/routes/webhooks/github.ts 新規作成（secret未設定は401・署名検証・X-GitHub-Delivery idempotency）
+- index.ts に raw body middleware + githubWebhookRouter を追加
+- .env.example / README.md に GitHub Webhook Setup セクションを追加
+- `pnpm verify` 全通過
+
+### 判断したこと
+- private repo対策として payload は repository.full_name/default_branch と action のみ engine_events に保存（body全文は保存しない）
+- fingerprint v2 では workflowRunId は含めない（毎実行で別alertになるのを防ぎ、同branch/同workflowはcount++）
+- default branch / release/* / hotfix/* を critical、それ以外を warning
+- failed conclusion は failure / timed_out / action_required の3種
+- raw body limit は 5mb（GitHub Webhookは比較的大きい）
+- X-GitHub-Delivery を client_event_id として idempotency 確保
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと
