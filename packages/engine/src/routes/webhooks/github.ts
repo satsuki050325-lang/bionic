@@ -63,10 +63,15 @@ githubWebhookRouter.post('/', (req: Request, res: Response): void => {
     const serviceId =
       (repo?.['full_name'] as string | undefined) ?? 'github'
 
-    await supabase.from('engine_events').insert({
+    const eventType =
+      githubEvent === 'workflow_run'
+        ? 'github.workflow.failed'
+        : `github.${githubEvent ?? 'unknown'}`
+
+    const { error: insertError } = await supabase.from('engine_events').insert({
       project_id: projectId,
       service_id: serviceId,
-      type: githubEvent ? `github.${githubEvent}` : 'github.unknown',
+      type: eventType,
       source: 'engine',
       client_event_id: clientEventId,
       payload: {
@@ -81,6 +86,16 @@ githubWebhookRouter.post('/', (req: Request, res: Response): void => {
       },
       occurred_at: new Date().toISOString(),
     })
+
+    if (insertError) {
+      if ((insertError as { code?: string }).code === '23505') {
+        res.status(202).json({ processed: false, duplicate: true })
+        return
+      }
+      console.error('[webhooks/github] failed to save event:', insertError)
+      res.status(500).json({ error: 'failed to save event' })
+      return
+    }
 
     if (githubEvent === 'workflow_run') {
       const payload = body as unknown as GitHubWorkflowRunPayload

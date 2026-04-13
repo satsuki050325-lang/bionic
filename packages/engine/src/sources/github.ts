@@ -63,7 +63,7 @@ export function classifyWorkflowRunSeverity(
 export function buildCiFailureFingerprint(
   projectId: string,
   repoFullName: string,
-  _workflowRunId: number,
+  workflowName: string,
   headBranch: string,
   defaultBranch: string
 ): string {
@@ -75,12 +75,15 @@ export function buildCiFailureFingerprint(
         ? `pr:${headBranch.replace('refs/pull/', '').replace('/merge', '')}`
         : `branch:${headBranch}`
 
+  const normalizedWorkflowName = workflowName.toLowerCase().replace(/[^a-z0-9]/g, '_')
+
   return [
     'v2',
     projectId,
     serviceId,
     'ci_failure',
     repoFullName.replace('/', '_'),
+    normalizedWorkflowName,
     scope,
   ].join(':')
 }

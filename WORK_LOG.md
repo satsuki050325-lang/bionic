@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 GitHub連携 finding修正）
+
+### やったこと
+- routes/webhooks/github.ts: insert結果を確認、23505 は 202 duplicate、その他エラーは 500、insert成功時のみ評価処理を実行
+- routes/webhooks/github.ts: workflow_run event は `github.workflow.failed` に正規化、それ以外は `github.{event}` のまま
+- sources/github.ts: buildCiFailureFingerprint に workflowName を追加（小文字＋non-alnum→`_`）して別workflowの失敗を分離
+- decisions/github.ts: 呼び出しに workflow_run.name を渡すよう更新
+- `pnpm verify` 全通過
+
+### 判断したこと
+- workflowNameをfingerprintに含めることで「testは赤・lintは緑」のような同branch複数workflowの状態を正しく分離
+- insert失敗時は評価処理を呼ばないことで race condition による二重alertを防止
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 GitHub連携）
 
 ### やったこと

@@ -26,7 +26,7 @@ export async function evaluateGitHubWorkflowRun(
   const fingerprint = buildCiFailureFingerprint(
     projectId,
     repoFullName,
-    workflow_run.id,
+    workflow_run.name,
     workflow_run.head_branch,
     repository.default_branch
   )
