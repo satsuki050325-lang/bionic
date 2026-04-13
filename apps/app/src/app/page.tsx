@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getStatus, getEvents } from '@/lib/engine'
 
 export default async function DashboardPage() {
@@ -14,6 +15,12 @@ export default async function DashboardPage() {
         <p className="text-text-secondary font-mono text-sm">
           Run <span className="text-accent">pnpm --filter @bionic/engine dev</span> to start
         </p>
+        <Link
+          href="/onboarding"
+          className="font-mono text-sm text-accent hover:underline uppercase tracking-wider"
+        >
+          Open Onboarding →
+        </Link>
       </div>
     )
   }

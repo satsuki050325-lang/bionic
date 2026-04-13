@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-04-13 / Claude（Appオンボーディング画面）
+
+### やったこと
+- `/onboarding` ページを新規実装（Hero・System Check・Operator Console・All Good State）
+- 5項目のセットアップ確認（Engine / DB / Scheduler / Discord / Vercel）
+- Engine offline時はコマンド一覧を表示、ready時はDashboardへのCTAを表示
+- StatusBadgeに loading / optional / degraded / missing / ready を追加
+- NavにONBOARDINGリンクを追加
+- Dashboard offline状態にOpen Onboardingリンクを追加
+- `pnpm verify` 全通過（typecheck + test 36件 + app build）
+
+### 判断したこと
+- L3品質対象なのでDESIGN.mdのtoken（bg-accent・text-text-primary等）を使用（hex直書き回避）
+- ◈シンボルを大きく配置してretrofuturist感を強調
+- 必須2項目（Engine/DB）が揃えばEnter Dashboardを開放、optional3項目は案内のみ
+- client componentでdiagnostics fetch（engine offline判定のため）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと

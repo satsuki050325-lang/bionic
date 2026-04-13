@@ -26,6 +26,9 @@ export default function RootLayout({
               <a href="/" className="text-text-secondary hover:text-accent transition-colors">
                 DASHBOARD
               </a>
+              <a href="/onboarding" className="text-text-secondary hover:text-accent transition-colors">
+                ONBOARDING
+              </a>
               <a href="/alerts" className="text-text-secondary hover:text-accent transition-colors">
                 ALERTS
               </a>

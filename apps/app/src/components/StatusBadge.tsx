@@ -12,6 +12,13 @@ export function StatusBadge({ status }: { status: string }) {
     completed: 'bg-status-success/10 text-status-success border border-status-success/30',
     succeeded: 'bg-status-success/10 text-status-success border border-status-success/30',
     approved: 'bg-status-success/10 text-status-success border border-status-success/30',
+    ready: 'bg-status-success/10 text-status-success border border-status-success/30',
+    missing: 'bg-status-critical/10 text-status-critical border border-status-critical/30',
+    degraded: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
+    optional:
+      'bg-status-neutral/10 text-status-neutral border border-status-neutral/30',
+    loading:
+      'bg-status-neutral/10 text-status-neutral border border-status-neutral/30',
   }
   const style =
     styles[status] ??
