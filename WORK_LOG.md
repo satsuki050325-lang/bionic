@@ -3,6 +3,27 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- bionic initを実装した（対話形式・.env.local生成）
+- Supabase・Engine token自動生成・Scheduler・Discord・Vercel対話形式セットアップ
+- Discord空入力時のskip扱いを実装した
+- Codexレビュー完了・P2 finding修正済み
+
+### 判断したこと
+- DiscordはWebhookをデフォルト推奨
+- Vercelはデフォルトskip
+- secret値はsummaryで[set]表示のみ
+- 既存.env.localは上書き確認のみ（mergeしない）
+
+### 次にやること
+- Phase 2.1: Appオンボーディング画面
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（bionic init P2 finding修正）
 
 ### やったこと

@@ -149,6 +149,11 @@
 - Bot通知関数をPromise<boolean>に変更
 - Webhook fallback対応（approval・alert reminder）
 - Codexレビュー完了・P1/P2 finding全修正済み
+- bionic init実装（packages/cli/src/commands/init.ts）
+- Supabase・Engine・Scheduler・Discord・Vercel対話形式セットアップ
+- secret値はsummaryで[set]/[auto-generated]表示
+- Discord空入力時のskip扱い
+- Codexレビュー完了・P2 finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -167,10 +172,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.1: bionic init最小実装
+- Phase 2.1: Appオンボーディング画面
 
 ### done条件
-- [ ] `bionic init` で `.env.local` 生成・Discord Bot設定確認・Supabase接続確認ができる
+- [ ] Appに初回セットアップガイド画面が表示される
 
 ---
 
@@ -200,7 +205,8 @@ Phase 1.8: migration fresh apply確認（完了）
 Phase 1.8: Stabilize Bionic Core 完了
 Phase 2.0: Runner / Policy / Approvalの完成（完了）
 Phase 2.1: Engine diagnostics画面（完了）
-Phase 2.1: bionic init最小実装（今ここ）
+Phase 2.1: bionic init最小実装（完了）
+Phase 2.1: Appオンボーディング画面（今ここ）
 
 
 ---
@@ -236,4 +242,4 @@ Phase 2.1: bionic init最小実装（今ここ）
 
 ## 最終更新
 
-2026-04-12 / Claude Code
+2026-04-13 / Claude Code
