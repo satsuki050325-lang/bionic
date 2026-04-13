@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-13 / Claude（bionic init P2 finding修正）
+
+### やったこと
+- `packages/cli/src/commands/init.ts` のDiscord設定で必須項目が空入力の場合にskip扱いへフォールバックするよう修正
+- webhook: URL空なら `discordMode = 'skip'` にしてSummary・.env出力に反映
+- bot: token/channelIdどちらか空ならskip扱い、両方揃ったときのみapproverIds（optional）を追加入力
+- `discordMode` を `let` に変更して再代入可能にした
+- `pnpm typecheck` 全通過を確認
+
+### 判断したこと
+- 必須項目が空でもinitを止めない（skipに倒す方がUX的に親切）
+- summaryは既存のまま `discordMode` 変数を参照するので修正不要（自動反映）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと

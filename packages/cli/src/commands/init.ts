@@ -57,7 +57,7 @@ export async function initCommand(options?: { force?: boolean }): Promise<void> 
 
   console.log('\n── Discord ──────────────────────────────')
   console.log('  Options: webhook (recommended) / bot / skip')
-  const discordMode = (await askChoice('  Configure Discord notifications?', [
+  let discordMode = (await askChoice('  Configure Discord notifications?', [
     'webhook',
     'bot',
     'skip',
@@ -69,13 +69,26 @@ export async function initCommand(options?: { force?: boolean }): Promise<void> 
   let discordApproverIds: string | undefined
 
   if (discordMode === 'webhook') {
-    discordWebhookUrl = await ask('  DISCORD_WEBHOOK_URL')
+    const url = await ask('  DISCORD_WEBHOOK_URL')
+    if (!url) {
+      console.log('  ⚠ URL not provided. Discord will be skipped.')
+      discordMode = 'skip'
+    } else {
+      discordWebhookUrl = url
+    }
   } else if (discordMode === 'bot') {
-    discordBotToken = await ask('  BIONIC_DISCORD_BOT_TOKEN')
-    discordChannelId = await ask('  BIONIC_DISCORD_CHANNEL_ID')
-    discordApproverIds = await ask(
-      '  BIONIC_DISCORD_APPROVER_IDS (comma-separated user IDs)'
-    )
+    const token = await ask('  BIONIC_DISCORD_BOT_TOKEN')
+    const channelId = await ask('  BIONIC_DISCORD_CHANNEL_ID')
+    if (!token || !channelId) {
+      console.log('  ⚠ Bot token or Channel ID not provided. Discord will be skipped.')
+      discordMode = 'skip'
+    } else {
+      discordBotToken = token
+      discordChannelId = channelId
+      discordApproverIds = await ask(
+        '  BIONIC_DISCORD_APPROVER_IDS (comma-separated user IDs, optional)'
+      )
+    }
   }
 
   console.log('\n── Vercel ───────────────────────────────')
