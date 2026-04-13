@@ -154,6 +154,12 @@
 - secret値はsummaryで[set]/[auto-generated]表示
 - Discord空入力時のskip扱い
 - Codexレビュー完了・P2 finding修正済み
+- Appオンボーディング画面実装（/onboarding）
+- Next.js API route proxy（/api/diagnostics）
+- 5秒ポーリング実装
+- StatusBadgeにready/missing/degraded/optional/loading追加
+- Dashboard offlineにOpen Onboarding CTA追加
+- Codexレビュー完了・P2 finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -172,10 +178,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.1: Appオンボーディング画面
+- Phase 2.2: Signal Quality（SDK event rate limit・alert resolve flow）
 
 ### done条件
-- [ ] Appに初回セットアップガイド画面が表示される
+- [ ] SDK eventのrate limit / dedupe実装
+- [ ] alert resolve flow実装
 
 ---
 
@@ -206,7 +213,9 @@ Phase 1.8: Stabilize Bionic Core 完了
 Phase 2.0: Runner / Policy / Approvalの完成（完了）
 Phase 2.1: Engine diagnostics画面（完了）
 Phase 2.1: bionic init最小実装（完了）
-Phase 2.1: Appオンボーディング画面（今ここ）
+Phase 2.1: Appオンボーディング画面（完了）
+Phase 2.1: Productizable Setup 完了
+Phase 2.2: Signal Quality（今ここ）
 
 
 ---

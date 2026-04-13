@@ -3,6 +3,29 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Appオンボーディング画面を実装した（/onboarding）
+- Next.js API routeでEngineへのproxyを実装した（BIONIC_ENGINE_TOKENはserver-only維持）
+- 5秒ポーリングでEngine状態が自動更新されるようにした
+- StatusBadgeにready/missing/degraded/optional/loadingを追加した
+- Dashboard offlineにOpen Onboarding CTAを追加した
+- Codexレビュー完了・P2 finding修正済み
+- Phase 2.1: Productizable Setup 全タスク完了
+
+### 判断したこと
+- オンボーディングはClient Component + API route proxy（server-only token維持・ポーリングあり）
+- Engine+DBを必須、Scheduler/Discord/VercelはOPTIONAL扱い
+- /onboardingはNavに常設
+
+### 次にやること
+- Phase 2.2: Signal Quality
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（オンボーディング P2 finding修正）
 
 ### やったこと
