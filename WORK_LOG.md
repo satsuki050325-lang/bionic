@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Dashboard UIを大幅改善した（Operational Brief・What Needs Attention・Incident Brief）
+- Claude Haiku APIでIncident Briefを動的生成するAPIを実装した（5分キャッシュ・alert変化で即失効）
+- ANTHROPIC_API_KEY未設定時はavailable:falseでフォールバック表示
+- Anthropicへの送信はtype/severity/service_id/count/last_seen_atのみ（title/message除外）
+- Privacy noticeを.env.exampleとREADMEに追加した
+- Codexレビュー完了・全finding修正済み
+
+### 判断したこと
+- Incident Briefはopt-in（ANTHROPIC_API_KEY未設定でも動作する）
+- 外部AI送信はredacted（title/messageは送らない）
+- キャッシュキーはalert数とupdated_atで管理する
+
+### 次にやること
+- Alerts UIの改善（fingerprint折りたたみ・resolve導線・時間表示）
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude Code
 
 ### やったこと

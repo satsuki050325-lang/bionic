@@ -201,6 +201,11 @@
 - Discord部分設定のWARN検出
 - FAILで exit code 1
 - Codexレビュー完了・P2 finding全修正済み
+- Dashboard UI改善Phase 1（Operational Brief・情報階層強化）
+- Dashboard UI改善Phase 2（Incident Brief API・動線重視レイアウト）
+- Incident Brief finding修正（DBエラー・redaction・cache）
+- ANTHROPIC_API_KEY設定時のPrivacy notice追加
+- Codexレビュー完了・全finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -219,10 +224,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: bionic demo実装
+- Phase 2.4: Alerts UIの改善（fingerprint折りたたみ・resolve導線・時間表示）
 
 ### done条件
-- [ ] bionic demoコマンドの実装
+- [ ] Alerts一覧のUI改善
 - [ ] Public Preview向けドキュメント整備
 
 ---
@@ -264,7 +269,9 @@ Phase 2.3-4: Deploy→Watch判定精度向上（完了）
 Phase 2.3-5: SDK品質改善（完了）
 Phase 2.3: Integrations 完了
 Phase 2.4: bionic doctor実装（完了）
-Phase 2.4: bionic demo実装（今ここ）
+Phase 2.4: bionic demo実装（完了）
+Phase 2.4: Dashboard UI改善（完了）
+Phase 2.4: Alerts UI改善（今ここ）
 
 
 ---
