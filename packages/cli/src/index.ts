@@ -4,6 +4,7 @@ import { statusCommand } from './commands/status.js'
 import { approvalsCommand } from './commands/approvals.js'
 import { approveCommand, denyCommand } from './commands/approve.js'
 import { initCommand } from './commands/init.js'
+import { doctorCommand } from './commands/doctor.js'
 
 program
   .name('bionic')
@@ -15,6 +16,12 @@ program
   .description('Create .env.local for Bionic')
   .option('--force', 'Overwrite existing .env.local without confirmation')
   .action((options: { force?: boolean }) => initCommand(options))
+
+program
+  .command('doctor')
+  .description('Diagnose Bionic local setup')
+  .option('--engine-url <url>', 'Override Bionic Engine URL')
+  .action((options: { engineUrl?: string }) => doctorCommand(options))
 
 program
   .command('status')

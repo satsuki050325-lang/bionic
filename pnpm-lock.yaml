@@ -57,6 +57,9 @@ importers:
       '@bionic/shared':
         specifier: workspace:*
         version: link:../shared
+      '@supabase/supabase-js':
+        specifier: ^2.103.0
+        version: 2.103.0
       chalk:
         specifier: ^5.3.0
         version: 5.6.2

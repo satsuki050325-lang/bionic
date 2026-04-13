@@ -3,6 +3,41 @@
 
 ---
 
+## 2026-04-13 / Claude Code
+
+### やったこと
+- Phase 2.4: bionic doctor コマンドを実装した
+- packages/cli/src/commands/doctor.ts 新規作成（Environment / Database / Engine / Discord / Integrations / Summary 5セクション + サマリ）
+- packages/cli/src/lib/envLoader.ts 新規作成（.env.localをprocess.envにmerge・既存値優先・quoted value対応）
+- packages/cli/src/index.ts に doctor サブコマンド追加（--engine-url オプション付き）
+- packages/cli/package.json に @supabase/supabase-js ^2.103.0 を追加
+- Supabase接続・必須テーブル6種・重要カラム確認（information_schema → per-columnフォールバック）
+- Engine `/api/status` に対する 200/401/503/接続失敗の4分岐ハンドリング
+- Discord mode（bot/webhook/disabled）と approver IDs の検証
+- 4 integrations（Vercel/GitHub/Stripe/Sentry）の secret ⇄ map/serviceId ペア検証
+- 出力はASCII（OK/WARN/FAIL/SKIP）のみ、絵文字未使用
+- 終了コードは FAIL なしで 0 / FAIL ありで 1
+- pnpm typecheck 通過、pnpm --filter @bionic/cli build 通過
+- 動作確認: 実環境で22チェック実行（20 OK / 2 WARN / 1 FAIL (Engine未起動) / 3 SKIP）
+- --engine-url オーバーライドで別URLを指定したときも FAIL で exit 1 を確認
+
+### 判断したこと
+- カラム確認は information_schema.columns が PostgREST 経由で取得できる環境を優先し、取れない場合は各カラムへの select(col) limit(0) でフォールバックした（Supabase構成差異を吸収するため）
+- Engine 未起動は FAIL として扱うが doctor 全体は最後まで走り切らせる（他セクションの診断結果をブロックしない方針）
+- BIONIC_ENGINE_TOKEN 未設定は WARN（ローカル開発では必須ではないが、本番では required）
+- Summary の Next step は最初の FAIL の fix を優先、なければ最初の WARN の fix、それもなければ Engine 起動案内
+
+### 未解決 / 既知リスク
+- information_schema.columns が PostgREST のデフォルト露出でないため、フォールバックパス（per-column probe）が主経路になる可能性がある。現状の実環境では OK で通過したが、運用で表示される FAIL カラムが 0 の場合と区別できるよう、将来 detail にどちらの方式で確認したかのメタ情報を足してもよい
+
+### 次にやること
+- Phase 2.4: npm公開準備（private解除・workspace:*の解決）
+- Phase 2.4: Public Preview向けドキュメント整備
+
+担当：Claude Code
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと
