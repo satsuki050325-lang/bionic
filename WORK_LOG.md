@@ -3,6 +3,23 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- bionic doctorコマンドを実装した
+- Environment/Database/Engine/Discord/Integrationsの6セクション確認
+- BIONIC_ENGINE_URLを優先したEngine URL解決を実装した
+- Discord部分設定（Bot tokenのみ・Channel IDのみ）をWARNで検出した
+- FAILがある場合はexit code 1を返すようにした
+- Codexレビュー完了・P2 finding全修正済み
+
+### 次にやること
+- Phase 2.4: bionic demo実装
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude Code
 
 ### やったこと
