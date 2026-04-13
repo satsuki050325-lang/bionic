@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.2: Signal Quality全タスクを完了した
+- alert resolve flowを実装した（手動POST /api/alerts/:id/resolve・service.health ok時の自動resolve）
+- fingerprint v2を実装した（normalizeMessage・alertType別stableKey）
+- SDKにrate limit（60/min）とdedupe（30s・health ok 60s）を実装した
+- health degraded後の復旧イベントは必ずdedupe対象外にした
+- client_event_id unique indexを追加してPOST重複時に202を返すようにした
+- CaptureEventResultのeventIdをstring | nullに変更した
+- VALID_SOURCESにmcpを追加した
+- Codexレビュー完了・全finding修正済み
+
+### 判断したこと
+- service_errorの自動resolveはPhase 2.2に含めない（手動のみ）
+- CaptureEventResultのeventIdはDBクエリ追加ではなく型変更で対応
+- fingerprint v2は新規alertから適用（既存open alertはそのまま）
+
+### 次にやること
+- Phase 2.3: Integrations
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.2 VALID_SOURCESにmcp追加）
 
 ### やったこと

@@ -160,6 +160,14 @@
 - StatusBadgeにready/missing/degraded/optional/loading追加
 - Dashboard offlineにOpen Onboarding CTA追加
 - Codexレビュー完了・P2 finding修正済み
+- Phase 2.2: Signal Quality完了
+- alert resolve flow（手動・自動・audit log）
+- fingerprint v2（normalizeMessage・alertType別stableKey）
+- SDK rate limit（60/min）・dedupe（30s・health ok 60s・復旧イベント必送）
+- client_event_id unique index・重複POST時に202返却
+- CaptureEventResult型修正（eventId: string | null）
+- VALID_SOURCESにmcp追加
+- Codexレビュー完了・全finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -178,11 +186,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.2: Signal Quality（SDK event rate limit・alert resolve flow）
+- Phase 2.3: Integrations（GitHub連携またはStripe監視）
 
 ### done条件
-- [ ] SDK eventのrate limit / dedupe実装
-- [ ] alert resolve flow実装
+- [ ] GitHub webhook受信（issue/PR/CI失敗）または Stripe webhook（支払い失敗）のどちらか1つを実装
 
 ---
 
@@ -215,7 +222,8 @@ Phase 2.1: Engine diagnostics画面（完了）
 Phase 2.1: bionic init最小実装（完了）
 Phase 2.1: Appオンボーディング画面（完了）
 Phase 2.1: Productizable Setup 完了
-Phase 2.2: Signal Quality（今ここ）
+Phase 2.2: Signal Quality（完了）
+Phase 2.3: Integrations（今ここ）
 
 
 ---
