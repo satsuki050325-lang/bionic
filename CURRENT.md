@@ -208,6 +208,11 @@
 - Codexレビュー完了・全finding修正済み
 - Alerts UI改善（severity sort・相対時間・fingerprint折りたたみ・Next Step・Resolve）
 - Codexレビュー完了・問題なし
+- Actions/Research/Onboarding/共通UI改善
+- Settingsページ実装（言語切り替え含む）
+- Dashboard 24h error trend sparkline実装
+- GET /api/metrics/events API追加
+- Codexレビュー完了・P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -226,11 +231,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: README整備・LICENSE確定・GitHub公開準備
+- Phase 2.4: README整備・LICENSE確定・Show HN投稿文・GitHub公開準備
 
 ### done条件
 - [ ] README英語化/整備
 - [ ] LICENSE確定
+- [ ] Show HN投稿文
 - [ ] GitHub公開準備
 
 ---

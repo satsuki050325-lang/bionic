@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Actions/Research/Onboarding/共通UI改善を実装した
+- formatRelativeTimeをtime.tsに共通化した
+- Settingsページを実装した（9セクション・read-only・言語切り替え）
+- 言語切り替え（en/ja）をcookieベースで実装した
+- Dashboard Open Alertsカードに24h error trend sparklineを追加した
+- GET /api/metrics/eventsをEngineに追加した
+- AdvancedセクションにDeployment Watch・Quiet Hours設定を追加した
+- Codexレビュー完了・P2 finding全修正済み
+
+### 判断したこと
+- グラフはDashboardのみ（数値判断が必要な場所のみ）
+- Settingsは表示のみ（.env.local編集はCLI前提）
+- 言語切り替えはSettingsページのみ翻訳（全ページ翻訳は別タスク）
+- sparklineは自前SVG（Recharts追加依存なし）
+
+### 次にやること
+- Phase 2.4: README整備・LICENSE確定・Show HN投稿文・GitHub公開準備
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと
