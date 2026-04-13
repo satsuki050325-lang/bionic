@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Phase 2.4: Alerts UI を刷新した（apps/app/src/app/alerts/page.tsx）
+- severity ソート（critical→warning→info）を実装、同severity内は lastSeenAt desc
+- 相対時間表示（`formatRelativeTime`）で "Last seen 3m ago" + `×count` を表示、`First seen Apr 13 17:30` を補助表示
+- fingerprint を `<details>Technical details</details>` に折りたたみ
+- Next Step をルールベース関数（deployment_regression / service_error / service_health / ci_failure / payment_failure / sentry_issue 他）で生成
+- Resolve Server Action を追加（apps/app/src/app/alerts/actions.ts）。Engine `/api/alerts/:id/resolve` に POST し、成功時 revalidatePath('/alerts') と '/'
+- ResolveButton を Client Component として分離（useTransition・エラー表示）
+- critical は `border-l-2 border-l-status-critical bg-status-critical/5` + font-semibold、warning/info は `border-l-status-warning`/`border-l-status-info`
+- ページヘッダーを `UPPERCASE + tracking-wide` に刷新、サブラベルに `N critical · M open` を表示
+- 空状態を `◈ ALL SYSTEMS QUIET` に変更
+- hex直書きなし、semantic token のみ
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- ResolveButton は `useTransition` を使って pending 状態とエラー表示を両立（`disabled:opacity-50 + cursor-not-allowed`）
+- Server Action の resolvedBy は `app:local`（将来、実アクター名に差し替える余地あり）
+- Tailwind の border-l ユーティリティは `border-l-2` + `border-l-<color>` の組み合わせで semantic token 経由にした
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと
