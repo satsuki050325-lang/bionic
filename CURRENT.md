@@ -206,6 +206,8 @@
 - Incident Brief finding修正（DBエラー・redaction・cache）
 - ANTHROPIC_API_KEY設定時のPrivacy notice追加
 - Codexレビュー完了・全finding修正済み
+- Alerts UI改善（severity sort・相対時間・fingerprint折りたたみ・Next Step・Resolve）
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -224,11 +226,12 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: Alerts UIの改善（fingerprint折りたたみ・resolve導線・時間表示）
+- Phase 2.4: README整備・LICENSE確定・GitHub公開準備
 
 ### done条件
-- [ ] Alerts一覧のUI改善
-- [ ] Public Preview向けドキュメント整備
+- [ ] README英語化/整備
+- [ ] LICENSE確定
+- [ ] GitHub公開準備
 
 ---
 
@@ -271,7 +274,8 @@ Phase 2.3: Integrations 完了
 Phase 2.4: bionic doctor実装（完了）
 Phase 2.4: bionic demo実装（完了）
 Phase 2.4: Dashboard UI改善（完了）
-Phase 2.4: Alerts UI改善（今ここ）
+Phase 2.4: Alerts UI改善（完了）
+Phase 2.4: Public Preview公開準備（今ここ）
 
 
 ---

@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Alerts UIを改善した
+- critical→warning→infoのseverity sortを追加した
+- 相対時間表示（Last seen 3m ago）を追加した
+- fingerprintをTechnical detailsに折りたたんだ
+- ルールベースのNext Step（6種のalert type別）を追加した
+- ResolveボタンとServer Actionを実装した
+- 空状態を◈ All systems quietに変更した
+- Codexレビュー完了・問題なし
+
+### 次にやること
+- Phase 2.4: README整備・LICENSE確定・GitHub公開準備
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと
