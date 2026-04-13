@@ -3,6 +3,23 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.2 CaptureEventResult型修正）
+
+### やったこと
+- `CaptureEventResult` の型を `{ accepted: boolean, eventId: string | null, duplicate?: boolean }` に変更
+- events.ts の duplicate 応答が型と一致することを確認
+- `pnpm verify` 全通過
+
+### 判断したこと
+- Medini・bionic 本体で eventId を参照する呼び出し元がないことを確認済みなので、破壊的変更なし
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.2 finding修正）
 
 ### やったこと

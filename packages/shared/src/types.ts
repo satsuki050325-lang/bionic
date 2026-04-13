@@ -41,8 +41,9 @@ export interface CaptureEventInput {
 }
 
 export interface CaptureEventResult {
-  accepted: true
-  eventId: string
+  accepted: boolean
+  eventId: string | null
+  duplicate?: boolean
 }
 
 // ── ServiceStatus ──────────────────────────────────────────────────
