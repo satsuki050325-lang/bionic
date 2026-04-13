@@ -189,6 +189,27 @@ BIONIC_STRIPE_SERVICE_ID=medini
 
 ---
 
+## Sentry Webhook Setup (Error Monitoring)
+
+Monitors Sentry issues: new issues and regressions become alerts.
+
+### Setup
+
+1. Add to `.env.local`:
+```bash
+SENTRY_WEBHOOK_SECRET=your-secret
+BIONIC_SENTRY_SERVICE_ID=medini
+```
+
+2. Configure Sentry:
+   - Sentry → Settings → Integrations → Webhooks (or Internal Integration)
+   - Webhook URL: `https://your-ngrok-url/api/webhooks/sentry`
+   - Resources / Events: `issue`
+
+3. Restart Engine.
+
+---
+
 ## MCP Setup (Claude Desktop)
 
 Query Bionic from Claude Desktop in natural language.

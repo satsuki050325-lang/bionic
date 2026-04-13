@@ -10,6 +10,7 @@ import { diagnosticsRouter } from './routes/diagnostics.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { githubWebhookRouter } from './routes/webhooks/github.js'
 import { stripeWebhookRouter } from './routes/webhooks/stripe.js'
+import { sentryWebhookRouter } from './routes/webhooks/sentry.js'
 import { engineAuthMiddleware } from './middleware/auth.js'
 import { startScheduler } from './scheduler/index.js'
 import { startDiscordBot } from './discord/index.js'
@@ -36,6 +37,12 @@ app.use(
   '/api/webhooks/stripe',
   express.raw({ type: 'application/json', limit: '1mb' }),
   stripeWebhookRouter
+)
+
+app.use(
+  '/api/webhooks/sentry',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  sentryWebhookRouter
 )
 
 app.use(express.json({ limit: '1mb' }))

@@ -187,6 +187,12 @@ export interface EngineConfig {
     serviceId: string
     enabled: boolean
   }
+
+  sentry: {
+    webhookSecret: string | null
+    serviceId: string
+    enabled: boolean
+  }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
@@ -261,6 +267,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       serviceId: readString(env, 'BIONIC_STRIPE_SERVICE_ID') ?? 'stripe',
       enabled: !!readString(env, 'STRIPE_WEBHOOK_SECRET'),
     },
+
+    sentry: {
+      webhookSecret: readString(env, 'SENTRY_WEBHOOK_SECRET'),
+      serviceId: readString(env, 'BIONIC_SENTRY_SERVICE_ID') ?? 'sentry',
+      enabled: !!readString(env, 'SENTRY_WEBHOOK_SECRET'),
+    },
   }
 }
 
@@ -322,6 +334,11 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
       webhookSecret: config.stripe.webhookSecret ? '[set]' : '[not set]',
       serviceId: config.stripe.serviceId,
       enabled: config.stripe.enabled,
+    },
+    sentry: {
+      webhookSecret: config.sentry.webhookSecret ? '[set]' : '[not set]',
+      serviceId: config.sentry.serviceId,
+      enabled: config.sentry.enabled,
     },
   }
 }

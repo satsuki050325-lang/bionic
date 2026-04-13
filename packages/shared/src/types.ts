@@ -20,6 +20,8 @@ export type EventType =
   | 'stripe.subscription.updated'
   | 'stripe.dispute.created'
   | 'stripe.refund.created'
+  | 'sentry.issue'
+  | 'sentry.metric_alert'
 
 export type AlertType =
   | 'service_health'
@@ -30,6 +32,7 @@ export type AlertType =
   | 'ci_failure'
   | 'payment_failure'
   | 'revenue_change'
+  | 'sentry_issue'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 export type AlertStatus = 'open' | 'resolved'

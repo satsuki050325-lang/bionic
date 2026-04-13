@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 Sentry連携）
+
+### やったこと
+- config.ts に sentry 設定を追加（webhookSecret / serviceId / enabled + redactConfig）
+- shared 型に AlertType `sentry_issue`、EventType `sentry.issue` / `sentry.metric_alert` を追加
+- packages/engine/src/sources/sentry.ts 新規作成（HMAC-SHA256署名検証 / triggerKind分類 / fingerprint v2 / title・message builder）
+- packages/engine/src/decisions/sentry.ts 新規作成（resolved以外のtriggerをalert化・update-or-create + audit log）
+- packages/engine/src/routes/webhooks/sentry.ts 新規作成（sentry-hook-signature検証 / client_event_id idempotency / 23505→202）
+- index.ts に raw body middleware + sentryWebhookRouter を追加
+- .env.example / README.md に Sentry Webhook Setup セクションを追加
+- `pnpm verify` 全通過
+
+### 判断したこと
+- PII保護: stacktrace全文 / user email / IP は engine_events に保存しない（issueId / shortId / projectSlug / level / title 200文字制限 / permalink のみ）
+- triggerKindごとに別fingerprint（new_issue と regressed を別alertとして扱う）
+- resolved action はalert化しない（将来 auto-resolve flow と統合余地）
+- severity: regressed(production)=critical / new_issue(fatal,error)=warning / それ以外=info
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと
