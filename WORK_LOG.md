@@ -6,6 +6,28 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Settings P2 finding 2件を修正
+- layout.tsx で `bionic-locale` cookie を読み、`<html lang>` を en/ja で動的設定（cookie値のサニタイズ付き: 'ja' 以外は 'en' に落とす）
+- Settings ページに i18n 辞書（en/ja）を導入し、9セクション全てのラベルと値文言を切替（全ページ翻訳は別タスク、範囲は明示的に Settings のみ）
+- Advanced セクションを追加: Deployment Watch Window / Error Count Threshold / Error Increase Threshold / Quiet Hours Start・End を表示、未設定は status=missing で色分け
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- cookie の locale 値は 'ja' と比較して white-list 的に絞る（未知の値が `<html lang>` に反映されないよう）
+- Quiet Hours の notSetParens は locale 別に `(not set)`/`(未設定)` を辞書から参照。比較も同じ値を使うので表示と判定が一貫する
+- root layout が cookies() を使うと全ルートが Dynamic 扱いになるが、Bionic のアプリは SSR 前提なので許容（onboarding のみ静的だったが、i18n を入れる以上は動的化が妥当）
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク（README整備・LICENSE確定・GitHub公開準備）
+- 後工程: 他ページ（Dashboard / Alerts / Actions など）の i18n 辞書適用
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Phase 2.4: Settings ページ と Dashboard 用 Event Metrics を実装した
 - Engine に `GET /api/metrics/events` を追加（packages/engine/src/routes/metrics.ts）
   - window 6h/24h・bucket 1h/6h をホワイトリスト検証、projectId 未指定時は config.projectId

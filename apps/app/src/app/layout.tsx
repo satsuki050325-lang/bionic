@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -6,13 +7,16 @@ export const metadata: Metadata = {
   description: 'Bionic Engine Dashboard',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = await cookies()
+  const locale = cookieStore.get('bionic-locale')?.value === 'ja' ? 'ja' : 'en'
+
   return (
-    <html lang="ja" className="dark">
+    <html lang={locale} className="dark">
       <body className="min-h-screen bg-bg-base text-text-primary">
         <nav className="border-b border-border-subtle bg-bg-surface">
           <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
