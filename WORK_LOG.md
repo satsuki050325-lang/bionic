@@ -6,6 +6,30 @@
 ## 2026-04-13 / Claude Code
 
 ### やったこと
+- Incident Brief API の P1/P2 finding 3件 + ドキュメント修正を適用
+- DBエラー時は `cachedBrief` に書かず 503 + `available:false` を返すようにした（以前は alert=[] として正常扱い→古いキャッシュを覆う可能性があった）
+- Anthropic に送る alert 文面から `title` と `message` を除外。送信するのは type / severity / service_id / count / last_seen_at のみ（本番エラー文・顧客影響を含む可能性を遮断）
+- キャッシュキーを `count:latestUpdatedAt` に変更。TTL内でも alert 集合が変わった瞬間にキャッシュが外れる。engine_alerts の select に `updated_at` を追加
+- .env.example の ANTHROPIC_API_KEY にプライバシー警告コメントを追加、デフォルト値を空に
+- README.md に「Incident Brief (AI-powered, optional)」セクションを追加（Privacy notice: title/message/PIIは送信しない旨を明記）
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- DBエラーは 503 で返す（5xx）。UIのgetIncidentBrief() は !res.ok で null を返すのでフォールバック分岐に入る
+- キャッシュキーは「count」と「最新updated_at」の組。order は severity 昇順でも updated_at の最大値は集合に依存しないので問題なし
+- 空のalert状態にもキャッシュキーを適用（`0:`）することで、「alert 0件のBrief」と「alertありのBrief」の混同を防ぐ
+- title/message は今回完全に送らない方針。将来どうしても必要な場面が出たら明示的なredaction層を噛ませる
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク
+
+担当：Claude Code
+
+---
+
+## 2026-04-13 / Claude Code
+
+### やったこと
 - Dashboard 改善 Phase 2: Incident Brief 生成API と 動線重視レイアウトを実装
 - Engine に `GET /api/incident-brief` を追加（packages/engine/src/routes/incidentBrief.ts）
   - open alerts を最大10件取得し claude-haiku-4-5-20251001 に要約させる

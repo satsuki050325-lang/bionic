@@ -302,6 +302,26 @@ BIONIC_SENTRY_SERVICE_ID=medini
 
 ---
 
+## Incident Brief (AI-powered, optional)
+
+When `ANTHROPIC_API_KEY` is set, Bionic generates AI-powered incident summaries
+on the Dashboard using Claude Haiku.
+
+> **Privacy notice**: Alert metadata (type, severity, service name, count, timestamps)
+> is sent to Anthropic API to generate summaries. Error messages, titles, and
+> personally identifiable information are NOT sent.
+>
+> If you want to keep all data fully local, do not set `ANTHROPIC_API_KEY`.
+> The Dashboard works without it — Incident Brief will show a static summary instead.
+
+To enable:
+
+```bash
+ANTHROPIC_API_KEY=your-api-key
+```
+
+---
+
 ## MCP Setup (Claude Desktop)
 
 Query Bionic from Claude Desktop in natural language.

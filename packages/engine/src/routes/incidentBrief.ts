@@ -14,7 +14,23 @@ export interface IncidentBrief {
 
 const CACHE_TTL_MS = 5 * 60 * 1000
 
-let cachedBrief: { brief: IncidentBrief; generatedAt: number } | null = null
+let cachedBrief: {
+  brief: IncidentBrief
+  generatedAt: number
+  cacheKey: string
+} | null = null
+
+function buildCacheKey(
+  alerts: Array<{ id: string; updated_at?: string | null }>
+): string {
+  const count = alerts.length
+  const latestUpdatedAt =
+    alerts
+      .map((a) => a.updated_at ?? '')
+      .sort()
+      .pop() ?? ''
+  return `${count}:${latestUpdatedAt}`
+}
 
 export const incidentBriefRouter = Router()
 
@@ -34,41 +50,57 @@ incidentBriefRouter.get('/', async (_req, res) => {
     return
   }
 
-  if (cachedBrief && Date.now() - cachedBrief.generatedAt < CACHE_TTL_MS) {
+  const { data: alerts, error: alertError } = await supabase
+    .from('engine_alerts')
+    .select('id, type, severity, service_id, count, last_seen_at, updated_at')
+    .eq('status', 'open')
+    .order('severity', { ascending: true })
+    .limit(10)
+
+  if (alertError) {
+    console.error('[incident-brief] failed to fetch alerts:', alertError)
+    res.status(503).json({
+      available: false,
+      error: 'failed to fetch alerts from database',
+    })
+    return
+  }
+
+  const alertRows = alerts ?? []
+  const cacheKey = buildCacheKey(alertRows)
+
+  if (
+    cachedBrief &&
+    Date.now() - cachedBrief.generatedAt < CACHE_TTL_MS &&
+    cachedBrief.cacheKey === cacheKey
+  ) {
     res.json({ ...cachedBrief.brief, cached: true, available: true })
     return
   }
 
-  try {
-    const { data: alerts } = await supabase
-      .from('engine_alerts')
-      .select(
-        'id, type, severity, title, message, service_id, count, last_seen_at, created_at'
-      )
-      .eq('status', 'open')
-      .order('severity', { ascending: true })
-      .limit(10)
-
-    if (!alerts || alerts.length === 0) {
-      const emptyBrief: IncidentBrief = {
-        summary: 'All systems nominal. No open alerts.',
-        startHere: 'No action required.',
-        affectedServices: [],
-        topIssueType: null,
-        generatedAt: new Date().toISOString(),
-        cached: false,
-      }
-      cachedBrief = { brief: emptyBrief, generatedAt: Date.now() }
-      res.json({ ...emptyBrief, available: true })
-      return
+  if (alertRows.length === 0) {
+    const emptyBrief: IncidentBrief = {
+      summary: 'All systems nominal. No open alerts.',
+      startHere: 'No action required.',
+      affectedServices: [],
+      topIssueType: null,
+      generatedAt: new Date().toISOString(),
+      cached: false,
     }
+    cachedBrief = { brief: emptyBrief, generatedAt: Date.now(), cacheKey }
+    res.json({ ...emptyBrief, available: true })
+    return
+  }
 
+  try {
     const anthropic = new Anthropic({ apiKey: config.anthropic.apiKey })
 
-    const alertSummary = alerts
+    // Minimize what we send to the external API: no titles, no messages.
+    // Only metadata needed to summarize the incident surface.
+    const alertSummary = alertRows
       .map(
         (a) =>
-          `- [${String(a.severity).toUpperCase()}] ${a.type} on ${a.service_id}: ${a.title} (count: ${a.count}, last seen: ${a.last_seen_at})`
+          `- [${String(a.severity).toUpperCase()}] type=${a.type} service=${a.service_id} count=${a.count} last_seen=${a.last_seen_at}`
       )
       .join('\n')
 
@@ -117,7 +149,7 @@ Keep it concise and actionable. Use the actual service names and issue types fro
       cached: false,
     }
 
-    cachedBrief = { brief, generatedAt: Date.now() }
+    cachedBrief = { brief, generatedAt: Date.now(), cacheKey }
     res.json({ ...brief, available: true })
   } catch (err) {
     console.error('[incident-brief] failed to generate brief:', err)
