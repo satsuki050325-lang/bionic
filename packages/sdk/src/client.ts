@@ -29,6 +29,7 @@ export class BionicClient {
 
   private readonly dedupeCache = new Map<string, number>()
   private readonly rateLimitWindow: number[] = []
+  private readonly lastHealthStatus = new Map<string, string>()
 
   constructor(config: BionicSDKConfig) {
     this.engineUrl = config.engineUrl.replace(/\/$/, '')
@@ -63,10 +64,30 @@ export class BionicClient {
     return this.rateLimitWindow.length >= this.rateLimitPerMinute
   }
 
-  private isDuplicate(eventKey: string, dedupeMs: number): boolean {
+  private isDuplicate(
+    eventKey: string,
+    dedupeMs: number,
+    type: string,
+    payload: Record<string, unknown>
+  ): boolean {
+    if (type === 'service.health.reported' && payload.status === 'ok') {
+      const serviceKey = (payload.serviceId as string | undefined) ?? this.serviceId
+      const prev = this.lastHealthStatus.get(serviceKey)
+      if (prev && prev !== 'ok') {
+        return false
+      }
+    }
     const lastSentAt = this.dedupeCache.get(eventKey)
     if (!lastSentAt) return false
     return Date.now() - lastSentAt < dedupeMs
+  }
+
+  private recordHealthStatus(type: string, payload: Record<string, unknown>): void {
+    if (type.startsWith('service.health.')) {
+      const serviceKey = (payload.serviceId as string | undefined) ?? this.serviceId
+      const status = (payload.status as string | undefined) ?? 'unknown'
+      this.lastHealthStatus.set(serviceKey, status)
+    }
   }
 
   private recordSent(eventKey: string): void {
@@ -90,7 +111,7 @@ export class BionicClient {
         : this.dedupeWindowMs
 
     const eventKey = this.getEventKey(type, payload)
-    if (this.isDuplicate(eventKey, dedupeMs)) {
+    if (this.isDuplicate(eventKey, dedupeMs, type, payload)) {
       console.debug('[bionic-sdk] duplicate event. skipped.')
       return { accepted: false, eventId: null, reason: 'duplicate' }
     }
@@ -121,6 +142,7 @@ export class BionicClient {
     }
 
     this.recordSent(eventKey)
+    this.recordHealthStatus(type, payload)
     return { accepted: true, eventId: event.id }
   }
 

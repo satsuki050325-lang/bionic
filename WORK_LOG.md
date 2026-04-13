@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.2 finding修正）
+
+### やったこと
+- SDK: 前回health statusを `lastHealthStatus` Map で保持、degraded/down → ok の復旧イベントは dedupe 対象外に
+- SDK: `isDuplicate` に type/payload を渡し、`recordHealthStatus` を送信成功後に呼び出し
+- engine/routes/events.ts: insert時の 23505 (unique violation) を 202 で返す idempotent レスポンス化
+- `pnpm verify` 全通過（typecheck + test 36件 + app build）
+
+### 判断したこと
+- recordHealthStatusは `service.health.*` 両タイプで記録（そうしないと degraded→ok の遷移を検知できない）
+- 23505は500ではなく202（accepted, duplicate: true）で返す（リトライ側のUXを壊さない）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.2 Signal Quality）
 
 ### やったこと

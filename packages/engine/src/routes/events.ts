@@ -102,6 +102,11 @@ eventsRouter.post('/', async (req, res) => {
   })
 
   if (error) {
+    if ((error as { code?: string }).code === '23505') {
+      console.log('[events] duplicate client_event_id, returning accepted')
+      res.status(202).json({ accepted: true, eventId: null, duplicate: true })
+      return
+    }
     console.error('Failed to insert event:', error)
     res.status(500).json({ error: 'failed to save event' })
     return
