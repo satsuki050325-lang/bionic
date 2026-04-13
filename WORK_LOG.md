@@ -3,6 +3,35 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Phase 2.4 GitHub公開準備: LICENSE / README / SECURITY_RELEASE_CHECKLIST / SHOW_HN を整備
+- LICENSE を repo root に配置（AGPL-3.0 フルテキスト + 末尾に `Copyright (c) 2026 Satsuki`）
+- README.md の冒頭 description を「local-first ops cockpit for solo developers and small SaaS teams」に刷新し、キャッチコピーと価値提案を前面に
+- README.md に「10-minute Quickstart」セクション（clone → Supabase → init → doctor → engine → demo → app の7手順）を追加
+- CLI Usage セクションを再構成し `bionic init` / `doctor` / `demo` の3コマンドを主役化、既存の status / approvals / approve / deny は Engine status and approvals として残置
+- README の License セクションを「AGPL-3.0 + 商用ライセンス問い合わせ」に確定（`planned` 表記を除去）
+- SECURITY_RELEASE_CHECKLIST を更新：確認済み項目をチェック化、Webhook 署名検証 / External AI / GitHub公開前 ブロックを追加、最終更新日を 2026-04-14 に
+- docs/SHOW_HN.md を新設（Show HN 投稿文。demo コマンド・local-first 方針・フィードバック依頼を含む）
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- LICENSE は FSF 公式の AGPL-3.0 フルテキストをそのまま配置し、Copyright 行を末尾に追加する方式にした（本文改変は行わない）
+- SECURITY_RELEASE_CHECKLIST は「事前に確認済み」と「本番デプロイ/GitHub 公開直前に確認」を明示分離（デプロイ固有項目をコードのチェックと混ぜない）
+- Show HN 投稿文は demo コマンド + privacy notice を前面に（local-first を最初のフックにする）
+- 既存の SDK Quickstart / Incident Brief privacy notice / MCP / Webhook セクションは変更せず、Quickstart セクションを Prerequisites の上に挿入する構成にした（既存ユーザー体験を壊さない）
+
+### 未解決 / 既知リスク
+- 本番での `BIONIC_ENGINE_TOKEN` 運用 / 全テーブル RLS 有効化 / gitleaks 最新結果 / クリーン環境での verify は GitHub 公開直前に改めて再確認する（CHECKLIST 未チェック項目として明示）
+
+### 次にやること
+- Phase 2.4 最終: 公開直前のクリーンチェック → GitHub 公開 → Show HN 投稿
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

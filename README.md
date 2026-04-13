@@ -1,8 +1,12 @@
 # Bionic
 
-A local-first AI operations engine for solo developers and small teams.
+**A local-first ops cockpit for solo developers and small SaaS teams.**
 
-Bionic observes your services, generates alerts, runs scheduled digests, and notifies you via Discord — all running locally with zero cloud dependencies.
+Stop checking five dashboards every morning.
+Bionic tells you what matters, why it matters, and what to do next.
+
+Bionic connects GitHub, Vercel, Stripe, Sentry, and your own services,
+then turns noisy signals into actionable alerts — running entirely on your machine.
 
 ---
 
@@ -14,6 +18,69 @@ Bionic observes your services, generates alerts, runs scheduled digests, and not
 - **Audit Log**: Records every automated action with full transparency
 - **MCP Server**: Query Bionic from Claude Desktop in natural language
 - **Discord Bot**: Receives alert notifications with approve/deny buttons
+
+---
+
+## 10-minute Quickstart
+
+The fastest way to go from zero to a live dashboard with simulated signals.
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/satsuki050325-lang/bionic.git
+cd bionic
+pnpm install
+```
+
+### 2. Set up Supabase
+
+Create a project at [supabase.com](https://supabase.com), then apply migrations:
+
+```bash
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+```
+
+### 3. Initialize configuration
+
+```bash
+npx tsx packages/cli/src/index.ts init
+```
+
+This creates `.env.local` with your configuration.
+
+### 4. Diagnose your setup
+
+```bash
+npx tsx packages/cli/src/index.ts doctor
+```
+
+Fix any `FAIL` items before proceeding.
+
+### 5. Start the Engine
+
+```bash
+pnpm --filter @bionic/engine dev
+```
+
+### 6. Try the demo
+
+```bash
+npx tsx packages/cli/src/index.ts demo
+```
+
+This simulates a production incident so you can see Bionic in action
+without connecting a real service. Run `demo --cleanup` to remove the
+simulated data afterward.
+
+### 7. Open the Dashboard
+
+```bash
+pnpm --filter @bionic/app dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
@@ -392,6 +459,33 @@ This runs typecheck + engine tests + app build.
 
 ## CLI Usage
 
+### bionic init
+
+Interactive setup that creates `.env.local` with your configuration.
+
+```bash
+npx tsx packages/cli/src/index.ts init
+```
+
+### bionic doctor
+
+Diagnoses your Bionic setup and reports any configuration issues.
+
+```bash
+npx tsx packages/cli/src/index.ts doctor
+```
+
+### bionic demo
+
+Simulates a production incident to explore Bionic without a real service.
+
+```bash
+npx tsx packages/cli/src/index.ts demo
+npx tsx packages/cli/src/index.ts demo --cleanup  # remove demo data
+```
+
+### Engine status and approvals
+
 ```bash
 # Engine status
 npx tsx packages/cli/src/index.ts status
@@ -464,4 +558,6 @@ pnpm --filter @bionic/engine test
 
 ## License
 
-AGPL-3.0 (planned)
+AGPL-3.0. See [LICENSE](./LICENSE) for details.
+
+For commercial use without AGPL obligations, contact us for a commercial license.
