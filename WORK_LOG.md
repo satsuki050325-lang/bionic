@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-13 / Claude Code
+
+### やったこと
+- Phase 2.4: bionic demoコマンドを実装した
+- packages/cli/src/commands/demo.ts 新規作成
+- Engine `/api/status` で疎通確認→`/api/events` に 7種のデモイベントをsource='cli'で投入
+- serviceId は 'demo-api' 固定、payload.demo=true / demoRunId でラン単位を識別
+- --fast（遅延なし）/ --cleanup（Supabase直接DELETE）/ --service / --engine-url オプション対応
+- index.ts に demo サブコマンドを登録
+- pnpm --filter @bionic/cli typecheck / build 通過
+- 動作確認: demo --fast で7イベント全てSEND→DONE、demo --cleanup で engine_events/alerts/actions の service_id='demo-api' 行が削除されるのを確認
+- Engine未起動時は FAIL で exit 1
+
+### 判断したこと
+- Engine URL解決順序は doctor と揃えた（--engine-url > BIONIC_ENGINE_URL > NEXT_PUBLIC_ENGINE_URL > localhost:3001）
+- cleanupはSupabaseへ直接DELETE（CLIローカル運用前提、service_idフィルタで本番データを巻き込まないよう限定）
+- payloadに demo:true と demoRunId を含めて将来のフィルタリングや可視化に使えるようにした
+
+### 次にやること
+- Phase 2.4: Public Preview準備の残タスク（README英語化・LICENSE確定・CLI bin/dist対応・MCP docs・demo動画/GIF・GitHub公開）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと
