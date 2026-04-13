@@ -45,6 +45,30 @@
 
 ---
 
+## 2026-04-13 / Claude（SDK品質改善・外部組み込み対応）
+
+### やったこと
+- BionicClient.sendEvent を fail-open に変更（fetch例外・非2xxを catch して SendEventResult.reason='failed'/'http_xxx' を返す）
+- timeoutMs オプションを追加（デフォルト 3000ms、AbortController でタイムアウト制御）
+- throwOnError オプションを追加（デフォルト false、true で旧挙動）
+- error() の stack送信をデフォルト off に変更（includeStack: true で明示）
+- BionicClient / BionicSDKConfig / SendEventResult / health / error / usage に JSDoc 追加
+- index.ts から SendEventResult を export
+- README.md に SDK Quickstart セクション追加（Basic / Next.js / Express examples + fail-open / browser-only 警告）
+- `pnpm verify` 全通過
+
+### 判断したこと
+- throwOnError=false デフォルトで Medini の既存 `await bionic.error(...)` 呼び出しは戻り値破棄のため互換維持
+- stack はデフォルト off にして PII / ソースパス漏洩リスクを下げる（明示 opt-in）
+- timeout は 3000ms 固定推奨ではなくオプション化、Engine slow時の application latency 影響を最小化
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Deploy→Watch判定精度向上）
 
 ### やったこと

@@ -1,22 +1,71 @@
 import type { EngineEvent, EventSource } from '@bionic/shared'
 
+/**
+ * Configuration for the Bionic SDK client.
+ */
 export interface BionicSDKConfig {
+  /** Bionic Engine base URL, e.g. `http://localhost:3001`. */
   engineUrl: string
+  /** Project identifier (e.g. `project_bionic`). */
   projectId: string
+  /** Service identifier — what your application calls itself in Bionic (e.g. `my-api`). */
   serviceId: string
+  /** Where this event originated. Defaults to `'sdk'`. */
   source?: EventSource
+  /** Engine bearer token. Required in production deployments. */
   token?: string
+  /** Default dedupe window in ms. Defaults to 30_000. */
   dedupeWindowMs?: number
+  /** Max events sent per minute. Defaults to 60. */
   rateLimitPerMinute?: number
+  /** Dedupe window for `health.status=ok` events. Defaults to 60_000. */
   healthOkDedupeMs?: number
+  /** HTTP request timeout in ms. Defaults to 3000. */
+  timeoutMs?: number
+  /**
+   * If `true`, network/HTTP failures will throw. Defaults to `false` (fail-open).
+   * Fail-open means SDK errors never disrupt your application.
+   */
+  throwOnError?: boolean
 }
 
+/**
+ * Result returned from sending an event.
+ */
 export interface SendEventResult {
+  /** `true` if Engine accepted the event. */
   accepted: boolean
+  /** Server-assigned event id, or `null` if the event was not delivered. */
   eventId: string | null
-  reason?: 'rate_limited' | 'duplicate' | 'failed'
+  /** Why the event was not accepted (only set when `accepted=false`). */
+  reason?: 'rate_limited' | 'duplicate' | 'failed' | string
 }
 
+/**
+ * Bionic SDK Client.
+ *
+ * Sends observability events to Bionic Engine.
+ * SDK failures are fail-open by default — they will not throw or disrupt your application.
+ *
+ * IMPORTANT: This SDK should only be used server-side.
+ * Never expose your Engine token in browser environments.
+ *
+ * @example
+ * ```ts
+ * const bionic = new BionicClient({
+ *   engineUrl: process.env.BIONIC_ENGINE_URL!,
+ *   token: process.env.BIONIC_ENGINE_TOKEN,
+ *   projectId: 'project_bionic',
+ *   serviceId: 'my-api',
+ * })
+ *
+ * // Fire-and-forget (recommended)
+ * void bionic.health({ status: 'ok' })
+ *
+ * // With result
+ * const result = await bionic.error({ code: 'DB_ERROR', message: '...' })
+ * ```
+ */
 export class BionicClient {
   private engineUrl: string
   private projectId: string
@@ -26,6 +75,8 @@ export class BionicClient {
   private dedupeWindowMs: number
   private rateLimitPerMinute: number
   private healthOkDedupeMs: number
+  private timeoutMs: number
+  private throwOnError: boolean
 
   private readonly dedupeCache = new Map<string, number>()
   private readonly rateLimitWindow: number[] = []
@@ -40,6 +91,8 @@ export class BionicClient {
     this.dedupeWindowMs = config.dedupeWindowMs ?? 30_000
     this.rateLimitPerMinute = config.rateLimitPerMinute ?? 60
     this.healthOkDedupeMs = config.healthOkDedupeMs ?? 60_000
+    this.timeoutMs = config.timeoutMs ?? 3000
+    this.throwOnError = config.throwOnError ?? false
   }
 
   private getEventKey(type: string, payload: Record<string, unknown>): string {
@@ -131,24 +184,45 @@ export class BionicClient {
       headers['Authorization'] = `Bearer ${this.token}`
     }
 
-    const res = await fetch(`${this.engineUrl}/api/events`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ event }),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs)
 
-    if (!res.ok) {
-      throw new Error(`Failed to send event: ${res.status} ${res.statusText}`)
+    try {
+      const res = await fetch(`${this.engineUrl}/api/events`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ event }),
+        signal: controller.signal,
+      })
+
+      if (!res.ok) {
+        if (this.throwOnError) {
+          throw new Error(`Failed to send event: ${res.status} ${res.statusText}`)
+        }
+        console.warn(`[bionic-sdk] engine returned ${res.status}`)
+        return { accepted: false, eventId: null, reason: `http_${res.status}` }
+      }
+
+      this.recordSent(eventKey)
+      this.recordHealthStatus(type, payload)
+      return { accepted: true, eventId: event.id }
+    } catch (err) {
+      if (this.throwOnError) throw err
+      console.warn('[bionic-sdk] failed to send event:', err)
+      return { accepted: false, eventId: null, reason: 'failed' }
+    } finally {
+      clearTimeout(timeout)
     }
-
-    this.recordSent(eventKey)
-    this.recordHealthStatus(type, payload)
-    return { accepted: true, eventId: event.id }
   }
 
+  /**
+   * Report service health. Use `status: 'ok'` for healthy, `'degraded'` for partial issues,
+   * `'down'` for outage.
+   */
   async health(payload: {
     status: 'ok' | 'degraded' | 'down'
     latencyMs?: number
+    [key: string]: unknown
   }): Promise<SendEventResult> {
     const type =
       payload.status === 'ok'
@@ -157,14 +231,29 @@ export class BionicClient {
     return this.sendEvent(type, payload)
   }
 
+  /**
+   * Report a service error.
+   *
+   * Note: stack traces are NOT sent by default to avoid leaking sensitive information.
+   * Pass `includeStack: true` explicitly if you need stack traces.
+   */
   async error(payload: {
     message: string
     code?: string
+    name?: string
     stack?: string
+    includeStack?: boolean
+    [key: string]: unknown
   }): Promise<SendEventResult> {
-    return this.sendEvent('service.error.reported', payload)
+    const { includeStack = false, stack, ...rest } = payload
+    const finalPayload =
+      includeStack && stack ? { ...rest, stack } : rest
+    return this.sendEvent('service.error.reported', finalPayload)
   }
 
+  /**
+   * Report usage signals (request counts, active users, etc.).
+   */
   async usage(payload: {
     activeUsers?: number
     requestCount?: number
