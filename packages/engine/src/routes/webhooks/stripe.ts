@@ -5,6 +5,15 @@ import { evaluateStripeEvent } from '../../decisions/stripe.js'
 import { supabase } from '../../lib/supabase.js'
 import type { StripeWebhookEvent } from '../../sources/stripe.js'
 
+const STRIPE_EVENT_TYPE_MAP: Record<string, string> = {
+  'invoice.payment_failed': 'stripe.invoice.payment_failed',
+  'payment_intent.payment_failed': 'stripe.payment_intent.payment_failed',
+  'customer.subscription.deleted': 'stripe.subscription.deleted',
+  'customer.subscription.updated': 'stripe.subscription.updated',
+  'charge.dispute.created': 'stripe.dispute.created',
+  'charge.refunded': 'stripe.refund.created',
+}
+
 export const stripeWebhookRouter = Router()
 
 stripeWebhookRouter.post('/', (req: Request, res: Response): void => {
@@ -57,7 +66,7 @@ stripeWebhookRouter.post('/', (req: Request, res: Response): void => {
 
     const projectId = config.projectId
     const serviceId = config.stripe.serviceId
-    const normalizedType = `stripe.${event.type.replace(/\./g, '_')}`
+    const normalizedType = STRIPE_EVENT_TYPE_MAP[event.type] ?? `stripe.${event.type}`
     const obj = event.data.object as unknown as Record<string, unknown>
 
     const { error: insertError } = await supabase.from('engine_events').insert({

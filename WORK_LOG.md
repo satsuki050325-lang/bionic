@@ -3,6 +3,24 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 Stripe event type正規化）
+
+### やったこと
+- routes/webhooks/stripe.ts に `STRIPE_EVENT_TYPE_MAP` を追加（dot区切りで shared EventType と一致）
+- `event.type.replace(/\./g, '_')` を廃止して明示マッピング → fallback `stripe.${event.type}`
+- `pnpm verify` 全通過
+
+### 判断したこと
+- 明示マッピングで shared EventType（stripe.invoice.payment_failed 等）と完全一致させる
+- 未知のevent typeは `stripe.${event.type}` でドット区切りのまま保存
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Stripe監視）
 
 ### やったこと
