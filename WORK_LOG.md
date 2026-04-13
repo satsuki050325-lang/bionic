@@ -3,6 +3,19 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.2 VALID_SOURCESにmcp追加）
+
+### やったこと
+- events.ts の VALID_SOURCES に `'mcp'` を追加
+- `pnpm verify` 全通過
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.2 CaptureEventResult型修正）
 
 ### やったこと

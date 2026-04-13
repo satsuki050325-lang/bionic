@@ -14,7 +14,7 @@ const VALID_EVENT_TYPES: EventType[] = [
   'job.failed',
 ]
 
-const VALID_SOURCES: EventSource[] = ['sdk', 'app', 'cli', 'engine', 'scheduler']
+const VALID_SOURCES: EventSource[] = ['sdk', 'app', 'cli', 'engine', 'scheduler', 'mcp']
 
 export const eventsRouter = Router()
 
