@@ -3,6 +3,29 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.3: Stripe監視を実装した
+- invoice.payment_failed・charge.dispute.created・subscription変更をalert化した
+- stripe-signature検証・client_event_id idempotencyを実装した
+- customer email/billing detailsは保存しない設計にした
+- Stripe event typeをshared型と一致するドット区切りに正規化した
+- Codexレビュー完了・P2 finding修正済み
+
+### 判断したこと
+- alert typeはpayment_failure/revenue_changeの2種類（最小構成）
+- subscription.updatedはpast_due/cancel_at_period_endのみalert化
+- serviceIdはBIONIC_STRIPE_SERVICE_IDで設定（デフォルト'stripe'）
+- App/DiagnosticsでcustomerId等は末尾4〜6桁表示を将来適用する
+
+### 次にやること
+- Phase 2.3: Sentry連携
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Stripe event type正規化）
 
 ### やったこと

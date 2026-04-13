@@ -174,6 +174,11 @@
 - X-GitHub-Delivery idempotency
 - fingerprint v2（workflow name含む）
 - Codexレビュー完了・P1/P2 finding全修正済み
+- Phase 2.3: Stripe監視（payment_failure・revenue_change alert）
+- invoice.payment_failed・dispute・subscription変更検知
+- stripe-signature検証・idempotency実装
+- customer email/billing details保存なし
+- Codexレビュー完了・P2 finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -192,10 +197,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.3: Stripe監視
+- Phase 2.3: Sentry連携
 
 ### done条件
-- [ ] Stripe webhook受信（支払い失敗等）でalert生成
+- [ ] Sentry webhookまたはAPI連携でerror eventをalert化する
 
 ---
 
@@ -230,7 +235,8 @@ Phase 2.1: Appオンボーディング画面（完了）
 Phase 2.1: Productizable Setup 完了
 Phase 2.2: Signal Quality（完了）
 Phase 2.3-1: GitHub連携 CI失敗検知（完了）
-Phase 2.3-2: Stripe監視（今ここ）
+Phase 2.3-2: Stripe監視（完了）
+Phase 2.3-3: Sentry連携（今ここ）
 
 
 ---
