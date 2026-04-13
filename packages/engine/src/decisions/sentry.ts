@@ -30,7 +30,7 @@ export async function evaluateSentryEvent(
   }
 
   const serviceId = resolveSentryServiceId()
-  const severity = classifySentrySeverity(triggerKind, issue.level)
+  const severity = classifySentrySeverity(triggerKind, issue.level, issue.environment)
   const fingerprint = buildSentryFingerprint(
     projectId,
     serviceId,
@@ -68,7 +68,7 @@ export async function evaluateSentryEvent(
       .maybeSingle()
 
     if (existing) {
-      await supabase
+      const { error: updateError } = await supabase
         .from('engine_alerts')
         .update({
           count: (existing.count ?? 1) + 1,
@@ -77,6 +77,19 @@ export async function evaluateSentryEvent(
           updated_at: now,
         })
         .eq('id', existing.id)
+
+      if (updateError) {
+        console.error('[decisions/sentry] failed to update alert:', updateError)
+        if (actionId) {
+          await failAction(actionId, {
+            message: 'update failed',
+            code: updateError.code,
+            detail: updateError.message,
+          })
+        }
+        return
+      }
+
       console.log(
         `[decisions/sentry] updated existing sentry_issue alert: ${existing.id}`
       )

@@ -11,6 +11,7 @@ export interface SentryWebhookEvent {
       shortId: string
       level: string
       count: string
+      environment?: string
       project: {
         slug: string
         name: string

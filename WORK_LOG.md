@@ -3,6 +3,24 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 Sentry finding修正）
+
+### やったこと
+- sources/sentry.ts: SentryWebhookEvent.data.issue に environment?: string を追加
+- decisions/sentry.ts: classifySentrySeverity に issue.environment を渡して production regressed を critical 判定
+- decisions/sentry.ts: 既存alert update のerrorを確認、失敗時は failAction(actionId, ...) で audit log に記録
+- `pnpm verify` 全通過
+
+### 判断したこと
+- 既存 evaluateSentryEvent 開始時の actionId を再利用して update 失敗を failAction で記録（spec の logAction は無いので createAction/failAction で代替）
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Sentry連携）
 
 ### やったこと
