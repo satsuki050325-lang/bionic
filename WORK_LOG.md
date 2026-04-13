@@ -6,6 +6,43 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Phase 2.4: Settings ページ と Dashboard 用 Event Metrics を実装した
+- Engine に `GET /api/metrics/events` を追加（packages/engine/src/routes/metrics.ts）
+  - window 6h/24h・bucket 1h/6h をホワイトリスト検証、projectId 未指定時は config.projectId
+  - 各 bucket で errors / healthDegraded / total を集計して points 配列を返す
+  - DBエラー時は 500 を返す（UIは null にフォールバック）
+- index.ts に router 登録（/api/metrics）
+- apps/app/src/lib/engine.ts に `getEventMetrics` と EventMetrics / EventMetricPoint 型を追加
+- apps/app/src/components/ErrorSparkline.tsx を新設（SVG sparkline、critical/warning スタック、空 bucket は border-subtle の細バー）
+- Dashboard の Open Alerts hero 右カラムに 24h sparkline + `24h` ラベルを配置
+- /settings ページを新設（apps/app/src/app/settings/page.tsx）
+  - Preferences（Language switcher）/ Project / Engine / Supabase / Scheduler / Discord / Integrations / Privacy & AI / Security の9セクション
+  - 全て server component で process.env を読み、secret は [configured]/[not set] のみ表示（生値は出さない）
+  - status=ok/warn/missing を semantic token で色分け
+  - ANTHROPIC_API_KEY 有効時はプライバシー文言を併記、Diagnostics へのリンクを配置
+- LanguageSwitcher をクライアントコンポーネントとして分離（`bionic-locale` cookie に en/ja を保存、year-long max-age、ページをリロードして適用）
+- layout.tsx のナビに SETTINGS リンクを追加
+- hex直書きなし、semantic token のみ
+- pnpm verify 通過（typecheck + engine test 36件 + app build）
+
+### 判断したこと
+- Settings は「読み取り専用 + .env.local への誘導」に徹した（秘匿情報のブラウザからの変更は設計上スコープ外）
+- LanguageSwitcher の永続化は cookie（SSR で読める、middleware 不要）
+- 実翻訳は今回スコープ外。cookieとUI切替までを整備しておくことで、後工程で i18n 辞書をかぶせやすい
+- Sparkline は server component から描画可能な inline SVG で実装（recharts などを引き込まずバンドルを増やさない）
+- window / bucket はホワイトリスト検証（任意文字列を SQL へ流さない）
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク（README整備・LICENSE確定・GitHub公開準備）
+- 後工程: 実UIの日本語辞書適用（LanguageSwitcher 前提）
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Phase 2.4: Actions / Research / Onboarding / 共通 の UI を改善した
 - apps/app/src/lib/time.ts を新設し、Alerts から formatRelativeTime を移動して共通化。Actions / Onboarding / Dashboard からも利用
 - Actions: ページヘッダーを Audit Log 表記に統一、pending_approval を Awaiting Approval 専用セクションとして最上部に表示（CLI approve コマンドを提示）、その他行には requestedBy・linked alert 抜粋・相対時間を追加し、succeeded/skipped は opacity-60 で弱める

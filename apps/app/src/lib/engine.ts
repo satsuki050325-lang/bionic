@@ -170,6 +170,33 @@ export interface IncidentBrief {
   available: boolean
 }
 
+export interface EventMetricPoint {
+  bucketStart: string
+  errors: number
+  healthDegraded: number
+  total: number
+}
+
+export interface EventMetrics {
+  points: EventMetricPoint[]
+  window: string
+  bucket: string
+  projectId: string
+}
+
+export async function getEventMetrics(window = '24h'): Promise<EventMetrics | null> {
+  try {
+    const res = await fetch(
+      `${ENGINE_URL}/api/metrics/events?window=${encodeURIComponent(window)}`,
+      { cache: 'no-store', headers: engineHeaders() }
+    )
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function getIncidentBrief(): Promise<IncidentBrief | null> {
   try {
     const res = await fetch(`${ENGINE_URL}/api/incident-brief`, {

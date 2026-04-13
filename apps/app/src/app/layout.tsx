@@ -41,6 +41,9 @@ export default function RootLayout({
               <a href="/diagnostics" className="text-text-secondary hover:text-accent transition-colors">
                 DIAGNOSTICS
               </a>
+              <a href="/settings" className="text-text-secondary hover:text-accent transition-colors">
+                SETTINGS
+              </a>
             </div>
           </div>
         </nav>

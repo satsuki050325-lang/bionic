@@ -1,6 +1,13 @@
 import Link from 'next/link'
-import { getStatus, getEvents, getIncidentBrief, getAlerts } from '@/lib/engine'
+import {
+  getStatus,
+  getEvents,
+  getIncidentBrief,
+  getAlerts,
+  getEventMetrics,
+} from '@/lib/engine'
 import { StatusBadge } from '@/components/StatusBadge'
+import { ErrorSparkline } from '@/components/ErrorSparkline'
 
 function eventTypeColor(type: string): string {
   if (type === 'service.error.reported') return 'text-status-critical'
@@ -10,11 +17,12 @@ function eventTypeColor(type: string): string {
 }
 
 export default async function DashboardPage() {
-  const [status, eventsResult, brief, alertsResult] = await Promise.all([
+  const [status, eventsResult, brief, alertsResult, metrics] = await Promise.all([
     getStatus(),
     getEvents(),
     getIncidentBrief(),
     getAlerts(),
+    getEventMetrics('24h'),
   ])
 
   const hasDemoData = !!alertsResult?.alerts.some(
@@ -261,10 +269,16 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
-          <div className="flex flex-col justify-between items-end">
+          <div className="flex flex-col justify-between items-end gap-1">
             {brief?.available && brief.topIssueType && (
               <div className="font-mono text-xs text-text-secondary">
                 Top: {brief.topIssueType}
+              </div>
+            )}
+            {metrics?.points && metrics.points.length > 0 && (
+              <div className="flex flex-col items-end gap-1">
+                <ErrorSparkline points={metrics.points} />
+                <div className="font-mono text-xs text-text-muted">24h</div>
               </div>
             )}
             <Link
