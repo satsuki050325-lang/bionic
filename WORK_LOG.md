@@ -6,6 +6,34 @@
 ## 2026-04-13 / Claude Code
 
 ### やったこと
+- Dashboard UI を Operational Brief 型に刷新（apps/app/src/app/page.tsx）
+- Page Header に今日の日付と runtime status dot を追加
+- Operational Brief セクション：openAlerts>0 のときのみ表示、critical ありは status-critical バー、無しは accent バー
+- Stat cards を 3枚構成に変更（Open Alertsを md:col-span-2 で主役化、text-5xl、critical時は status-critical 配色）
+- Pending Jobs / Pending Approvals は text-4xl、Last Event カードは廃止
+- What Needs Attention セクションを新設（Critical / Approval / Jobs をバッジ付きで列挙、何もなければ「All systems nominal」）
+- Engine 情報を Diagnostics へのリンクカードに縮約（v{version} · Started {time}）
+- Recent Events を Recent Signal にリネームして下部に配置、event.type を color coding（error→critical / degraded→warning / health→success / その他→muted）
+- hex直書きは無し。全て globals.css のsemantic token（bg-surface / border-subtle / accent / status-critical / status-warning / status-success / status-info / text-primary / text-secondary / text-muted）経由
+- pnpm verify 通過（typecheck + engine test + app build 全通過）
+
+### 判断したこと
+- Operational Brief は criticalなしでもopenAlerts>0なら表示（仕様通り、かつ心理的な導線として妥当）
+- critical時のBriefバーは accent ではなく status-critical に振り分けた（視覚的な緊急度と一致させるため）
+- Last Event を stat cards から外し、Engine Info カードの補助情報へ移した（主要KPI＝Alerts/Jobs/Approvalsに集中）
+- What Needs Attention は critical/approval/jobs の3行を優先度順に並べ、バッジはそれぞれ status-critical / status-warning / status-info に統一
+
+### 次にやること
+- Dashboard の動作確認はSSRで実施（ブラウザでの見た目確認が別途必要な場合は担当者と調整）
+- 他画面（Alerts / Actions / Research / Diagnostics）のL2リファインは別タスク
+
+担当：Claude Code
+
+---
+
+## 2026-04-13 / Claude Code
+
+### やったこと
 - Phase 2.4: bionic demoコマンドを実装した
 - packages/cli/src/commands/demo.ts 新規作成
 - Engine `/api/status` で疎通確認→`/api/events` に 7種のデモイベントをsource='cli'で投入
