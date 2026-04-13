@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-13 / Claude（オンボーディング P2 finding修正）
+
+### やったこと
+- `apps/app/src/app/api/diagnostics/route.ts` を新規作成（Engine → Next.js server → client のproxy）
+- onboarding/page.tsx の fetch を `/api/diagnostics` に変更
+- 5秒ごとのポーリング + cancelled guard + cleanup（clearInterval）を実装
+- `pnpm verify` 全通過（typecheck + test 36件 + app build）
+
+### 判断したこと
+- BIONIC_ENGINE_TOKENはNEXT_PUBLIC_をつけず server-only のまま維持（secretをclientに漏らさない）
+- Engine offline時もポーリング継続することでEngine起動→自動検知のUXを実現
+- cancelled flagでunmount後のsetState警告を防止
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Appオンボーディング画面）
 
 ### やったこと

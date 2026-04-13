@@ -34,24 +34,35 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
+
     async function fetchDiagnostics() {
       try {
-        const url = process.env.NEXT_PUBLIC_ENGINE_URL ?? 'http://localhost:3001'
-        const token = process.env.NEXT_PUBLIC_ENGINE_TOKEN
-        const res = await fetch(`${url}/api/diagnostics`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
+        const res = await fetch('/api/diagnostics', { cache: 'no-store' })
         if (!res.ok) throw new Error('Engine returned error')
         const data = (await res.json()) as DiagnosticsData
-        setDiagnostics(data)
-        setEngineOnline(true)
+        if (!cancelled) {
+          setDiagnostics(data)
+          setEngineOnline(true)
+        }
       } catch {
-        setEngineOnline(false)
+        if (!cancelled) {
+          setEngineOnline(false)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
+
     fetchDiagnostics()
+    const interval = setInterval(fetchDiagnostics, 5000)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
   }, [])
 
   const checks: SetupCheck[] =
