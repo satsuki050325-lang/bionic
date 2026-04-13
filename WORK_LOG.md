@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.3: Sentry連携を実装した（sentry_issue alert）
+- new_issue・regressed・spike をalert化した
+- sentry-hook-signature検証・client_event_id idempotencyを実装した
+- PII（stacktrace全文・user email・IP）は保存しない設計にした
+- productionのregressedはcritical、それ以外はwarningにした
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- AlertTypeはsentry_issueのみ（最小構成）
+- performance劣化はPhase 2.3に含めない
+- serviceIdはBIONIC_SENTRY_SERVICE_IDで設定（デフォルト'sentry'）
+
+### 次にやること
+- Phase 2.3: Vercel logs深掘り
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Sentry finding修正）
 
 ### やったこと

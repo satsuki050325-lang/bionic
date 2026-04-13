@@ -179,6 +179,12 @@
 - stripe-signature検証・idempotency実装
 - customer email/billing details保存なし
 - Codexレビュー完了・P2 finding修正済み
+- Phase 2.3: Sentry連携（sentry_issue alert）
+- new_issue・regressed・spike検知
+- sentry-hook-signature検証・idempotency実装
+- PII（stacktrace/email/IP）保存なし
+- production regressedはcritical
+- Codexレビュー完了・P1/P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -197,10 +203,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.3: Sentry連携
+- Phase 2.3: Vercel logs深掘り
 
 ### done条件
-- [ ] Sentry webhookまたはAPI連携でerror eventをalert化する
+- [ ] Deploy→Watch→Alertの精度向上（Vercel logs解析）
 
 ---
 
@@ -236,7 +242,8 @@ Phase 2.1: Productizable Setup 完了
 Phase 2.2: Signal Quality（完了）
 Phase 2.3-1: GitHub連携 CI失敗検知（完了）
 Phase 2.3-2: Stripe監視（完了）
-Phase 2.3-3: Sentry連携（今ここ）
+Phase 2.3-3: Sentry連携（完了）
+Phase 2.3-4: Vercel logs深掘り（今ここ）
 
 
 ---
