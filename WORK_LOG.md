@@ -45,6 +45,30 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.3: SDK品質改善を実装した（外部開発者が安心して組み込めるSDK）
+- fail-open設計にした（fetch失敗・timeoutでthrowしない）
+- timeoutMs（デフォルト3000ms）をAbortControllerで実装した
+- stack送信をデフォルトoffにした（includeStack: trueで明示opt-in）
+- JSDocをBionicClient・BionicSDKConfig・主要メソッドに追加した
+- SendEventResultをindex.tsからexportした
+- README.mdにSDK Quickstart（Next.js/Express例含む）を追加した
+- Phase 2.3: Integrations全タスク完了
+
+### 判断したこと
+- throwOnError: falseがデフォルト（Medini互換を維持）
+- npm公開準備（private: true解除・workspace:*の扱い）はPhase 2.4で実施
+- Vercel Runtime Logs API連携は次段階に切る
+
+### 次にやること
+- Phase 2.4: Public Preview準備
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（SDK品質改善・外部組み込み対応）
 
 ### やったこと

@@ -190,6 +190,12 @@
 - thresholdをconfig経由に変更（BIONIC_DEPLOYMENT_WATCH_MINUTES等）
 - alert messageに判定メタデータ追加
 - Codexレビュー完了・問題なし
+- Phase 2.3: SDK品質改善（外部組み込み対応）
+- fail-open・timeoutMs・stack送信デフォルトoff
+- JSDoc追加・SendEventResultのexport追加
+- README.mdにSDK Quickstart追加
+- Codexレビュー完了・問題なし
+- Phase 2.3: Integrations 全タスク完了
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -208,10 +214,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.3: Medini以外のSDK組み込み
+- Phase 2.4: Public Preview準備
 
 ### done条件
-- [ ] Medini以外のサンプルアプリにBionic SDKを組み込んで実運用検証する
+- [ ] npm公開準備（private解除・workspace:*の解決）
+- [ ] Public Preview向けドキュメント整備
 
 ---
 
@@ -249,7 +256,9 @@ Phase 2.3-1: GitHub連携 CI失敗検知（完了）
 Phase 2.3-2: Stripe監視（完了）
 Phase 2.3-3: Sentry連携（完了）
 Phase 2.3-4: Deploy→Watch判定精度向上（完了）
-Phase 2.3-5: Medini以外のSDK組み込み（今ここ）
+Phase 2.3-5: SDK品質改善（完了）
+Phase 2.3: Integrations 完了
+Phase 2.4: Public Preview準備（今ここ）
 
 
 ---
