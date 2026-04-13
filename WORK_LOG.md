@@ -3,6 +3,29 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.3: GitHub連携を実装した（CI失敗検知）
+- workflow_run.completed + conclusion=failure/timed_out/action_requiredでci_failure alertを生成した
+- X-Hub-Signature-256署名検証・X-GitHub-Delivery idempotencyを実装した
+- default branch失敗→critical、PR branch失敗→warningに分類した
+- fingerprint v2にworkflow nameを含めて別workflowの失敗を分けた
+- private repoのbody全文は保存しない設計にした
+- Codexレビュー完了・P1/P2 finding全修正済み
+
+### 判断したこと
+- alert typeはci_failure（将来GitHub以外のCIにも対応できる）
+- Issue alert・PR・dependabotはPhase 2.3では含めない
+- event typeはgithub.workflow.failedに正規化する
+
+### 次にやること
+- Phase 2.3: Stripe監視
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 GitHub連携 finding修正）
 
 ### やったこと
