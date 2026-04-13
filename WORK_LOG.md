@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-04-13 / Claude（Phase 2.3 Stripe監視）
+
+### やったこと
+- packages/engine に stripe@22 を追加
+- config.ts に stripe 設定を追加（webhookSecret / serviceId / enabled + redactConfig）
+- shared 型に AlertType `payment_failure` / `revenue_change`、EventType `stripe.*` 6種を追加
+- packages/engine/src/sources/stripe.ts 新規作成（severity分類 / fingerprint v2 / title / message / alertType解決）
+- packages/engine/src/decisions/stripe.ts 新規作成（subscription.updatedはpast_due/cancel_scheduledのみ alert・audit log結線）
+- packages/engine/src/routes/webhooks/stripe.ts 新規作成（Stripe SDKでstripe-signature検証・client_event_id idempotency・insert失敗時の23505→202）
+- index.ts に raw body middleware + stripeWebhookRouter を追加
+- .env.example / README.md に Stripe Webhook Setup セクションを追加
+- `pnpm verify` 全通過
+
+### 判断したこと
+- customer email / billing details は engine_events に保存しない（id / type / objectId / objectType のみ）
+- subscription.updated は status=past_due または cancel_at_period_end=true のときだけ alert化
+- fingerprint stableKey は subscription_id（invoice）/ payment_intent_id / charge_id / `subId:changeKind` で同一事象を集約
+- alert type は payment_failure（決済系障害）と revenue_change（解約・返金）の2種
+
+### 次にやること
+- 後続タスク
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude
 
 ### やったこと

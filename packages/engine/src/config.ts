@@ -181,6 +181,12 @@ export interface EngineConfig {
     repoMap: Map<string, string>
     enabled: boolean
   }
+
+  stripe: {
+    webhookSecret: string | null
+    serviceId: string
+    enabled: boolean
+  }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
@@ -249,6 +255,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       repoMap: readGitHubRepoMap(env, 'BIONIC_GITHUB_REPO_MAP'),
       enabled: !!readString(env, 'GITHUB_WEBHOOK_SECRET'),
     },
+
+    stripe: {
+      webhookSecret: readString(env, 'STRIPE_WEBHOOK_SECRET'),
+      serviceId: readString(env, 'BIONIC_STRIPE_SERVICE_ID') ?? 'stripe',
+      enabled: !!readString(env, 'STRIPE_WEBHOOK_SECRET'),
+    },
   }
 }
 
@@ -305,6 +317,11 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
       webhookSecret: config.github.webhookSecret ? '[set]' : '[not set]',
       repoMapSize: config.github.repoMap.size,
       enabled: config.github.enabled,
+    },
+    stripe: {
+      webhookSecret: config.stripe.webhookSecret ? '[set]' : '[not set]',
+      serviceId: config.stripe.serviceId,
+      enabled: config.stripe.enabled,
     },
   }
 }

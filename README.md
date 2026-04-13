@@ -166,6 +166,29 @@ BIONIC_GITHUB_REPO_MAP=owner/repo:your-service-id
 
 ---
 
+## Stripe Webhook Setup (Payment Monitoring)
+
+Monitors payment failures, disputes, and subscription changes.
+
+### Setup
+
+1. Add to `.env.local`:
+```bash
+STRIPE_WEBHOOK_SECRET=whsec_...
+BIONIC_STRIPE_SERVICE_ID=medini
+```
+
+2. Configure Stripe Webhook:
+   - Stripe Dashboard → Developers → Webhooks → Add endpoint
+   - Endpoint URL: `https://your-ngrok-url/api/webhooks/stripe`
+   - Events: `invoice.payment_failed`, `charge.dispute.created`,
+     `customer.subscription.deleted`, `customer.subscription.updated`,
+     `payment_intent.payment_failed`, `charge.refunded`
+
+3. Restart Engine.
+
+---
+
 ## MCP Setup (Claude Desktop)
 
 Query Bionic from Claude Desktop in natural language.

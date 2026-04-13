@@ -14,6 +14,12 @@ export type EventType =
   | 'github.issue.opened'
   | 'github.pull_request.merged'
   | 'github.release.published'
+  | 'stripe.invoice.payment_failed'
+  | 'stripe.payment_intent.payment_failed'
+  | 'stripe.subscription.deleted'
+  | 'stripe.subscription.updated'
+  | 'stripe.dispute.created'
+  | 'stripe.refund.created'
 
 export type AlertType =
   | 'service_health'
@@ -22,6 +28,8 @@ export type AlertType =
   | 'job_failure'
   | 'deployment_regression'
   | 'ci_failure'
+  | 'payment_failure'
+  | 'revenue_change'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 export type AlertStatus = 'open' | 'resolved'
