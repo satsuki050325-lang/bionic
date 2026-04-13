@@ -199,6 +199,11 @@ export interface EngineConfig {
     thresholdErrorCount: number
     thresholdIncreasePercent: number
   }
+
+  anthropic: {
+    apiKey: string | null
+    enabled: boolean
+  }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
@@ -285,6 +290,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       thresholdErrorCount: readInt(env, 'BIONIC_DEPLOYMENT_THRESHOLD_ERROR_COUNT', 5, { min: 1, max: 1000 }),
       thresholdIncreasePercent: readInt(env, 'BIONIC_DEPLOYMENT_THRESHOLD_INCREASE_PERCENT', 200, { min: 10, max: 10000 }),
     },
+
+    anthropic: {
+      apiKey: readString(env, 'ANTHROPIC_API_KEY'),
+      enabled: !!readString(env, 'ANTHROPIC_API_KEY'),
+    },
   }
 }
 
@@ -353,6 +363,10 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
       enabled: config.sentry.enabled,
     },
     deploymentWatch: config.deploymentWatch,
+    anthropic: {
+      apiKey: config.anthropic.apiKey ? '[set]' : '[not set]',
+      enabled: config.anthropic.enabled,
+    },
   }
 }
 

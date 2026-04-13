@@ -6,6 +6,48 @@
 ## 2026-04-13 / Claude Code
 
 ### やったこと
+- Dashboard 改善 Phase 2: Incident Brief 生成API と 動線重視レイアウトを実装
+- Engine に `GET /api/incident-brief` を追加（packages/engine/src/routes/incidentBrief.ts）
+  - open alerts を最大10件取得し claude-haiku-4-5-20251001 に要約させる
+  - レスポンスは summary / startHere / affectedServices / topIssueType / generatedAt / cached / available
+  - ANTHROPIC_API_KEY 未設定時は `available: false` を返し、UI側フォールバックで動作する
+  - メモリ上 5分キャッシュ（2度目以降は cached: true）、alert 0件時は定型Brief返却
+- config.ts に anthropic { apiKey, enabled } を追加、redactConfig にも反映
+- @anthropic-ai/sdk ^0.88.0 を packages/engine に追加
+- Engine index.ts に router 登録（/api/incident-brief）
+- apps/app/src/lib/engine.ts に getIncidentBrief() と IncidentBrief 型を追加
+- Dashboard を動線重視レイアウトに再構成（Page Header → Brief → What Needs Attention → Key Metrics → System Strip → Recent Signal）
+  - Operational Brief: Claude生成のsummary+startHereを表示、未設定時はカウントベースのフォールバック
+  - What Needs Attention を stat cards の上に移動、critical行に affectedServices を表示、各行を Link 化して hover:bg-bg-hover の -mx-5 px-5 フルブリードにした
+  - Open Alerts hero カードに右カラム追加（topIssueType + View all →）
+  - nothingPending 時は中央に "All systems nominal" ブロックを表示（以前はAttention内のみ）
+  - Recent Signal の event.type は text-only の color coding（critical/warning/success/muted）、bg付きbadgeは廃止
+- .env.example に ANTHROPIC_API_KEY を追加
+- 検証: engine typecheck 通過 / engine test 36件全通過 / app build 通過 / pnpm verify 通過
+
+### 判断したこと
+- キャッシュはプロセスメモリ内（5分）。永続化は今回スコープ外（Engineが再起動すれば再生成でよい）
+- max_tokens=300・JSON mode（markdownなし）で応答を安定化
+- availableフラグはフロントで判定しやすいよう boolean で返す（summary が null のパターンも検出可能）
+- critical時の Brief バーと中のラベルは status-critical、それ以外は accent で統一（色の過剰投入を避けつつ緊急度は伝える）
+- What Needs Attention を stat cards より上に移したので、"0件だけど Attention が何もない" ケースを考慮し、nothingPending の時は代わりに独立ブロックを表示
+- LLM出力の JSON.parse は try/catch のcatch節で500を返す設計（UIはフォールバック表示に落ちる）
+
+### 未解決 / 既知リスク
+- Anthropic APIのレイテンシとコスト: Haiku + max_tokens:300 + 5分キャッシュでラフに低コストだが、ダッシュボードアクセス頻度が高い環境ではキャッシュTTLを伸ばす検討余地あり
+- JSON.parse失敗時に500→UIフォールバックに落ちる挙動は現状正しいが、今後 strict JSON モードや zod validation を入れる余地あり
+- Engine再起動でキャッシュが飛ぶ。永続キャッシュは将来Redis/DBで対応
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク
+
+担当：Claude Code
+
+---
+
+## 2026-04-13 / Claude Code
+
+### やったこと
 - Dashboard UI を Operational Brief 型に刷新（apps/app/src/app/page.tsx）
 - Page Header に今日の日付と runtime status dot を追加
 - Operational Brief セクション：openAlerts>0 のときのみ表示、critical ありは status-critical バー、無しは accent バー

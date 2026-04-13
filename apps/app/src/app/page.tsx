@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { getStatus, getEvents } from '@/lib/engine'
+import { getStatus, getEvents, getIncidentBrief } from '@/lib/engine'
+import { StatusBadge } from '@/components/StatusBadge'
 
 function eventTypeColor(type: string): string {
   if (type === 'service.error.reported') return 'text-status-critical'
@@ -9,7 +10,11 @@ function eventTypeColor(type: string): string {
 }
 
 export default async function DashboardPage() {
-  const [status, eventsResult] = await Promise.all([getStatus(), getEvents()])
+  const [status, eventsResult, brief] = await Promise.all([
+    getStatus(),
+    getEvents(),
+    getIncidentBrief(),
+  ])
 
   if (!status) {
     return (
@@ -62,7 +67,10 @@ export default async function DashboardPage() {
     day: 'numeric',
   })
 
-  const nothingPending = openAlerts === 0 && pendingApprovals === 0 && pendingJobs === 0
+  const showWhatNeedsAttention =
+    criticalAlerts > 0 || pendingApprovals > 0 || pendingJobs > 0
+  const nothingPending =
+    openAlerts === 0 && pendingApprovals === 0 && pendingJobs === 0
 
   return (
     <div>
@@ -82,68 +90,171 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Operational Brief — only when alerts are open */}
+      {/* Operational Brief */}
       {openAlerts > 0 && (
         <div
-          className={`border-l-2 rounded p-4 mb-6 ${
+          className={`border-l-2 rounded p-5 mb-6 ${
             criticalAlerts > 0
               ? 'border-status-critical bg-status-critical/5'
               : 'border-accent bg-accent/5'
           }`}
         >
           <div
-            className={`font-mono text-xs uppercase tracking-widest mb-2 ${
+            className={`font-mono text-xs uppercase tracking-widest mb-3 ${
               criticalAlerts > 0 ? 'text-status-critical' : 'text-accent'
             }`}
           >
             Operational Brief
           </div>
-          <div className="font-heading text-lg font-semibold text-text-primary mb-1">
-            {criticalAlerts > 0
-              ? `${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''} require attention`
-              : `${openAlerts} alert${openAlerts > 1 ? 's' : ''} open`}
-          </div>
-          <p className="font-body text-sm text-text-secondary mb-3">
-            {criticalAlerts > 0
-              ? 'Critical issues detected. Review and resolve before they impact users.'
-              : 'Non-critical alerts are open. Monitor for escalation.'}
-          </p>
+
+          {brief?.available && brief.summary ? (
+            <>
+              <p className="font-body text-base text-text-primary mb-2">
+                {brief.summary}
+              </p>
+              {brief.startHere && (
+                <p className="font-mono text-xs text-accent mb-3">
+                  Start here: {brief.startHere}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="font-heading text-lg font-semibold text-text-primary mb-1">
+                {criticalAlerts > 0
+                  ? `${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''} require attention`
+                  : `${openAlerts} alert${openAlerts > 1 ? 's' : ''} open`}
+              </p>
+              <p className="font-body text-sm text-text-secondary mb-3">
+                Review and resolve before they impact users.
+              </p>
+            </>
+          )}
+
           <Link
             href="/alerts"
             className={`font-mono text-xs uppercase tracking-widest hover:underline ${
               criticalAlerts > 0 ? 'text-status-critical' : 'text-accent'
             }`}
           >
-            Review Alerts →
+            Review critical alerts →
           </Link>
         </div>
       )}
 
-      {/* Stat Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {/* Open Alerts - 主役 (2x width on md+) */}
+      {/* What Needs Attention — above stat cards */}
+      {showWhatNeedsAttention && (
+        <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-6">
+          <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
+            What Needs Attention
+          </div>
+
+          {criticalAlerts > 0 && (
+            <Link
+              href="/alerts"
+              className="flex items-center justify-between py-3 border-b border-border-subtle hover:bg-bg-hover -mx-5 px-5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <StatusBadge status="critical" />
+                <div>
+                  <span className="font-body text-sm text-text-primary">
+                    {criticalAlerts} critical alert{criticalAlerts > 1 ? 's' : ''}
+                  </span>
+                  {brief?.available &&
+                    brief.affectedServices &&
+                    brief.affectedServices.length > 0 && (
+                      <span className="font-mono text-xs text-text-secondary ml-2">
+                        · {brief.affectedServices.join(', ')}
+                      </span>
+                    )}
+                </div>
+              </div>
+              <span className="font-mono text-xs text-accent">Review →</span>
+            </Link>
+          )}
+
+          {pendingApprovals > 0 && (
+            <Link
+              href="/actions"
+              className="flex items-center justify-between py-3 border-b border-border-subtle hover:bg-bg-hover -mx-5 px-5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <StatusBadge status="pending" />
+                <span className="font-body text-sm text-text-primary">
+                  {pendingApprovals} action{pendingApprovals > 1 ? 's' : ''} waiting for approval
+                </span>
+              </div>
+              <span className="font-mono text-xs text-accent">Approve →</span>
+            </Link>
+          )}
+
+          {pendingJobs > 0 && (
+            <Link
+              href="/diagnostics"
+              className="flex items-center justify-between py-3 hover:bg-bg-hover -mx-5 px-5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <StatusBadge status="running" />
+                <span className="font-body text-sm text-text-primary">
+                  {pendingJobs} job{pendingJobs > 1 ? 's' : ''} in queue
+                </span>
+              </div>
+              <span className="font-mono text-xs text-accent">View →</span>
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Nothing pending state (when no alerts, approvals, jobs) */}
+      {nothingPending && (
+        <div className="bg-bg-surface border border-border-subtle rounded p-6 mb-6 text-center">
+          <div className="font-mono text-2xl text-accent mb-2">◈</div>
+          <div className="font-mono text-xs text-text-muted uppercase tracking-widest">
+            All systems nominal
+          </div>
+        </div>
+      )}
+
+      {/* Key Metrics (stat cards) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {/* Open Alerts — hero */}
         <div
-          className={`md:col-span-2 rounded p-5 border ${
+          className={`md:col-span-2 rounded p-5 border flex ${
             criticalAlerts > 0
               ? 'bg-status-critical/5 border-status-critical/50'
               : 'bg-bg-surface border-border-subtle'
           }`}
         >
-          <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2">
-            Open Alerts
-          </div>
-          <div
-            className={`font-heading text-5xl font-bold mb-1 ${
-              criticalAlerts > 0 ? 'text-status-critical' : 'text-text-primary'
-            }`}
-          >
-            {openAlerts}
-          </div>
-          {criticalAlerts > 0 && (
-            <div className="font-mono text-xs text-status-critical">
-              {criticalAlerts} critical
+          <div className="flex-1">
+            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2">
+              Open Alerts
             </div>
-          )}
+            <div
+              className={`font-heading text-5xl font-bold mb-1 ${
+                criticalAlerts > 0 ? 'text-status-critical' : 'text-text-primary'
+              }`}
+            >
+              {openAlerts}
+            </div>
+            {criticalAlerts > 0 && (
+              <div className="font-mono text-xs text-status-critical">
+                {criticalAlerts} critical
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col justify-between items-end">
+            {brief?.available && brief.topIssueType && (
+              <div className="font-mono text-xs text-text-secondary">
+                Top: {brief.topIssueType}
+              </div>
+            )}
+            <Link
+              href="/alerts"
+              className="font-mono text-xs text-accent hover:underline mt-auto"
+            >
+              View all →
+            </Link>
+          </div>
         </div>
 
         {/* Pending Jobs */}
@@ -175,81 +286,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* What Needs Attention */}
-      <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
-        <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
-          What Needs Attention
-        </div>
-
-        {criticalAlerts > 0 && (
-          <div className="flex items-center justify-between py-2 border-b border-border-subtle">
-            <div>
-              <span className="font-mono text-xs bg-status-critical/10 text-status-critical border border-status-critical/30 px-2 py-0.5 rounded uppercase tracking-wider mr-2">
-                Critical
-              </span>
-              <span className="font-body text-sm text-text-primary">
-                {criticalAlerts} critical alert{criticalAlerts > 1 ? 's' : ''}
-              </span>
-            </div>
-            <Link
-              href="/alerts"
-              className="font-mono text-xs text-accent hover:underline"
-            >
-              Review →
-            </Link>
-          </div>
-        )}
-
-        {pendingApprovals > 0 && (
-          <div className="flex items-center justify-between py-2 border-b border-border-subtle">
-            <div>
-              <span className="font-mono text-xs bg-status-warning/10 text-status-warning border border-status-warning/30 px-2 py-0.5 rounded uppercase tracking-wider mr-2">
-                Approval
-              </span>
-              <span className="font-body text-sm text-text-primary">
-                {pendingApprovals} action{pendingApprovals > 1 ? 's' : ''} waiting for approval
-              </span>
-            </div>
-            <Link
-              href="/actions"
-              className="font-mono text-xs text-accent hover:underline"
-            >
-              Review →
-            </Link>
-          </div>
-        )}
-
-        {pendingJobs > 0 && (
-          <div className="flex items-center justify-between py-2 border-b border-border-subtle">
-            <div>
-              <span className="font-mono text-xs bg-status-info/10 text-status-info border border-status-info/30 px-2 py-0.5 rounded uppercase tracking-wider mr-2">
-                Jobs
-              </span>
-              <span className="font-body text-sm text-text-primary">
-                {pendingJobs} job{pendingJobs > 1 ? 's' : ''} in queue
-              </span>
-            </div>
-            <Link
-              href="/diagnostics"
-              className="font-mono text-xs text-accent hover:underline"
-            >
-              View →
-            </Link>
-          </div>
-        )}
-
-        {nothingPending && (
-          <div className="text-center py-6">
-            <div className="font-mono text-2xl text-accent mb-2">◈</div>
-            <div className="font-mono text-xs text-text-muted uppercase tracking-widest">
-              All systems nominal
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Engine Info → Diagnostics Link */}
-      <div className="bg-bg-surface border border-border-subtle rounded p-4 mb-4">
+      {/* System Strip — Engine → Diagnostics */}
+      <div className="bg-bg-surface border border-border-subtle rounded p-4 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-1">
@@ -268,7 +306,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Signal (secondary, machine-log style) */}
+      {/* Recent Signal */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
           Recent Signal

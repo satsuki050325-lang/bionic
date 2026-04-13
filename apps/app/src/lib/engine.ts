@@ -160,6 +160,29 @@ export async function getDiagnostics(): Promise<Diagnostics | null> {
   }
 }
 
+export interface IncidentBrief {
+  summary: string | null
+  startHere: string | null
+  affectedServices: string[]
+  topIssueType: string | null
+  generatedAt: string
+  cached: boolean
+  available: boolean
+}
+
+export async function getIncidentBrief(): Promise<IncidentBrief | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/incident-brief`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function createResearchItem(
   input: CreateResearchItemInput
 ): Promise<CreateResearchItemResult | null> {

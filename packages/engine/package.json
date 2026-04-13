@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
     "@bionic/shared": "workspace:*",
     "@supabase/supabase-js": "^2.103.0",
     "cors": "^2.8.6",
