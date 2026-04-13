@@ -6,6 +6,25 @@
 ## 2026-04-13 / Claude Code
 
 ### やったこと
+- bionic doctor P2 finding 2件を修正した
+- Engine URL解決順序に BIONIC_ENGINE_URL を追加（`--engine-url` > BIONIC_ENGINE_URL > NEXT_PUBLIC_ENGINE_URL > localhost:3001）
+- Discord 部分設定（bot tokenのみ / channel IDのみ）を SKIP より前に WARN として検出する分岐を追加
+- pnpm --filter @bionic/cli typecheck / build 通過
+- 動作確認: BIONIC_ENGINE_URLを優先で解決することを確認、bot-tokenのみ・channel-IDのみの各ケースでWARNが出ることを確認
+
+### 判断したこと
+- 部分設定WARNは discordMode() 判定より前に置くことで、最終的にdisabledと判定されてSKIPになる場合でも警告が消えないようにした
+
+### 次にやること
+- Phase 2.4: Public Preview準備の残タスク（npm公開準備・ドキュメント整備）
+
+担当：Claude Code
+
+---
+
+## 2026-04-13 / Claude Code
+
+### やったこと
 - Phase 2.4: bionic doctor コマンドを実装した
 - packages/cli/src/commands/doctor.ts 新規作成（Environment / Database / Engine / Discord / Integrations / Summary 5セクション + サマリ）
 - packages/cli/src/lib/envLoader.ts 新規作成（.env.localをprocess.envにmerge・既存値優先・quoted value対応）

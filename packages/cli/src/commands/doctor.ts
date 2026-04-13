@@ -256,7 +256,10 @@ async function checkEngine(counters: Counters, engineUrlOverride?: string): Prom
   printSection('Engine')
 
   const engineUrl =
-    engineUrlOverride ?? process.env.NEXT_PUBLIC_ENGINE_URL ?? 'http://localhost:3001'
+    engineUrlOverride ??
+    process.env.BIONIC_ENGINE_URL ??
+    process.env.NEXT_PUBLIC_ENGINE_URL ??
+    'http://localhost:3001'
   const token = process.env.BIONIC_ENGINE_TOKEN
 
   const headers: Record<string, string> = {}
@@ -335,6 +338,32 @@ function discordMode(): 'bot' | 'webhook' | 'disabled' {
 
 async function checkDiscord(counters: Counters): Promise<void> {
   printSection('Discord')
+
+  const botToken = process.env.BIONIC_DISCORD_BOT_TOKEN
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL
+  const channelId = process.env.BIONIC_DISCORD_CHANNEL_ID
+
+  if (botToken && !channelId) {
+    printCheck(
+      {
+        status: 'WARN',
+        label: 'Discord Bot token set but BIONIC_DISCORD_CHANNEL_ID missing',
+        fix: 'Add BIONIC_DISCORD_CHANNEL_ID to .env.local',
+      },
+      counters
+    )
+  }
+
+  if (channelId && !botToken && !webhookUrl) {
+    printCheck(
+      {
+        status: 'WARN',
+        label: 'Discord channel ID set but no bot token or webhook URL',
+        fix: 'Add BIONIC_DISCORD_BOT_TOKEN or DISCORD_WEBHOOK_URL to .env.local',
+      },
+      counters
+    )
+  }
 
   const mode = discordMode()
   if (mode === 'disabled') {
