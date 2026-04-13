@@ -25,6 +25,26 @@
 
 ---
 
+## 2026-04-13 / Claude
+
+### やったこと
+- Phase 2.3: Deploy→Watch判定精度向上を実装した
+- baseline比較を「deploy前30分固定」から「同じ経過時間比較」に改善した
+- threshold（errorCount/increasePercent/watchMinutes）をconfig経由に変更した
+- alert messageに診断メタデータ（baseline/current/increase/threshold/deploymentId）を追加した
+- Codexレビュー完了・問題なし
+
+### 判断したこと
+- Vercel Runtime Logs API連携は次段階に切る
+- service.usage.requestCountがあってもPhase 2.3では「error count increase」として扱う
+
+### 次にやること
+- Phase 2.3: Medini以外のSDK組み込み
+
+担当：Claude
+
+---
+
 ## 2026-04-13 / Claude（Phase 2.3 Deploy→Watch判定精度向上）
 
 ### やったこと

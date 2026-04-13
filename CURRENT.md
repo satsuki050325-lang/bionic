@@ -185,6 +185,11 @@
 - PII（stacktrace/email/IP）保存なし
 - production regressedはcritical
 - Codexレビュー完了・P1/P2 finding全修正済み
+- Phase 2.3: Deploy→Watch判定精度向上
+- baseline比較を同じ経過時間比較に改善
+- thresholdをconfig経由に変更（BIONIC_DEPLOYMENT_WATCH_MINUTES等）
+- alert messageに判定メタデータ追加
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -203,10 +208,10 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.3: Vercel logs深掘り
+- Phase 2.3: Medini以外のSDK組み込み
 
 ### done条件
-- [ ] Deploy→Watch→Alertの精度向上（Vercel logs解析）
+- [ ] Medini以外のサンプルアプリにBionic SDKを組み込んで実運用検証する
 
 ---
 
@@ -243,7 +248,8 @@ Phase 2.2: Signal Quality（完了）
 Phase 2.3-1: GitHub連携 CI失敗検知（完了）
 Phase 2.3-2: Stripe監視（完了）
 Phase 2.3-3: Sentry連携（完了）
-Phase 2.3-4: Vercel logs深掘り（今ここ）
+Phase 2.3-4: Deploy→Watch判定精度向上（完了）
+Phase 2.3-5: Medini以外のSDK組み込み（今ここ）
 
 
 ---
