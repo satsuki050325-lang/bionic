@@ -3,6 +3,35 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- LICENSE（AGPL-3.0）を追加した
+- README.mdを整備した（10分Quickstart・init/doctor/demo）
+- SECURITY_RELEASE_CHECKLIST.mdを更新した
+- docs/SHOW_HN.mdを作成した
+- 全ページUIスクリーンショットを颯紀さんに確認してもらった
+- Codexによる最終UIレビューを実施した
+
+### 判断したこと
+- 公開前に修正が必要なもの：
+  - Settingsのenv読み取りバグ（[not set]問題）
+  - Dashboardのsparkline非表示バグ
+  - Actionsのskipped理由表示
+  - カラーパレット適用（P25ベース）
+  - アイコン導入
+- Onboarding・Diagnostics・Alerts・Researchは公開可能な品質
+- DashboardとActionsはもう一段改善が必要
+
+### 次にやること
+- Settingsバグ修正・Dashboardsparklineバグ修正
+- カラーパレット適用（Codexに設計確認後）
+- アイコン導入
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと

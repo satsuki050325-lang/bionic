@@ -213,6 +213,10 @@
 - Dashboard 24h error trend sparkline実装
 - GET /api/metrics/events API追加
 - Codexレビュー完了・P2 finding全修正済み
+- LICENSE追加（AGPL-3.0）
+- README.md整備（10分Quickstart・init/doctor/demo主役化）
+- SECURITY_RELEASE_CHECKLIST.md更新
+- docs/SHOW_HN.md作成
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -231,13 +235,14 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: README整備・LICENSE確定・Show HN投稿文・GitHub公開準備
+- Phase 2.4: Settingsバグ修正・Dashboardsparklineバグ修正・カラーパレット適用・アイコン導入
 
 ### done条件
-- [ ] README英語化/整備
-- [ ] LICENSE確定
-- [ ] Show HN投稿文
-- [ ] GitHub公開準備
+- [ ] Settingsのenv読み取りバグ修正（[not set]問題）
+- [ ] Dashboard sparkline非表示バグ修正
+- [ ] Actionsのskipped理由表示
+- [ ] カラーパレット適用（P25ベース）
+- [ ] アイコン導入
 
 ---
 
@@ -281,7 +286,8 @@ Phase 2.4: bionic doctor実装（完了）
 Phase 2.4: bionic demo実装（完了）
 Phase 2.4: Dashboard UI改善（完了）
 Phase 2.4: Alerts UI改善（完了）
-Phase 2.4: Public Preview公開準備（今ここ）
+Phase 2.4: Public Preview公開準備（LICENSE・README・CHECKLIST・SHOW_HN 完了）
+Phase 2.4: UI最終仕上げ（今ここ）
 
 
 ---
