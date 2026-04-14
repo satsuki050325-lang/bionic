@@ -6,9 +6,58 @@ import { sendTestServiceEvent } from './actions'
 
 type Framework = 'nextjs' | 'express' | 'other'
 type InstallMethod = 'sdk' | 'curl'
+type ShellType = 'bash' | 'powershell'
 
 const ENGINE_URL =
   process.env['NEXT_PUBLIC_ENGINE_URL'] ?? 'http://localhost:3001'
+
+function generatePowerShellSnippet(serviceId: string): string {
+  const sid = serviceId || 'my-service'
+  return `# Send a health signal (no SDK required)
+# Set $env:BIONIC_ENGINE_TOKEN if your Engine requires authentication.
+# Drop the Authorization entry from the Headers hashtable if not set.
+
+$body = @{
+  event = @{
+    id          = "test-001"
+    projectId   = "project_bionic"
+    serviceId   = "${sid}"
+    type        = "service.health.reported"
+    source      = "sdk"
+    occurredAt  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+    payload     = @{ status = "ok" }
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "${ENGINE_URL}/api/events" \`
+  -Method POST \`
+  -Headers @{
+    "Content-Type"  = "application/json"
+    "Authorization" = "Bearer $env:BIONIC_ENGINE_TOKEN"
+  } \`
+  -Body $body
+
+# Report an error
+$errBody = @{
+  event = @{
+    id          = "err-001"
+    projectId   = "project_bionic"
+    serviceId   = "${sid}"
+    type        = "service.error.reported"
+    source      = "sdk"
+    occurredAt  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+    payload     = @{ code = "ERR_CODE"; message = "What happened" }
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "${ENGINE_URL}/api/events" \`
+  -Method POST \`
+  -Headers @{
+    "Content-Type"  = "application/json"
+    "Authorization" = "Bearer $env:BIONIC_ENGINE_TOKEN"
+  } \`
+  -Body $errBody`
+}
 
 function generateCurlSnippet(serviceId: string): string {
   const sid = serviceId || 'my-service'
@@ -116,6 +165,7 @@ export default function AddServicePage({
 }) {
   const [serviceId, setServiceId] = useState(searchParams.serviceId ?? '')
   const [installMethod, setInstallMethod] = useState<InstallMethod>('curl')
+  const [shellType, setShellType] = useState<ShellType>('bash')
   const [framework, setFramework] = useState<Framework>('nextjs')
   const [testResult, setTestResult] = useState<
     'idle' | 'sending' | 'success' | 'error'
@@ -125,7 +175,9 @@ export default function AddServicePage({
 
   const snippet =
     installMethod === 'curl'
-      ? generateCurlSnippet(serviceId)
+      ? shellType === 'powershell'
+        ? generatePowerShellSnippet(serviceId)
+        : generateCurlSnippet(serviceId)
       : generateSnippet(serviceId, framework)
   const trimmed = serviceId.trim()
   const isValid = trimmed.length > 0 && /^[a-z0-9-]+$/.test(trimmed)
@@ -305,10 +357,24 @@ npm install @bionic/sdk   # available once published`}
           </>
         ) : (
           <>
+            <div className="flex gap-2 flex-wrap mb-3">
+              {(['bash', 'powershell'] as ShellType[]).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setShellType(s)}
+                  className={`font-mono text-xs px-4 py-2 rounded border transition-colors ${
+                    shellType === s
+                      ? 'border-accent text-accent bg-accent/10'
+                      : 'border-border-subtle text-text-secondary hover:border-accent/50'
+                  }`}
+                >
+                  {s === 'bash' ? 'Bash (macOS / Linux / WSL)' : 'PowerShell (Windows)'}
+                </button>
+              ))}
+            </div>
             <p className="font-body text-xs text-text-muted mb-3">
-              No SDK required. Any HTTP client works. Replace{' '}
-              <code className="text-accent">occurredAt</code> with the current
-              timestamp.
+              No SDK required. Any HTTP client works. The snippet computes{' '}
+              <code className="text-accent">occurredAt</code> at runtime.
             </p>
             <div className="bg-bg-base border border-border-subtle rounded p-3 overflow-x-auto">
               <pre className="font-mono text-xs text-text-primary whitespace-pre">

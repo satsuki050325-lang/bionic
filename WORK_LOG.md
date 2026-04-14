@@ -6,6 +6,28 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Add Service curl snippet に OS タブ（Bash / PowerShell）を追加
+- `generatePowerShellSnippet` を新設: `Invoke-RestMethod` + `ConvertTo-Json -Depth 5`、`$env:BIONIC_ENGINE_TOKEN` 参照、`(Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")` で ISO-8601 UTC を生成。health/error の 2 例を出力
+- Direct API ブロック冒頭にシェルタブを配置（Bash が左デフォルト、PowerShell が右）。ラベルは `Bash (macOS / Linux / WSL)` / `PowerShell (Windows)` で使用環境を明示
+- 注釈を「timestamp は置換」から「snippet がランタイムで occurredAt を計算」に更新（bash の `$(date)` も PowerShell の `Get-Date` も実行時評価なので正確）
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- PowerShell の日時は `.ToUniversalTime().ToString(...)` を採用。`Get-Date -Format` は既定でローカル TZ を返すため、UTC `Z` サフィックスと食い違う。UTC へ明示変換してから ISO-8601 Z 形式で emit
+- ヘッダーを Hashtable でまとめる方式に統一（`Invoke-RestMethod -Headers @{...}`）。Bash snippet の `-H` 複数指定と対称になる
+- Bash タブラベルに `WSL` を明記: Windows ユーザーで WSL 派の取りこぼしを防ぐ
+- ConvertTo-Json の `-Depth 5` は `payload` がネスト構造になり得ることを想定した安全側の値（既定 2 だと深いペイロードで切れる）
+
+### 次にやること
+- 最終 UI レビュー・公開判断
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Add Service の P1/P2 finding 2件を追加修正
 - P1: Direct API (curl) をデフォルト & 推奨表示に変更（`useState<InstallMethod>('curl')`、タブ順序を curl 左 / sdk 右に、ラベルを `Direct API (recommended)` / `TypeScript SDK (advanced)` に）。SDK タブ選択時は `bg-status-warning/10` の警告ボックスで「@bionic/shared 依存のため npm publish 前は単独 install 不可」を明示
 - P2: curl snippet に `Authorization: Bearer $BIONIC_ENGINE_TOKEN` ヘッダを追加。ヘッダ冒頭コメントで「token 未設定なら Authorization 行を削除」を案内。`occurredAt` を `'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'` のシェル展開でランタイム生成（固定文字列の誤解を防ぐ）
