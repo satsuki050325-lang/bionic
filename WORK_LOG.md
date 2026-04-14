@@ -3,6 +3,33 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Servicesページを実装した（engine_events/alertsから推定）
+- GET /api/servicesをEngineに追加した
+- Add Serviceページを実装した（4ステップウィザード）
+- Direct API（curl）をデフォルト推奨にした
+- Bash/PowerShell両対応のcurl snippetを実装した
+- SDK workspace依存の警告を追加した
+- Test Eventボタン（Server Action）を実装した
+- Webhook設定手順（コロン区切り形式）を追加した
+- ナビゲーションにServicesを追加した（Dashboard直後）
+- OnboardingにAdd Service導線を追加した
+- Codexレビュー完了・全finding修正済み
+
+### 判断したこと
+- SDKはworkspace依存のため公開前はDirect APIを推奨
+- servicesテーブルはPhase 2.4では作らない（推定で足りる）
+- Phase 2.5でUptime ping監視を追加する
+
+### 次にやること
+- Phase 2.4: 最終確認・GitHub公開
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと

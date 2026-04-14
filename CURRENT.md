@@ -223,6 +223,12 @@
 - アイコン導入（lucide-react・AlertSeverityIcon・ActionStatusIcon）
 - Actionsのskipped/failed理由表示（humanize対応）
 - Codexレビュー完了・P2 finding全修正済み
+- Servicesページ実装（engine_events/alertsから推定・GET /api/services追加）
+- Add Serviceページ実装（SDK snippet・Direct API・Test Event・Webhook設定）
+- ナビゲーションにServices追加
+- OnboardingにAdd Service導線追加
+- Add Service P1/P2 finding全修正済み（SDK警告・curl Authorization・Windows対応・event id一意化）
+- Codexレビュー完了・全finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -241,7 +247,7 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: 最終UIレビュー・公開判断
+- Phase 2.4: 最終確認・GitHub公開
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）
