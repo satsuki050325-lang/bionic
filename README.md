@@ -35,6 +35,13 @@ pnpm install
 
 ### 2. Set up Supabase
 
+Install and login to the Supabase CLI first:
+
+```bash
+npm install -g supabase
+supabase login
+```
+
 Create a project at [supabase.com](https://supabase.com), then apply migrations:
 
 ```bash
@@ -74,6 +81,11 @@ This simulates a production incident so you can see Bionic in action
 without connecting a real service. Run `demo --cleanup` to remove the
 simulated data afterward.
 
+> **Note**: If you set `BIONIC_ENGINE_TOKEN` during `bionic init`, make sure the
+> same token is available to the App. The simplest approach for local development
+> is to leave `BIONIC_ENGINE_TOKEN=` empty — authentication is disabled when not
+> set. Run `bionic doctor` if the Dashboard shows "Engine offline".
+
 ### 7. Open the Dashboard
 
 ```bash
@@ -89,6 +101,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - Node.js 20+
 - pnpm 9+
 - Supabase account (free tier works)
+- Supabase CLI (`npm install -g supabase`) — required for `supabase db push`
 - Discord server (for notifications)
 
 ---
