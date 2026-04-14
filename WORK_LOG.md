@@ -3,6 +3,27 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- ナビゲーションのブランドロゴに `◈` シンボルを追加（`BIONIC / ENGINE` の左、`text-accent font-mono text-lg leading-none`）。ブランドブロック全体を `<a href="/">` でラップしてクリック可能に
+- Settings ページのコンテナ幅を `max-w-3xl` → `max-w-5xl` に変更（layout の main と同じ幅に揃える）
+- ナビの全リンクラベルを `bionic-locale` cookie に連動させる。`navLabels` 辞書（en/ja）を layout.tsx に定義し、ja では ダッシュボード / セットアップ / アラート / 操作ログ / リサーチ / 診断 / 設定 を表示
+- pnpm verify 通過（typecheck + engine test 36件 + app build 11 routes）
+
+### 判断したこと
+- `ENGINE` サブラベルは翻訳せず固定（製品名の一部として扱う。DESIGN.md の「ALL CAPS monospace = operational category label」に沿う）
+- ブランドブロックを `<a>` でラップ: 従来ロゴはリンクではなかったが、ヘッダーロゴ = ホームが一般慣習。ナビ右側の Dashboard リンクは locale 連動なので機能重複ではない
+- ナビリンクは uppercase クラスを外した（日本語では UPPERCASE が機能しないため）。英語時も Settings 等の Title Case にして辞書値を尊重（DESIGN.md は ALL CAPS を mono 専用としているが、ナビは識別よりラベル色・タイポで階層を作る方向に寄せる）
+- Settings 幅統一は layout.tsx の main が `max-w-5xl` なので、page 側で再度 `max-w-3xl` を指定すると二重制約で視覚的に中途半端に寄る。5xl に揃えて main のコンテナに任せる
+
+### 次にやること
+- 最終 UI レビュー・公開判断
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

@@ -194,7 +194,7 @@ export default async function SettingsPage() {
   const quietHoursEnd = formatHour(cfg?.notification.quietHoursEnd)
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <div className="mb-8">
         <h1 className="font-heading text-2xl font-bold text-text-primary uppercase tracking-wide">
           {labels.title}

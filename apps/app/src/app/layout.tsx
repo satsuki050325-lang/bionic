@@ -15,38 +15,63 @@ export default async function RootLayout({
   const cookieStore = await cookies()
   const locale = cookieStore.get('bionic-locale')?.value === 'ja' ? 'ja' : 'en'
 
+  const navLabels = {
+    en: {
+      dashboard: 'Dashboard',
+      onboarding: 'Onboarding',
+      alerts: 'Alerts',
+      actions: 'Actions',
+      research: 'Research',
+      diagnostics: 'Diagnostics',
+      settings: 'Settings',
+    },
+    ja: {
+      dashboard: 'ダッシュボード',
+      onboarding: 'セットアップ',
+      alerts: 'アラート',
+      actions: '操作ログ',
+      research: 'リサーチ',
+      diagnostics: '診断',
+      settings: '設定',
+    },
+  } as const
+  const labels = navLabels[locale]
+
   return (
     <html lang={locale} className="dark">
       <body className="min-h-screen bg-bg-base text-text-primary">
         <nav className="border-b border-border-subtle bg-bg-surface">
           <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-accent font-heading font-bold text-lg tracking-wider">
+            <a href="/" className="flex items-center gap-2">
+              <span className="text-accent font-mono text-lg leading-none">◈</span>
+              <span className="font-heading font-bold text-accent tracking-widest uppercase">
                 BIONIC
               </span>
-              <span className="text-text-muted font-mono text-xs">ENGINE</span>
-            </div>
+              <span className="font-mono text-xs text-text-muted uppercase tracking-widest">
+                ENGINE
+              </span>
+            </a>
             <div className="flex items-center gap-6 font-mono text-sm">
               <a href="/" className="text-text-secondary hover:text-accent transition-colors">
-                DASHBOARD
+                {labels.dashboard}
               </a>
               <a href="/onboarding" className="text-text-secondary hover:text-accent transition-colors">
-                ONBOARDING
+                {labels.onboarding}
               </a>
               <a href="/alerts" className="text-text-secondary hover:text-accent transition-colors">
-                ALERTS
+                {labels.alerts}
               </a>
               <a href="/actions" className="text-text-secondary hover:text-accent transition-colors">
-                ACTIONS
+                {labels.actions}
               </a>
               <a href="/research" className="text-text-secondary hover:text-accent transition-colors">
-                RESEARCH
+                {labels.research}
               </a>
               <a href="/diagnostics" className="text-text-secondary hover:text-accent transition-colors">
-                DIAGNOSTICS
+                {labels.diagnostics}
               </a>
               <a href="/settings" className="text-text-secondary hover:text-accent transition-colors">
-                SETTINGS
+                {labels.settings}
               </a>
             </div>
           </div>
