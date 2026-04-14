@@ -3,6 +3,24 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- ナビゲーションを6項目に整理した（Dashboard/Services/Alerts/Actions/Diagnostics/Settings）
+- ナビにlucideアイコンを追加した
+- 日本語ナビ対応を実装した
+- OnboardingをSettingsのSystem Checkリンクに移動した
+- ResearchをナビからRemoveした（ページは残存）
+- ActionsのSUCCEEDED/SKIPPEDの色をはっきりさせた
+- DiagnosticsとSettingsのタイトル・ラベル・値の階層を改善した
+
+### 次にやること
+- 最終UIレビュー・GitHub公開判断
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと

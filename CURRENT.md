@@ -229,6 +229,12 @@
 - OnboardingにAdd Service導線追加
 - Add Service P1/P2 finding全修正済み（SDK警告・curl Authorization・Windows対応・event id一意化）
 - Codexレビュー完了・全finding修正済み
+- ナビゲーション整理（6項目・アイコン追加・日本語対応）
+- OnboardingをナビからSettingsに移動
+- Researchをナビから削除
+- ActionsのSUCCEEDED/SKIPPED色改善
+- Diagnostics・Settingsのタイトル階層改善
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -247,7 +253,7 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: 最終確認・GitHub公開
+- Phase 2.4: 最終UIレビュー・GitHub公開判断
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）
