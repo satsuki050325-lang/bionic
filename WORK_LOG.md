@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Settingsのenv読み取りバグを修正した（GET /api/diagnostics経由に変更）
+- Dashboardのsparkline非表示バグを修正した（style={{ fill: 'var()' }}に変更）
+- カラーパレットを更新した（P25ローラー・リンクベース安全版）
+- 黒基調を維持しつつborder/text/statusにレトロな管制室感を追加した
+- DESIGN.mdを新パレットに更新した
+- Codexレビュー完了・全finding修正済み
+
+### 判断したこと
+- --accent: #E8611A（Anthropic Orange）は維持
+- --accent-warm: #FAA45Bを追加（Onboarding等の生命感）
+- bg-baseはほぼ黒維持（#090D0E）
+- text-primaryをwarm white（#F5F0E8）に変更
+
+### 次にやること
+- アイコン導入
+- Actionsのskipped理由表示
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと

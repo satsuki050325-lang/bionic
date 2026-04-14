@@ -217,6 +217,10 @@
 - README.md整備（10分Quickstart・init/doctor/demo主役化）
 - SECURITY_RELEASE_CHECKLIST.md更新
 - docs/SHOW_HN.md作成
+- Settingsバグ修正（env読み取り → GET /api/diagnostics経由に変更）
+- Dashboardスパークライン非表示バグ修正（CSS変数に変更）
+- カラーパレット適用（P25ローラー・リンクベース安全版）
+- Codexレビュー完了・全finding修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -235,14 +239,14 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: Settingsバグ修正・Dashboardsparklineバグ修正・カラーパレット適用・アイコン導入
+- Phase 2.4: アイコン導入・Actionsのskipped理由表示
 
 ### done条件
-- [ ] Settingsのenv読み取りバグ修正（[not set]問題）
-- [ ] Dashboard sparkline非表示バグ修正
-- [ ] Actionsのskipped理由表示
-- [ ] カラーパレット適用（P25ベース）
+- [x] Settingsのenv読み取りバグ修正（[not set]問題）
+- [x] Dashboard sparkline非表示バグ修正
+- [x] カラーパレット適用（P25ベース）
 - [ ] アイコン導入
+- [ ] Actionsのskipped理由表示
 
 ---
 
@@ -323,4 +327,4 @@ Phase 2.4: UI最終仕上げ（今ここ）
 
 ## 最終更新
 
-2026-04-13 / Claude
+2026-04-14 / Claude
