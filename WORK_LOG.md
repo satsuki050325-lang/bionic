@@ -6,6 +6,37 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Engine に `GET /api/services` を新設（`packages/engine/src/routes/services.ts`）: engine_events と engine_alerts を service_id でグルーピングし、status（alerting/receiving/quiet/stale/demo）・eventCount24h・sources（SDK/Vercel/GitHub/Stripe/Sentry/CLI 推論）・nextStep を返す
+- `packages/engine/src/index.ts` に servicesRouter を登録（`/api/services`）
+- `apps/app/src/lib/engine.ts` に `ServiceWatchStatus` / `ServiceSource` / `ServiceSummary` / `ListServicesResult` 型と `getServices()` を追加
+- `apps/app/src/app/services/page.tsx` を新設: service カードリスト、空状態（◈ + Add your first service）、alerting カードは `border-status-critical/30` で浮かせる
+- `apps/app/src/app/services/new/page.tsx` を Client Component で新設: 4 ステップ（Name → Framework → SDK snippet → Test signal）+ Optional webhooks トグル。Next.js / Express / Other の 3 フレームワーク対応スニペット生成
+- `apps/app/src/app/services/new/actions.ts` を Server Action で新設: `sendTestServiceEvent(serviceId)`。`BIONIC_ENGINE_TOKEN` は server-only で使用、POST /api/events へ `service.health.reported` を送る。入力は server 側でも `^[a-z0-9-]+$` で再バリデーション
+- ナビゲーションに Services を追加（Dashboard の直後、en=`Services` / ja=`サービス`）
+- Onboarding の All Good state に「Next Mission: Add Service →」動線を追加
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- 型名は `ServiceStatus` にすると shared の `ServiceStatus`（Engine runtime 状態）と衝突するため `ServiceWatchStatus` に改名。サービス単位の「監視下の状態」と意味論的にも分離できた
+- Server Action では入力を再バリデーション（クライアント JS を迂回した呼び出し対策）。regex は client と同一で DRY より安全側
+- Test signal は `source: 'app'` を使う（既存の VALID_SOURCES に含まれる）。専用の `test_signal` source を増やすと SDK 含む既存コードに影響が出る
+- isDemo の判定は `serviceId === 'demo-api' || startsWith('demo-')` と緩めに。`bionic demo` が生成するサンプルを拡張する際に一緒に掴める
+- `sources` の推論は「SDK は `service.*` event か source=sdk」「Vercel は deployment_regression alert か payload.provider」「GitHub/Stripe/Sentry は alert type ベース」。Engine 側のイベント名前空間が `github.*` 等で整備されていない前提に立って、alertTypes を優先ソースに利用
+- /services の alert-count 表示は critical > 0 のときのみ critical を出す（critical と open の二重表示を避ける）
+
+### 既知リスク / 未解決
+- /api/services は engine_events から最新 500 件を走査する単純実装。プロジェクト規模が大きくなると重くなるため、Phase 3 以降で service_id の直接インデックス集計（DB view か materialized view）に置換する余地あり
+
+### 次にやること
+- 最終 UI レビュー・公開判断
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - ナビゲーションのブランドロゴに `◈` シンボルを追加（`BIONIC / ENGINE` の左、`text-accent font-mono text-lg leading-none`）。ブランドブロック全体を `<a href="/">` でラップしてクリック可能に
 - Settings ページのコンテナ幅を `max-w-3xl` → `max-w-5xl` に変更（layout の main と同じ幅に揃える）
 - ナビの全リンクラベルを `bionic-locale` cookie に連動させる。`navLabels` 辞書（en/ja）を layout.tsx に定義し、ja では ダッシュボード / セットアップ / アラート / 操作ログ / リサーチ / 診断 / 設定 を表示

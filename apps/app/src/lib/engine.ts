@@ -259,6 +259,51 @@ export async function getEventMetrics(window = '24h'): Promise<EventMetrics | nu
   }
 }
 
+export type ServiceWatchStatus =
+  | 'alerting'
+  | 'receiving'
+  | 'quiet'
+  | 'stale'
+  | 'demo'
+
+export type ServiceSource =
+  | 'sdk'
+  | 'vercel'
+  | 'github'
+  | 'stripe'
+  | 'sentry'
+  | 'manual'
+
+export interface ServiceSummary {
+  serviceId: string
+  projectId: string
+  isDemo: boolean
+  status: ServiceWatchStatus
+  lastEventAt: string | null
+  eventCount24h: number
+  openAlerts: number
+  criticalAlerts: number
+  sources: ServiceSource[]
+  nextStep: string
+}
+
+export interface ListServicesResult {
+  services: ServiceSummary[]
+}
+
+export async function getServices(): Promise<ListServicesResult | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/services`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function getIncidentBrief(): Promise<IncidentBrief | null> {
   try {
     const res = await fetch(`${ENGINE_URL}/api/incident-brief`, {

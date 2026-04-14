@@ -253,6 +253,23 @@ export default function OnboardingPage() {
             Run demo in terminal:{' '}
             <code className="text-accent">npx tsx packages/cli/src/index.ts demo</code>
           </p>
+
+          <div className="mt-8 border-t border-border-subtle pt-6">
+            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
+              Next Mission
+            </div>
+            <p className="font-body text-sm text-text-secondary mb-4">
+              The engine is running. Now connect your first service.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <Link
+                href="/services/new"
+                className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-border-default text-text-secondary rounded hover:border-accent hover:text-accent transition-colors"
+              >
+                Add Service →
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>

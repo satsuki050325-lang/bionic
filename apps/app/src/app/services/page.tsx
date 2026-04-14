@@ -1,0 +1,214 @@
+import Link from 'next/link'
+import { getServices, type ServiceWatchStatus } from '@/lib/engine'
+import { formatRelativeTime } from '@/lib/time'
+
+const STATUS_BADGE: Record<
+  ServiceWatchStatus,
+  { label: string; className: string }
+> = {
+  alerting: {
+    label: 'ALERTING',
+    className:
+      'text-status-critical border-status-critical/50 bg-status-critical/10',
+  },
+  receiving: {
+    label: 'RECEIVING',
+    className:
+      'text-status-success border-status-success/50 bg-status-success/10',
+  },
+  quiet: {
+    label: 'QUIET',
+    className: 'text-text-muted border-border-subtle',
+  },
+  stale: {
+    label: 'STALE',
+    className:
+      'text-status-warning border-status-warning/50 bg-status-warning/10',
+  },
+  demo: {
+    label: 'DEMO',
+    className: 'text-status-info border-status-info/50 bg-status-info/10',
+  },
+}
+
+const SOURCE_LABELS: Record<string, string> = {
+  sdk: 'SDK',
+  vercel: 'Vercel',
+  github: 'GitHub',
+  stripe: 'Stripe',
+  sentry: 'Sentry',
+  manual: 'CLI',
+}
+
+export default async function ServicesPage() {
+  const data = await getServices()
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="text-accent font-heading text-4xl">&#9670;</div>
+        <h1 className="font-heading text-2xl font-semibold">Engine Offline</h1>
+        <p className="text-text-secondary font-mono text-sm">
+          Run{' '}
+          <span className="text-accent">
+            pnpm --filter @bionic/engine dev
+          </span>{' '}
+          to start
+        </p>
+      </div>
+    )
+  }
+
+  const services = data.services
+  const realServices = services.filter((s) => !s.isDemo)
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-text-primary uppercase tracking-wide">
+            Services
+          </h1>
+          <p className="font-mono text-xs text-text-muted mt-1">
+            {realServices.length > 0
+              ? `${realServices.length} service${realServices.length > 1 ? 's' : ''} under watch`
+              : 'No services connected yet'}
+          </p>
+        </div>
+        <Link
+          href="/services/new"
+          className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors"
+        >
+          + Add Service
+        </Link>
+      </div>
+
+      {services.length === 0 && (
+        <div className="text-center py-20">
+          <div className="font-mono text-4xl text-accent mb-4">◈</div>
+          <div className="font-mono text-sm text-text-muted uppercase tracking-widest mb-2">
+            No services connected
+          </div>
+          <p className="font-body text-sm text-text-secondary mb-6">
+            Bionic is running, but it is not watching any service yet.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link
+              href="/services/new"
+              className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors"
+            >
+              Add your first service
+            </Link>
+            <Link
+              href="/onboarding"
+              className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-border-default text-text-secondary rounded hover:border-accent hover:text-accent transition-colors"
+            >
+              Run Demo
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {services.map((service) => {
+          const badge = STATUS_BADGE[service.status] ?? STATUS_BADGE.quiet
+          return (
+            <div
+              key={service.serviceId}
+              className={`bg-bg-surface border rounded p-5 ${
+                service.status === 'alerting'
+                  ? 'border-status-critical/30 bg-status-critical/5'
+                  : 'border-border-subtle'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3 gap-4">
+                <div className="flex items-center gap-3 flex-wrap min-w-0">
+                  <span className="font-heading text-base font-semibold text-text-primary">
+                    {service.serviceId}
+                  </span>
+                  <span
+                    className={`font-mono text-xs px-2 py-0.5 rounded border uppercase tracking-wider ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
+                  {service.isDemo && (
+                    <span className="font-mono text-xs text-text-muted">
+                      (demo data)
+                    </span>
+                  )}
+                </div>
+                <div className="font-mono text-xs text-text-muted shrink-0">
+                  {service.lastEventAt
+                    ? `Last signal ${formatRelativeTime(service.lastEventAt)}`
+                    : 'No signals yet'}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 mb-3 flex-wrap">
+                {service.criticalAlerts > 0 && (
+                  <div className="font-mono text-xs text-status-critical">
+                    {service.criticalAlerts} critical alert
+                    {service.criticalAlerts > 1 ? 's' : ''}
+                  </div>
+                )}
+                {service.openAlerts > 0 && service.criticalAlerts === 0 && (
+                  <div className="font-mono text-xs text-status-warning">
+                    {service.openAlerts} open alert
+                    {service.openAlerts > 1 ? 's' : ''}
+                  </div>
+                )}
+                {service.eventCount24h > 0 && (
+                  <div className="font-mono text-xs text-text-muted">
+                    {service.eventCount24h} signal
+                    {service.eventCount24h > 1 ? 's' : ''} in 24h
+                  </div>
+                )}
+                {service.sources.length > 0 && (
+                  <div className="flex gap-1">
+                    {service.sources.map((src) => (
+                      <span
+                        key={src}
+                        className="font-mono text-xs px-1.5 py-0.5 rounded border border-border-subtle text-text-muted"
+                      >
+                        {SOURCE_LABELS[src] ?? src}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <p className="font-body text-xs text-text-secondary">
+                  {service.nextStep}
+                </p>
+                <div className="flex gap-3 shrink-0">
+                  {service.openAlerts > 0 && (
+                    <Link
+                      href="/alerts"
+                      className="font-mono text-xs text-accent hover:underline"
+                    >
+                      View alerts →
+                    </Link>
+                  )}
+                  {!service.isDemo && (
+                    <Link
+                      href={`/services/new?serviceId=${encodeURIComponent(service.serviceId)}`}
+                      className="font-mono text-xs text-text-muted hover:text-text-secondary"
+                    >
+                      Setup guide
+                    </Link>
+                  )}
+                  {service.isDemo && (
+                    <span className="font-mono text-xs text-text-muted">
+                      bionic demo --cleanup
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

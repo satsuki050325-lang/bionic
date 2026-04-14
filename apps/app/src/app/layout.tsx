@@ -18,6 +18,7 @@ export default async function RootLayout({
   const navLabels = {
     en: {
       dashboard: 'Dashboard',
+      services: 'Services',
       onboarding: 'Onboarding',
       alerts: 'Alerts',
       actions: 'Actions',
@@ -27,6 +28,7 @@ export default async function RootLayout({
     },
     ja: {
       dashboard: 'ダッシュボード',
+      services: 'サービス',
       onboarding: 'セットアップ',
       alerts: 'アラート',
       actions: '操作ログ',
@@ -54,6 +56,9 @@ export default async function RootLayout({
             <div className="flex items-center gap-6 font-mono text-sm">
               <a href="/" className="text-text-secondary hover:text-accent transition-colors">
                 {labels.dashboard}
+              </a>
+              <a href="/services" className="text-text-secondary hover:text-accent transition-colors">
+                {labels.services}
               </a>
               <a href="/onboarding" className="text-text-secondary hover:text-accent transition-colors">
                 {labels.onboarding}
