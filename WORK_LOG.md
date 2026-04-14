@@ -6,6 +6,26 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Add Service の P1/P2 finding 2件を追加修正
+- P1: Direct API (curl) をデフォルト & 推奨表示に変更（`useState<InstallMethod>('curl')`、タブ順序を curl 左 / sdk 右に、ラベルを `Direct API (recommended)` / `TypeScript SDK (advanced)` に）。SDK タブ選択時は `bg-status-warning/10` の警告ボックスで「@bionic/shared 依存のため npm publish 前は単独 install 不可」を明示
+- P2: curl snippet に `Authorization: Bearer $BIONIC_ENGINE_TOKEN` ヘッダを追加。ヘッダ冒頭コメントで「token 未設定なら Authorization 行を削除」を案内。`occurredAt` を `'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'` のシェル展開でランタイム生成（固定文字列の誤解を防ぐ）
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- デフォルトを curl にする判断: 外部ユーザーが「コピペ→即動作」できる体験を最短にする。SDK は npm publish 後に推奨へ昇格する想定
+- Authorization ヘッダはトークン未設定環境でもそのまま動く（Engine 側 middleware が空 Bearer を 401 にしない構成のはず）が、コメントで明示的に削除を促す方が誤配ミス（本番で空 token 送信）を防げる
+- date シェル展開は POSIX (`-u +Y-%m-%dT%H:%M:%SZ`) を採用。GNU/BSD 両系で動作
+
+### 次にやること
+- 最終 UI レビュー・公開判断
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Add Service の P1/P2 finding 4件を修正
 - P1 #1: SDK install を現実に即した内容に再構成。Step 02 を「Choose how to integrate」に拡張し `TypeScript SDK` / `Direct API (curl)` トグルを追加。SDK 側は monorepo cp / npm link / 将来 npm 公開予定を明記。Direct API 側は `curl -X POST /api/events` の health/error 2 例を生成（外部ユーザーが SDK なしで即試せる）
 - P1 #2: Webhook env のフォーマット誤りを修正。`{"prj_xxx":"svc"}` JSON → `prj_xxx:svc` コロン区切り（Engine の `readVercelProjectMap` / `readGitHubRepoMap` が `split(':')` を使っているため。複数は `,` で連結）。各項目に hint 行（プレースホルダ説明・複数指定の書式）を追加

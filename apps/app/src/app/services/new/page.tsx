@@ -12,9 +12,13 @@ const ENGINE_URL =
 
 function generateCurlSnippet(serviceId: string): string {
   const sid = serviceId || 'my-service'
-  return `# Send a health signal directly (no SDK required):
+  return `# Send a health signal (no SDK required)
+# Set BIONIC_ENGINE_TOKEN if your Engine requires authentication.
+# Remove the Authorization header if BIONIC_ENGINE_TOKEN is not set.
+
 curl -X POST ${ENGINE_URL}/api/events \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \\
   -d '{
     "event": {
       "id": "test-001",
@@ -22,14 +26,15 @@ curl -X POST ${ENGINE_URL}/api/events \\
       "serviceId": "${sid}",
       "type": "service.health.reported",
       "source": "sdk",
-      "occurredAt": "2026-01-01T00:00:00.000Z",
+      "occurredAt": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
       "payload": { "status": "ok" }
     }
   }'
 
-# Report an error:
+# Report an error
 curl -X POST ${ENGINE_URL}/api/events \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \\
   -d '{
     "event": {
       "id": "err-001",
@@ -37,7 +42,7 @@ curl -X POST ${ENGINE_URL}/api/events \\
       "serviceId": "${sid}",
       "type": "service.error.reported",
       "source": "sdk",
-      "occurredAt": "2026-01-01T00:00:00.000Z",
+      "occurredAt": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
       "payload": { "code": "ERR_CODE", "message": "What happened" }
     }
   }'`
@@ -110,7 +115,7 @@ export default function AddServicePage({
   searchParams: { serviceId?: string }
 }) {
   const [serviceId, setServiceId] = useState(searchParams.serviceId ?? '')
-  const [installMethod, setInstallMethod] = useState<InstallMethod>('sdk')
+  const [installMethod, setInstallMethod] = useState<InstallMethod>('curl')
   const [framework, setFramework] = useState<Framework>('nextjs')
   const [testResult, setTestResult] = useState<
     'idle' | 'sending' | 'success' | 'error'
@@ -210,7 +215,7 @@ export default function AddServicePage({
           02 · Choose how to integrate
         </div>
         <div className="flex gap-2 flex-wrap mb-4">
-          {(['sdk', 'curl'] as InstallMethod[]).map((m) => (
+          {(['curl', 'sdk'] as InstallMethod[]).map((m) => (
             <button
               key={m}
               onClick={() => setInstallMethod(m)}
@@ -220,7 +225,9 @@ export default function AddServicePage({
                   : 'border-border-subtle text-text-secondary hover:border-accent/50'
               }`}
             >
-              {m === 'sdk' ? 'TypeScript SDK' : 'Direct API (curl)'}
+              {m === 'curl'
+                ? 'Direct API (recommended)'
+                : 'TypeScript SDK (advanced)'}
             </button>
           ))}
         </div>
@@ -255,10 +262,17 @@ export default function AddServicePage({
 
         {installMethod === 'sdk' ? (
           <>
+            <div className="bg-status-warning/10 border border-status-warning/30 rounded p-3 mb-3">
+              <p className="font-mono text-xs text-status-warning">
+                Note: The SDK depends on @bionic/shared from the Bionic
+                monorepo and cannot be installed standalone until Bionic
+                publishes to npm. Use Direct API for now, or run both
+                services from the same Bionic repo.
+              </p>
+            </div>
             <p className="font-body text-xs text-text-muted mb-3">
-              The SDK is not yet on npm. Use one of the local options below
-              while running Bionic from source. (npm publish is planned in a
-              future release.)
+              While running Bionic from source, use one of the local options
+              below.
             </p>
             <div className="bg-bg-base border border-border-subtle rounded p-3 mb-3 overflow-x-auto">
               <pre className="font-mono text-xs text-text-primary whitespace-pre">
