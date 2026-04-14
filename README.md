@@ -100,7 +100,7 @@ The fastest way to get Bionic running with basic alert and digest functionality.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-repo/bionic.git
+git clone https://github.com/satsuki050325-lang/bionic.git
 cd bionic
 pnpm install
 ```
@@ -185,17 +185,37 @@ BIONIC_DIGEST_TIMEZONE=Asia/Tokyo
 
 Instrument your service to send observability events to Bionic Engine.
 
-### Installation
+> **Note**: The SDK (`@bionic/sdk`) is currently part of the Bionic monorepo
+> and not yet published to npm. Use the Direct API for now.
+
+### Direct API (Recommended)
+
+Send signals directly to the Bionic Engine without any SDK:
 
 ```bash
-# pnpm workspace (this monorepo)
-pnpm add @bionic/sdk
-
-# In external projects, copy the SDK or install via path/git
-# (npm publish coming in a future release)
+curl -X POST http://localhost:3001/api/events \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \
+  -d '{
+    "event": {
+      "id": "test-001",
+      "projectId": "project_bionic",
+      "serviceId": "my-service",
+      "type": "service.health.reported",
+      "source": "sdk",
+      "occurredAt": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
+      "payload": { "status": "ok" }
+    }
+  }'
 ```
 
-### Basic Usage
+Windows / PowerShell and framework snippets are generated on the
+`/services/new` page in the app.
+
+### SDK (Monorepo only)
+
+If you are running Bionic from source, the SDK is available at
+`packages/sdk`. npm publishing is planned for a future release.
 
 ```typescript
 import { BionicClient } from '@bionic/sdk'

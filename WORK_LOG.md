@@ -6,6 +6,27 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Dashboard 階層改善は前回コミット `39a72ed` で完了済みと確認（OPERATIONAL BRIEF / WHAT NEEDS ATTENTION / RECENT SIGNAL を `font-heading text-sm font-bold`、stat card ラベルを `text-text-muted tracking-wide`）。追加変更なし
+- README.md の SDK Quickstart セクションを Direct API 主導に再構成: 冒頭に「SDK は monorepo 内包、npm 未公開」の注記を配置、curl + Authorization Bearer の POST /api/events 例を先頭に、SDK セクションは「Monorepo only」として残置
+- README.md の 2 箇所目の Minimum Setup（line 103 付近）にあった `github.com/your-repo/bionic.git` を実 URL `github.com/satsuki050325-lang/bionic.git` に修正
+- `.env.example` の `BIONIC_ENGINE_TOKEN` を `your-secure-random-token` → 空値に変更し、コメントで「ローカル開発は空、本番は `openssl rand -hex 32` を推奨」を併記
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- Quickstart を「Direct API → SDK」の順に入れ替え: 初見ユーザーが `pnpm add @bionic/sdk` を叩いて失敗する導線を完全に断ち、監視イベントの投入は curl 1 発で試せる現実の最短経路を提示
+- BIONIC_ENGINE_TOKEN の placeholder をダミー値ではなく空にしたのは、`.env.local` へ丸写しした場合に「it looks like a token だけど実際は無効」という危険な中間状態を生まないため。空なら Engine middleware 側で fail-fast、production では validateConfigForStartup が起動拒否する設計と整合
+- 1 箇所目の clone URL（line 31 付近）はすでに正 URL に修正済みだったため、2 箇所目のみ差し替え
+
+### 次にやること
+- 最終スクリーンショット確認・GitHub 公開
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Dashboard (`apps/app/src/app/page.tsx`) のセクションタイトル階層を Settings / Diagnostics と同じ水準に統一
 - `Operational Brief`: `font-heading text-sm font-bold` に（色は accent/critical 維持）
 - `What Needs Attention` / `Recent Signal`: `font-heading text-sm font-bold text-text-primary uppercase tracking-wide` に昇格
