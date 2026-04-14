@@ -3,6 +3,33 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Settings の `SettingSection` タイトルを「章見出し」に格上げ: `font-heading text-sm font-bold text-text-primary uppercase` + 任意の description 行。全 10 セクションに desc を付与。`SettingRow` は値を `text-sm font-medium` に引き上げ
+- Settings の i18n を en/ja/es/zh の 4 言語に拡張。英語版を正本とし、他言語は `{ ...en, ...overrides }` スプレッドで欠落キー時も en にフォールバック（未翻訳文字列でランタイムエラーを出さない）
+- `LanguageSwitcher.tsx` を 4 言語（English / 日本語 / Español / 中文）対応に、レイアウトを `flex-wrap`
+- `layout.tsx` の navLabels に es/zh を追加し、locale 解決を `rawLocale in navLabels` で型安全に判定
+- Actions を `Needs Attention`（failed/pending_approval/needs_review）と `Recent History`（others）の 2 セクションに再構成。上部にサマリーバー（N need attention / N succeeded / N skipped）。pending_approval の `bionic approve` CLI ヒントは行内に残す
+- Actions 行レンダリングを `ActionRow` コンポーネントに抽出（重複排除 + 再利用）、history 側は `opacity-75` で控えめに
+- Services の各実サービスカードに「Not connected: Vercel GitHub …」と `Add integration →` リンクを追加。`ALL_INTEGRATION_SOURCES` に無い sources を opacity-50 で淡色表示
+- Diagnostics 最上部に総合判定バナーを追加: engine not running OR db down OR runner error → critical、failed/needsReview/scheduler 無効 → warning、それ以外 → healthy
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- 多言語フォールバックは「スプレッド方式」を採用: `Record<Locale, Labels>` を都度全展開するより base を上書きする方が、追加キー時の ja/es/zh のメンテナンスコストが増えない。未翻訳は英語で表示されるが空欄より遥かに良い
+- locale 判定は `rawLocale in navLabels` の型ガードに統一（文字列 includes より安全）
+- Diagnostics のヘルス判定は段階的: errors（運用上の致命）と warnings（改善可能）を明確に分け、両方 true の場合は errors 優先
+- Recent History の opacity は `opacity-75`（従来 `opacity-60` より少し明るく）: 完了ログを「読める情報」として残す方が監査目的に合う
+- Missing integrations は demo サービスには出さない（Demo は「接続していない状態のまま」だから注意喚起にならない）
+
+### 次にやること
+- 最終 UI レビュー・GitHub 公開判断
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

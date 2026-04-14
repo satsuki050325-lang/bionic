@@ -2,6 +2,13 @@
 
 import { useState } from 'react'
 
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'ja', label: '日本語' },
+  { code: 'es', label: 'Español' },
+  { code: 'zh', label: '中文' },
+] as const
+
 export function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
   const [locale, setLocale] = useState(currentLocale)
 
@@ -12,19 +19,19 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
   }
 
   return (
-    <div className="flex gap-2">
-      {(['en', 'ja'] as const).map((l) => (
+    <div className="flex gap-2 flex-wrap">
+      {LANGUAGES.map((l) => (
         <button
-          key={l}
+          key={l.code}
           type="button"
-          onClick={() => switchLocale(l)}
+          onClick={() => switchLocale(l.code)}
           className={`font-mono text-xs px-3 py-1 rounded border transition-colors ${
-            locale === l
+            locale === l.code
               ? 'border-accent text-accent bg-accent/10'
               : 'border-border-subtle text-text-secondary hover:border-accent/50'
           }`}
         >
-          {l === 'en' ? 'English' : '日本語'}
+          {l.label}
         </button>
       ))}
     </div>

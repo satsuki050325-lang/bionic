@@ -40,6 +40,8 @@ const SOURCE_LABELS: Record<string, string> = {
   manual: 'CLI',
 }
 
+const ALL_INTEGRATION_SOURCES = ['sdk', 'vercel', 'github', 'stripe', 'sentry'] as const
+
 export default async function ServicesPage() {
   const data = await getServices()
 
@@ -205,6 +207,35 @@ export default async function ServicesPage() {
                   )}
                 </div>
               </div>
+
+              {!service.isDemo &&
+                (() => {
+                  const missingSources = ALL_INTEGRATION_SOURCES.filter(
+                    (s) => !service.sources.includes(s)
+                  )
+                  if (missingSources.length === 0) return null
+                  return (
+                    <div className="mt-3 pt-3 border-t border-border-subtle flex items-center justify-between gap-3 flex-wrap">
+                      <div className="font-mono text-xs text-text-muted">
+                        Not connected:
+                        {missingSources.map((src) => (
+                          <span
+                            key={src}
+                            className="ml-1.5 font-mono text-xs text-text-muted opacity-50"
+                          >
+                            {SOURCE_LABELS[src]}
+                          </span>
+                        ))}
+                      </div>
+                      <Link
+                        href={`/services/new?serviceId=${encodeURIComponent(service.serviceId)}`}
+                        className="font-mono text-xs text-accent hover:underline"
+                      >
+                        Add integration →
+                      </Link>
+                    </div>
+                  )
+                })()}
             </div>
           )
         })}

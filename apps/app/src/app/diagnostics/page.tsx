@@ -20,8 +20,48 @@ export default async function DiagnosticsPage() {
   const statusColor = isRunning ? 'text-status-success' : 'text-status-warning'
   const statusLabel = isRunning ? '◈ ONLINE' : '⚠ DEGRADED'
 
+  const runnerHasError = diag.scheduler.runners.some((r) => !!r.lastError)
+  const hasErrors = !isRunning || !diag.db.ok || runnerHasError
+  const hasWarnings =
+    !hasErrors &&
+    (diag.queue.jobs.failedRecent > 0 ||
+      diag.queue.actions.failedRecent > 0 ||
+      diag.queue.jobs.needsReview > 0 ||
+      !diag.scheduler.enabled)
+
+  const summaryTone = hasErrors
+    ? {
+        wrap: 'bg-status-critical/5 border-status-critical/30',
+        text: 'text-status-critical',
+        label: '⚠ Needs attention',
+        detail: 'One or more components require attention.',
+      }
+    : hasWarnings
+      ? {
+          wrap: 'bg-status-warning/5 border-status-warning/30',
+          text: 'text-status-warning',
+          label: '◈ Has warnings',
+          detail: 'Engine is running with minor warnings.',
+        }
+      : {
+          wrap: 'bg-status-success/5 border-status-success/30',
+          text: 'text-status-success',
+          label: '◈ All systems healthy',
+          detail:
+            'Engine, database, scheduler, and all runners are operational.',
+        }
+
   return (
     <div className="space-y-6">
+      <div className={`rounded p-4 border ${summaryTone.wrap}`}>
+        <div className={`font-mono text-sm font-bold ${summaryTone.text}`}>
+          {summaryTone.label}
+        </div>
+        <p className="font-mono text-xs text-text-muted mt-1">
+          {summaryTone.detail}
+        </p>
+      </div>
+
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-semibold tracking-wider">
           BIONIC DIAGNOSTICS

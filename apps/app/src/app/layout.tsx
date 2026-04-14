@@ -21,9 +21,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const locale = cookieStore.get('bionic-locale')?.value === 'ja' ? 'ja' : 'en'
-
   const navLabels = {
     en: {
       dashboard: 'Dashboard',
@@ -41,7 +38,31 @@ export default async function RootLayout({
       diagnostics: '診断',
       settings: '設定',
     },
+    es: {
+      dashboard: 'Panel',
+      services: 'Servicios',
+      alerts: 'Alertas',
+      actions: 'Acciones',
+      diagnostics: 'Diagnóstico',
+      settings: 'Configuración',
+    },
+    zh: {
+      dashboard: '仪表板',
+      services: '服务',
+      alerts: '告警',
+      actions: '操作日志',
+      diagnostics: '诊断',
+      settings: '设置',
+    },
   } as const
+
+  type NavLocale = keyof typeof navLabels
+
+  const cookieStore = await cookies()
+  const rawLocale = cookieStore.get('bionic-locale')?.value ?? 'en'
+  const locale: NavLocale = (
+    rawLocale in navLabels ? rawLocale : 'en'
+  ) as NavLocale
   const labels = navLabels[locale]
 
   const navItems: { href: string; label: string; icon: LucideIcon }[] = [
