@@ -102,7 +102,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - pnpm 9+
 - Supabase account (free tier works)
 - Supabase CLI (`npm install -g supabase`) — required for `supabase db push`
-- Discord server (for notifications)
+- Discord server (optional, for notifications)
 
 ---
 
