@@ -181,12 +181,9 @@ BIONIC_DIGEST_TIMEZONE=Asia/Tokyo
 
 ---
 
-## SDK Quickstart
+## Service Integration
 
 Instrument your service to send observability events to Bionic Engine.
-
-> **Note**: The SDK (`@bionic/sdk`) is currently part of the Bionic monorepo
-> and not yet published to npm. Use the Direct API for now.
 
 ### Direct API (Recommended)
 
@@ -209,87 +206,14 @@ curl -X POST http://localhost:3001/api/events \
   }'
 ```
 
-Windows / PowerShell and framework snippets are generated on the
-`/services/new` page in the app.
+> **Tip**: Open the app at `/services/new` to get OS-specific snippets
+> (Bash / PowerShell) with your service ID pre-filled.
 
-### SDK (Monorepo only)
+### SDK (Coming Soon)
 
-If you are running Bionic from source, the SDK is available at
-`packages/sdk`. npm publishing is planned for a future release.
-
-```typescript
-import { BionicClient } from '@bionic/sdk'
-
-const bionic = new BionicClient({
-  engineUrl: process.env.BIONIC_ENGINE_URL ?? 'http://localhost:3001',
-  token: process.env.BIONIC_ENGINE_TOKEN, // optional in development
-  projectId: 'project_bionic',
-  serviceId: 'my-api',
-})
-
-// Report service health (fire-and-forget)
-void bionic.health({ status: 'ok', latencyMs: 120 })
-void bionic.health({ status: 'degraded', latencyMs: 3000, reason: 'high_latency' })
-
-// Report errors (stack not sent by default)
-void bionic.error({ code: 'DB_CONNECTION_FAILED', message: 'Cannot connect to database' })
-
-// Report usage
-void bionic.usage({ requestCount: 1, endpoint: '/api/checkout' })
-```
-
-### Next.js Route Handler Example
-
-```typescript
-// src/app/api/health/route.ts
-import { bionic } from '@/lib/bionic'
-
-export async function GET() {
-  try {
-    await checkDatabase()
-    void bionic.health({ status: 'ok' })
-    return Response.json({ status: 'ok' })
-  } catch (err) {
-    void bionic.error({ code: 'DB_ERROR', message: (err as Error).message })
-    void bionic.health({ status: 'down', reason: 'database_unavailable' })
-    return Response.json({ status: 'error' }, { status: 500 })
-  }
-}
-```
-
-### Express Middleware Example
-
-```typescript
-// middleware/bionic.ts
-import { BionicClient } from '@bionic/sdk'
-
-export const bionic = new BionicClient({
-  engineUrl: process.env.BIONIC_ENGINE_URL!,
-  token: process.env.BIONIC_ENGINE_TOKEN,
-  projectId: 'project_bionic',
-  serviceId: 'my-express-api',
-})
-
-export function bionicMiddleware(req, res, next) {
-  res.on('finish', () => {
-    if (res.statusCode >= 500) {
-      void bionic.error({
-        code: 'SERVER_ERROR',
-        message: `${req.method} ${req.path}`,
-      })
-    }
-    void bionic.usage({ requestCount: 1, endpoint: req.path })
-  })
-  next()
-}
-```
-
-> **Important**: The SDK is server-side only. Never use it in browser environments,
-> as your Engine token would be exposed.
-
-> **Note**: SDK failures are fail-open by default. A network error or offline Engine
-> will not throw or disrupt your application — events are silently dropped after a
-> 3-second timeout. Pass `throwOnError: true` to opt in to throwing.
+The Bionic SDK (`@bionic/sdk`) will be published to npm in a future release.
+Until then, use the Direct API above, or see `packages/sdk` in the monorepo
+for the source.
 
 ---
 
