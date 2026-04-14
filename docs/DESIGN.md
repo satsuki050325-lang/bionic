@@ -422,7 +422,7 @@ Based on the 3-layer quality model:
 - Don't use colors outside the defined palette
 - Don't mix fonts within the same component
 - Don't use `rounded-full` (pill shape) for operational badges — use `rounded` (4px)
-- Don't use bright white (`#FFFFFF`) — use `--text-primary` (`#F5F5F5`)
+- Don't use bright white (`#FFFFFF`) — use `--text-primary` (`#F5F0E8`)
 - Don't use teal, cyan, mint, or green as primary accent colors
 
 ---
