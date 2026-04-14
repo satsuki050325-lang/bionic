@@ -6,6 +6,26 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- StatusIcon.tsx の ActionStatus 型を `@bionic/shared` の `SharedActionStatus` + `'needs_review'` 拡張に変更（shared 型の全9状態 pending/running/succeeded/failed/skipped/pending_approval/approved/denied/cancelled + needs_review を網羅）
+- `ActionStatusIcon` の switch を全状態対応に拡張: approved→CheckCircle2(success), denied→XCircle(critical), cancelled→MinusCircle(muted), pending→Clock3(muted) を追加。needs_review は Clock3(warning) のまま維持
+- Actions ページの pending_approval セクションの各行に ActionStatusIcon + `PENDING_APPROVAL` badge を追加（他の行と視覚的に一貫）
+- pnpm verify 通過（typecheck + engine test 36件 + app build 11 routes）
+
+### 判断したこと
+- `needs_review` は shared の `ActionStatus` には含まれないが `JobStatus` にある。Engine の notify_discord 失敗時に job 側を needs_review にする実装があり、Actions UI 側の既存 badgeClass もそれを扱っていたため、UI 側の耐性として union 拡張として扱う（ランタイムで万一混入しても壊れない）
+- approved / denied のアイコンは succeeded / failed と同じ図案を使う: 運用者にとって「承認＝完了に向かう」「拒否＝失敗系」と視覚同期させた方が審査履歴として読みやすい
+- pending_approval の badge は既存 utility `badge-warning` を流用（CSS の単一の真実のソース）。インライン Tailwind でのハードコード色指定は CSS 変数の差し替えが効かなくなるため避けた
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク（スクリーンショット更新・GitHub 公開準備）
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - `lucide-react` を `apps/app` に追加
 - `apps/app/src/components/StatusIcon.tsx` を新設: `AlertSeverityIcon` / `ActionStatusIcon` の2コンポーネント、7種のステータス対応（succeeded/failed/skipped/pending_approval/running/needs_review + severity 3種）
 - `apps/app/src/lib/actionUtils.ts` を新設: `humanizeSkipReason` + `getActionOutcome`。Engine 側で既知の skip 理由 5種を英語短文に変換、未知理由は原文表示（fail-safe）

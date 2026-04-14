@@ -9,15 +9,13 @@ import {
   ShieldQuestion,
   LoaderCircle,
 } from 'lucide-react'
+import type { ActionStatus as SharedActionStatus } from '@bionic/shared'
 
 type AlertSeverity = 'critical' | 'warning' | 'info'
-export type ActionStatus =
-  | 'succeeded'
-  | 'failed'
-  | 'skipped'
-  | 'pending_approval'
-  | 'running'
-  | 'needs_review'
+
+// Align with @bionic/shared's ActionStatus, plus JobStatus's 'needs_review'
+// which can surface in the Actions audit log for failed bot notifications.
+export type ActionStatus = SharedActionStatus | 'needs_review'
 
 export function AlertSeverityIcon({
   severity,
@@ -57,7 +55,22 @@ export function ActionStatusIcon({
   const props = { size, strokeWidth: 1.75 }
 
   switch (status) {
+    case 'pending':
+      return (
+        <Clock3
+          {...props}
+          className="text-text-muted inline-block shrink-0"
+        />
+      )
+    case 'running':
+      return (
+        <LoaderCircle
+          {...props}
+          className="text-accent animate-spin inline-block shrink-0"
+        />
+      )
     case 'succeeded':
+    case 'approved':
       return (
         <CheckCircle2
           {...props}
@@ -65,6 +78,7 @@ export function ActionStatusIcon({
         />
       )
     case 'failed':
+    case 'denied':
       return (
         <XCircle
           {...props}
@@ -72,6 +86,7 @@ export function ActionStatusIcon({
         />
       )
     case 'skipped':
+    case 'cancelled':
       return (
         <MinusCircle
           {...props}
@@ -83,13 +98,6 @@ export function ActionStatusIcon({
         <ShieldQuestion
           {...props}
           className="text-status-warning inline-block shrink-0"
-        />
-      )
-    case 'running':
-      return (
-        <LoaderCircle
-          {...props}
-          className="text-accent animate-spin inline-block shrink-0"
         />
       )
     case 'needs_review':

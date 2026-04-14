@@ -58,20 +58,27 @@ export default async function ActionsPage() {
                 key={action.id}
                 className="flex items-start justify-between gap-4 py-2 first:pt-0 last:pb-0"
               >
-                <div className="min-w-0">
-                  <div className="font-body text-sm text-text-primary">
-                    {action.title}
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                    <ActionStatusIcon status="pending_approval" />
+                    <span className="badge-warning">PENDING_APPROVAL</span>
                   </div>
-                  <div className="font-mono text-xs text-text-muted mt-0.5">
-                    {action.requestedBy} · {formatRelativeTime(action.createdAt)}
-                    {action.alertId && (
-                      <>
-                        {' · alert '}
-                        <span className="text-text-secondary">
-                          {action.alertId.slice(0, 8)}
-                        </span>
-                      </>
-                    )}
+                  <div className="min-w-0">
+                    <div className="font-body text-sm text-text-primary">
+                      {action.title}
+                    </div>
+                    <div className="font-mono text-xs text-text-muted mt-0.5">
+                      {action.requestedBy} ·{' '}
+                      {formatRelativeTime(action.createdAt)}
+                      {action.alertId && (
+                        <>
+                          {' · alert '}
+                          <span className="text-text-secondary">
+                            {action.alertId.slice(0, 8)}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="font-mono text-xs text-text-secondary shrink-0 text-right">
