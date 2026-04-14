@@ -6,6 +6,28 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Dashboard (`apps/app/src/app/page.tsx`) のセクションタイトル階層を Settings / Diagnostics と同じ水準に統一
+- `Operational Brief`: `font-heading text-sm font-bold` に（色は accent/critical 維持）
+- `What Needs Attention` / `Recent Signal`: `font-heading text-sm font-bold text-text-primary uppercase tracking-wide` に昇格
+- Stat card ラベル（Open Alerts / Pending Jobs / Pending Approvals / Engine）: `text-text-secondary tracking-widest` → `text-text-muted tracking-wide` に下げ、数値（5xl/4xl font-bold）との視覚差を拡大
+- pnpm verify は `node_modules` の platform-specific native binding（tailwindcss oxide, rolldown）の linux-x64-gnu 不足で失敗。`pnpm install --force` + linux 用 binding を devDependencies に追加すれば通ることを確認したが、macOS / Windows 開発者を壊すため変更は revert。UI 変更のみをコミット
+- page.tsx の変更は全て className 文字列の差し替えで、TypeScript 的には無変更相当
+
+### 既知リスク / 未解決
+- 本リポジトリの `pnpm-lock.yaml` が Windows 環境で生成された結果、tailwindcss-oxide / rolldown の native binding が msvc 版のみ解決される状態。WSL/Linux 環境では `pnpm install` 後に実行時エラーが出るため、lockfile を Linux 環境で再生成するか `.pnpmrc` で platform 制約を緩める対応が別タスクで必要
+- 本コミットでは verify 失敗の原因が「コード変更ではなく環境構成」であることを確認したうえで push する。UI 変更自体は型チェック・ランタイムに影響なし
+
+### 次にやること
+- 最終スクリーンショット確認・GitHub 公開
+- （環境側）pnpm-lock.yaml の cross-platform 化
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Diagnostics の `Block` コンポーネントを Settings と同じ章見出しスタイルに揃えた: `font-heading text-sm font-bold text-text-primary uppercase tracking-wide` + 任意 description
 - 7 セクションに description を付与: SYSTEM CORE / SCHEDULER / RUNNERS / JOB QUEUE / ACTIONS / INTEGRATIONS / RECENT
 - Runners を SCHEDULER 内のサブセクションから独立した Block に昇格（タイトル・description が対等に並ぶように）

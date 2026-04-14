@@ -127,7 +127,7 @@ export default async function DashboardPage() {
           }`}
         >
           <div
-            className={`font-mono text-xs uppercase tracking-widest mb-3 ${
+            className={`font-heading text-sm font-bold uppercase tracking-wide mb-3 ${
               criticalAlerts > 0 ? 'text-status-critical' : 'text-accent'
             }`}
           >
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
       {/* What Needs Attention — above stat cards */}
       {showWhatNeedsAttention && (
         <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-6">
-          <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
+          <div className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide mb-4">
             What Needs Attention
           </div>
 
@@ -253,7 +253,7 @@ export default async function DashboardPage() {
           }`}
         >
           <div className="flex-1">
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wide mb-2">
               Open Alerts
             </div>
             <div
@@ -290,7 +290,7 @@ export default async function DashboardPage() {
 
         {/* Pending Jobs */}
         <div className="bg-bg-surface border border-border-subtle rounded p-5">
-          <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2">
+          <div className="font-mono text-xs text-text-muted uppercase tracking-wide mb-2">
             Pending Jobs
           </div>
           <div
@@ -304,7 +304,7 @@ export default async function DashboardPage() {
 
         {/* Pending Approvals */}
         <div className="bg-bg-surface border border-border-subtle rounded p-5">
-          <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2">
+          <div className="font-mono text-xs text-text-muted uppercase tracking-wide mb-2">
             Pending Approvals
           </div>
           <div
@@ -321,7 +321,7 @@ export default async function DashboardPage() {
       <div className="bg-bg-surface border border-border-subtle rounded p-4 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-1">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wide mb-1">
               Engine
             </div>
             <div className="font-mono text-xs text-text-muted">
@@ -339,7 +339,7 @@ export default async function DashboardPage() {
 
       {/* Recent Signal */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5">
-        <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
+        <div className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide mb-4">
           Recent Signal
         </div>
         {events.length === 0 ? (
