@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- ナビゲーションを 6 項目に整理（Dashboard / Services / Alerts / Actions / Diagnostics / Settings）。Onboarding と Research をナビから削除（ルートは存続）
+- ナビ各リンクに lucide アイコンを追加（LayoutDashboard / Layers / TriangleAlert / ScrollText / Activity / Settings、14px、strokeWidth 1.75、`text-text-muted`）
+- Settings 下部 CTA に `System Check →`（`/onboarding`）リンクを追加（en/ja 辞書に `systemCheck` を追加）
+- Actions 一覧の各行を固定幅レイアウトに: `w-44` 状態 + `w-48` type + `flex-1` title + shrink-0 timestamp。縦に整列
+- SUCCEEDED バッジを明るく（`text-status-success border-status-success/50 bg-status-success/15`、`badge-success` utility の 20/30 より視認性を高めた）。他のステータスは `badge-*` utility を継続利用
+- Diagnostics の KV ラベル色を `text-text-secondary` → `text-text-muted` に、tracking を `widest` に変更して値との視覚階層を強化
+- Scheduler Runners セクションを `grid-cols-[200px_96px_1fr_auto]` に再構築。名前 → バッジ → 直近エラーメッセージ → 最終実行時刻の 4 カラムで縦揃い
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- Onboarding/Research を nav から外しつつ route は残す: Settings からリンクがあれば初回セットアップ導線は維持できる。Research は今は主要動線に乗せず将来 Dashboard 内部セクションに統合する余地を残す
+- SUCCEEDED だけ `badge-success` utility を避けて explicit クラスにした: utility を変更すると Diagnostics 側の「OK」バッジなど広範に影響するため、局所上書きで副作用を封じる
+- Runner の 3 列目に `lastError` を表示: 既存の空表示から「最新の失敗理由」を一覧時点で見せる方が運用価値が高い（成功時は空文字で見た目が崩れない）
+- ナビアイコンは `text-text-muted` で常時薄く、テキスト側のみ hover で accent に遷移: Nav は DESIGN.md の「decoration ではなく functional label」原則に沿い、アイコン色の強調は避けた
+
+### 次にやること
+- Phase 2.4: 最終確認・GitHub公開
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

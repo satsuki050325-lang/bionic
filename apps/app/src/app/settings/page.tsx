@@ -51,6 +51,7 @@ const t = {
     trueLabel: 'true',
     falseLabel: 'false',
     openDiagnostics: 'Open Diagnostics →',
+    systemCheck: 'System Check →',
     editHint:
       'To change settings, edit .env.local and restart the engine.',
     engineOffline:
@@ -101,6 +102,7 @@ const t = {
     trueLabel: 'true',
     falseLabel: 'false',
     openDiagnostics: '診断を開く →',
+    systemCheck: 'セットアップ確認 →',
     editHint:
       '設定を変更するには .env.local を編集してエンジンを再起動してください。',
     engineOffline:
@@ -346,6 +348,12 @@ export default async function SettingsPage() {
           className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-border-default text-text-secondary rounded hover:border-accent hover:text-accent transition-colors"
         >
           {labels.openDiagnostics}
+        </Link>
+        <Link
+          href="/onboarding"
+          className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-border-default text-text-secondary rounded hover:border-accent hover:text-accent transition-colors"
+        >
+          {labels.systemCheck}
         </Link>
       </div>
 

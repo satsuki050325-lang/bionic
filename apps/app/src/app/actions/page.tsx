@@ -3,8 +3,15 @@ import { formatRelativeTime } from '@/lib/time'
 import { ActionStatusIcon, type ActionStatus } from '@/components/StatusIcon'
 import { getActionOutcome } from '@/lib/actionUtils'
 
+const BADGE_BASE =
+  'font-mono text-xs px-2 py-0.5 rounded uppercase tracking-wider border whitespace-nowrap'
+
 function badgeClass(status: string): string {
-  if (status === 'succeeded') return 'badge-success'
+  if (status === 'succeeded') {
+    // Brighter than badge-success utility (20%/30%) — 15% bg / 50% border /
+    // full-intensity text makes completed work legible at a glance in the log.
+    return `${BADGE_BASE} text-status-success border-status-success/50 bg-status-success/15`
+  }
   if (status === 'failed') return 'badge-critical'
   if (status === 'running') return 'badge-info'
   if (status === 'pending_approval') return 'badge-warning'
@@ -106,17 +113,19 @@ export default async function ActionsPage() {
             return (
               <div
                 key={action.id}
-                className={`bg-bg-surface border border-border-subtle rounded p-3 flex items-center gap-4 ${
+                className={`bg-bg-surface border border-border-subtle rounded p-3 flex items-start gap-3 ${
                   isFaded(action.status) ? 'opacity-60' : ''
                 }`}
               >
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 w-44 shrink-0 pt-0.5">
                   <ActionStatusIcon status={action.status as ActionStatus} />
                   <span className={badgeClass(action.status)}>
                     {action.status.toUpperCase()}
                   </span>
                 </div>
-                <span className="badge-muted font-mono">{action.type}</span>
+                <div className="w-48 shrink-0 pt-0.5">
+                  <span className="badge-muted font-mono">{action.type}</span>
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-text-primary text-sm truncate">
                     {action.title}
@@ -145,7 +154,7 @@ export default async function ActionsPage() {
                     )}
                   </div>
                 </div>
-                <span className="font-mono text-xs text-text-muted shrink-0">
+                <span className="font-mono text-xs text-text-muted shrink-0 pt-0.5">
                   {formatRelativeTime(action.createdAt)}
                 </span>
               </div>

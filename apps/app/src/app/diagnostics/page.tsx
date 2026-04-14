@@ -71,19 +71,22 @@ export default async function DiagnosticsPage() {
           {diag.scheduler.runners.map((runner) => (
             <div
               key={runner.name}
-              className="flex items-center gap-3 py-1 border-b border-border-subtle last:border-b-0"
+              className="grid grid-cols-[200px_96px_1fr_auto] items-center gap-4 py-2 border-b border-border-subtle last:border-b-0"
             >
-              <span className="font-mono text-sm text-text-primary shrink-0 min-w-[180px]">
-                {runner.name.toUpperCase().replace(/_/g, ' ')}
+              <span className="font-mono text-xs text-text-secondary uppercase tracking-wide">
+                {runner.name.replace(/_/g, ' ')}
               </span>
               {runner.lastError ? (
-                <span className="badge-critical shrink-0">FAILED</span>
+                <span className="badge-critical">FAILED</span>
               ) : runner.lastSuccessAt ? (
-                <span className="badge-success shrink-0">OK</span>
+                <span className="badge-success">OK</span>
               ) : (
-                <span className="badge-muted shrink-0">IDLE</span>
+                <span className="badge-muted">IDLE</span>
               )}
-              <span className="font-mono text-xs text-text-muted ml-auto shrink-0">
+              <span className="font-mono text-xs text-text-muted truncate">
+                {runner.lastError ?? ''}
+              </span>
+              <span className="font-mono text-xs text-text-muted text-right">
                 {runner.lastRunAt ? formatTime(runner.lastRunAt) : '—'}
               </span>
             </div>
@@ -304,7 +307,7 @@ function KV({ label, value, accent }: { label: string; value: string; accent?: A
       : 'text-text-primary'
   return (
     <div>
-      <div className="font-mono text-xs text-text-secondary uppercase tracking-wider mb-1">
+      <div className="font-mono text-xs text-text-muted uppercase tracking-widest mb-1">
         {label}
       </div>
       <div className={`font-heading text-lg font-semibold ${valueClass}`}>{value}</div>

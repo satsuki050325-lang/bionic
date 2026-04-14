@@ -1,5 +1,14 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
+import {
+  LayoutDashboard,
+  Layers,
+  TriangleAlert,
+  ScrollText,
+  Activity,
+  Settings,
+  type LucideIcon,
+} from 'lucide-react'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -19,25 +28,30 @@ export default async function RootLayout({
     en: {
       dashboard: 'Dashboard',
       services: 'Services',
-      onboarding: 'Onboarding',
       alerts: 'Alerts',
       actions: 'Actions',
-      research: 'Research',
       diagnostics: 'Diagnostics',
       settings: 'Settings',
     },
     ja: {
       dashboard: 'ダッシュボード',
       services: 'サービス',
-      onboarding: 'セットアップ',
       alerts: 'アラート',
       actions: '操作ログ',
-      research: 'リサーチ',
       diagnostics: '診断',
       settings: '設定',
     },
   } as const
   const labels = navLabels[locale]
+
+  const navItems: { href: string; label: string; icon: LucideIcon }[] = [
+    { href: '/', label: labels.dashboard, icon: LayoutDashboard },
+    { href: '/services', label: labels.services, icon: Layers },
+    { href: '/alerts', label: labels.alerts, icon: TriangleAlert },
+    { href: '/actions', label: labels.actions, icon: ScrollText },
+    { href: '/diagnostics', label: labels.diagnostics, icon: Activity },
+    { href: '/settings', label: labels.settings, icon: Settings },
+  ]
 
   return (
     <html lang={locale} className="dark">
@@ -53,31 +67,21 @@ export default async function RootLayout({
                 ENGINE
               </span>
             </a>
-            <div className="flex items-center gap-6 font-mono text-sm">
-              <a href="/" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.dashboard}
-              </a>
-              <a href="/services" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.services}
-              </a>
-              <a href="/onboarding" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.onboarding}
-              </a>
-              <a href="/alerts" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.alerts}
-              </a>
-              <a href="/actions" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.actions}
-              </a>
-              <a href="/research" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.research}
-              </a>
-              <a href="/diagnostics" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.diagnostics}
-              </a>
-              <a href="/settings" className="text-text-secondary hover:text-accent transition-colors">
-                {labels.settings}
-              </a>
+            <div className="flex items-center gap-5">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-1.5 font-mono text-xs text-text-secondary hover:text-accent transition-colors"
+                >
+                  <item.icon
+                    size={14}
+                    strokeWidth={1.75}
+                    className="text-text-muted"
+                  />
+                  {item.label}
+                </a>
+              ))}
             </div>
           </div>
         </nav>
