@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- lucide-reactを導入した
+- AlertSeverityIcon（critical/warning/info）を実装した
+- ActionStatusIcon（全状態対応）を実装した
+- Alertsのseverity badge左にアイコンを追加した
+- Actionsのstatus badge左にアイコンを追加した
+- skipped/failedの理由をhumanizeして表示するようにした
+- pending_approvalセクションにもbadge・アイコンを追加した
+- DESIGN.mdにIcon rulesセクションを追加した
+- Codexレビュー完了・P2 finding全修正済み
+
+### 判断したこと
+- Navにアイコンは追加しない（Bionicらしさ維持）
+- ◈はlucideで置き換えない
+- アイコンは必ずテキストラベルと併用
+
+### 次にやること
+- 最終UIレビュー・公開判断
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと

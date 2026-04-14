@@ -220,7 +220,9 @@
 - Settingsバグ修正（env読み取り → GET /api/diagnostics経由に変更）
 - Dashboardスパークライン非表示バグ修正（CSS変数に変更）
 - カラーパレット適用（P25ローラー・リンクベース安全版）
-- Codexレビュー完了・全finding修正済み
+- アイコン導入（lucide-react・AlertSeverityIcon・ActionStatusIcon）
+- Actionsのskipped/failed理由表示（humanize対応）
+- Codexレビュー完了・P2 finding全修正済み
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -239,14 +241,14 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: アイコン導入・Actionsのskipped理由表示
+- Phase 2.4: 最終UIレビュー・公開判断
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）
 - [x] Dashboard sparkline非表示バグ修正
 - [x] カラーパレット適用（P25ベース）
-- [ ] アイコン導入
-- [ ] Actionsのskipped理由表示
+- [x] アイコン導入
+- [x] Actionsのskipped理由表示
 
 ---
 
