@@ -75,7 +75,7 @@ export default async function DiagnosticsPage() {
       </div>
 
       {/* 1. SYSTEM CORE */}
-      <Block title="SYSTEM CORE">
+      <Block title="SYSTEM CORE" description="Runtime and database connection">
         <Grid>
           <KV label="ENGINE" value={diag.engine.status.toUpperCase()} accent={!isRunning ? 'warning' : undefined} />
           <KV label="VERSION" value={diag.engine.version} />
@@ -94,7 +94,7 @@ export default async function DiagnosticsPage() {
       </Block>
 
       {/* 2. SCHEDULER */}
-      <Block title="SCHEDULER">
+      <Block title="SCHEDULER" description="Automated job scheduling">
         <Grid>
           <KV
             label="STATE"
@@ -104,10 +104,11 @@ export default async function DiagnosticsPage() {
           <KV label="DIGEST CRON" value={diag.scheduler.digestCron} />
           <KV label="TIMEZONE" value={diag.scheduler.digestTimezone} />
         </Grid>
-        <div className="mt-4 space-y-2">
-          <div className="font-mono text-xs text-text-secondary uppercase tracking-wider">
-            Runners
-          </div>
+      </Block>
+
+      {/* 2b. RUNNERS */}
+      <Block title="RUNNERS" description="Background task runners">
+        <div className="space-y-2">
           {diag.scheduler.runners.map((runner) => (
             <div
               key={runner.name}
@@ -135,7 +136,7 @@ export default async function DiagnosticsPage() {
       </Block>
 
       {/* 3. JOB QUEUE */}
-      <Block title="JOB QUEUE">
+      <Block title="JOB QUEUE" description="Pending and active jobs">
         <Grid cols={5}>
           <KV size="lg" label="PENDING" value={String(diag.queue.jobs.pending)} accent={diag.queue.jobs.pending > 0 ? 'accent' : undefined} />
           <KV size="lg" label="RUNNING" value={String(diag.queue.jobs.running)} />
@@ -163,7 +164,7 @@ export default async function DiagnosticsPage() {
       </Block>
 
       {/* 4. ACTIONS */}
-      <Block title="ACTIONS">
+      <Block title="ACTIONS" description="Automation and approval status">
         <Grid cols={6}>
           <KV
             size="lg"
@@ -209,10 +210,10 @@ export default async function DiagnosticsPage() {
       </Block>
 
       {/* 5. INTEGRATIONS */}
-      <Block title="INTEGRATIONS">
+      <Block title="INTEGRATIONS" description="Connected external services">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-border-subtle rounded p-3 space-y-2">
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-wider">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wider">
               Discord
             </div>
             <Grid cols={3}>
@@ -230,7 +231,7 @@ export default async function DiagnosticsPage() {
             </Grid>
           </div>
           <div className="border border-border-subtle rounded p-3 space-y-2">
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-wider">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wider">
               Vercel
             </div>
             <Grid cols={3}>
@@ -257,10 +258,10 @@ export default async function DiagnosticsPage() {
       </Block>
 
       {/* 6. RECENT */}
-      <Block title="RECENT">
+      <Block title="RECENT" description="Latest activity">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-wider mb-2">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wider mb-2">
               Actions
             </div>
             {diag.recent.actions.length === 0 ? (
@@ -283,7 +284,7 @@ export default async function DiagnosticsPage() {
             )}
           </div>
           <div>
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-wider mb-2">
+            <div className="font-mono text-xs text-text-muted uppercase tracking-wider mb-2">
               Deployments
             </div>
             {diag.recent.deployments.length === 0 ? (
@@ -313,11 +314,26 @@ export default async function DiagnosticsPage() {
 
 // ── helpers ───────────────────────────────────────────────────────
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: React.ReactNode
+}) {
   return (
     <div className="card space-y-3">
-      <div className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">
-        {title}
+      <div className="mb-4">
+        <div className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">
+          {title}
+        </div>
+        {description && (
+          <div className="font-mono text-xs text-text-muted mt-0.5">
+            {description}
+          </div>
+        )}
       </div>
       {children}
     </div>

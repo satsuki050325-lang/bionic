@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Diagnostics の `Block` コンポーネントを Settings と同じ章見出しスタイルに揃えた: `font-heading text-sm font-bold text-text-primary uppercase tracking-wide` + 任意 description
+- 7 セクションに description を付与: SYSTEM CORE / SCHEDULER / RUNNERS / JOB QUEUE / ACTIONS / INTEGRATIONS / RECENT
+- Runners を SCHEDULER 内のサブセクションから独立した Block に昇格（タイトル・description が対等に並ぶように）
+- INTEGRATIONS 内の「Discord」「Vercel」サブ見出し、RECENT 内の「Actions」「Deployments」サブ見出しを `text-text-secondary` → `text-text-muted` に下げて、KV ラベルとの階層を保った
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- Runners を独立 Block に出した方が視覚的に対等で、description 付与もしやすい。SCHEDULER 配下のサブ見出しとして残すと「章」と「章内のラベル」が混ざって Settings と階層が合わなくなる
+- サブ見出し（Discord/Vercel 等）を `text-text-muted` に下げた結果、章見出し → サブ見出し → KV ラベル の 3 段階が自然に成立（章が一番明るく、サブと KV ラベルが同じトーン）
+
+### 次にやること
+- 最終スクリーンショット確認・GitHub 公開
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと
