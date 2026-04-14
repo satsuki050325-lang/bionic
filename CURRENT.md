@@ -242,6 +242,12 @@
 - 多言語対応追加（Español・中文）
 - LanguageSwitcher4言語対応
 - Codexレビュー完了・問題なし
+- Dashboard階層改善（セクションタイトルをSettings・Diagnostics同水準に統一）
+- 公開前README修正（Direct API主導・clone URL実URL・event id一意化）
+- .env.example BIONIC_ENGINE_TOKEN空に変更
+- Add Service SDKタブをComing soonのみに変更
+- SECURITY_RELEASE_CHECKLIST表記修正
+- Codexレビュー完了・全finding修正済み・公開前品質ゲート通過
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -260,7 +266,7 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: 最終スクリーンショット確認・GitHub公開
+- Phase 2.4: GitHub公開（リポジトリをpublicに変更）
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）

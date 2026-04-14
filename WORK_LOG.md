@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-04-15 / Claude
+
+### やったこと
+- DashboardのセクションタイトルをSettings・Diagnosticsと同水準に統一した
+- READMEをDirect API主導に修正した
+- clone URLを実URLに変更した
+- event idを一意な形式に変更した
+- .env.exampleのBIONIC_ENGINE_TOKENを空にした
+- Add ServiceのSDKタブをComing soonのみにした
+- SECURITY_RELEASE_CHECKLISTの表記を修正した
+- Codexによる公開前品質ゲート全通過を確認した
+
+### 判断したこと
+- SDK npm公開はPhase 2.5以降
+- Direct APIを初回接続の主導線にする
+- pnpm-lock.yamlのWSL/Linux native binding問題は公開後に対処
+
+### 次にやること
+- GitHubリポジトリをpublicに変更して公開
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと
