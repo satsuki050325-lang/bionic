@@ -19,7 +19,7 @@ function generatePowerShellSnippet(serviceId: string): string {
 
 $body = @{
   event = @{
-    id          = "test-001"
+    id          = "test-$([guid]::NewGuid())"
     projectId   = "project_bionic"
     serviceId   = "${sid}"
     type        = "service.health.reported"
@@ -40,7 +40,7 @@ Invoke-RestMethod -Uri "${ENGINE_URL}/api/events" \`
 # Report an error
 $errBody = @{
   event = @{
-    id          = "err-001"
+    id          = "err-$([guid]::NewGuid())"
     projectId   = "project_bionic"
     serviceId   = "${sid}"
     type        = "service.error.reported"
@@ -70,7 +70,7 @@ curl -X POST ${ENGINE_URL}/api/events \\
   -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \\
   -d '{
     "event": {
-      "id": "test-001",
+      "id": "'"test-$(date +%s)-$RANDOM"'",
       "projectId": "project_bionic",
       "serviceId": "${sid}",
       "type": "service.health.reported",
@@ -86,7 +86,7 @@ curl -X POST ${ENGINE_URL}/api/events \\
   -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \\
   -d '{
     "event": {
-      "id": "err-001",
+      "id": "'"err-$(date +%s)-$RANDOM"'",
       "projectId": "project_bionic",
       "serviceId": "${sid}",
       "type": "service.error.reported",
