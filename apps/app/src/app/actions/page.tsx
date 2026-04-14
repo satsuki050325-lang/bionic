@@ -6,17 +6,28 @@ import { getActionOutcome } from '@/lib/actionUtils'
 const BADGE_BASE =
   'font-mono text-xs px-2 py-0.5 rounded uppercase tracking-wider border whitespace-nowrap'
 
+const STATUS_CLASS: Record<string, string> = {
+  succeeded:
+    'text-status-success border-status-success bg-status-success/20 font-semibold',
+  failed:
+    'text-status-critical border-status-critical bg-status-critical/20 font-semibold',
+  skipped: 'text-text-secondary border-border-default bg-bg-elevated',
+  pending_approval:
+    'text-status-warning border-status-warning bg-status-warning/20 font-semibold',
+  approved:
+    'text-status-success border-status-success bg-status-success/20',
+  denied:
+    'text-status-critical border-status-critical bg-status-critical/20',
+  cancelled: 'text-text-muted border-border-subtle bg-bg-elevated',
+  running: 'text-accent border-accent bg-accent/20 font-semibold',
+  needs_review:
+    'text-status-warning border-status-warning bg-status-warning/20',
+  pending: 'text-text-secondary border-border-default bg-bg-elevated',
+}
+
 function badgeClass(status: string): string {
-  if (status === 'succeeded') {
-    // Brighter than badge-success utility (20%/30%) — 15% bg / 50% border /
-    // full-intensity text makes completed work legible at a glance in the log.
-    return `${BADGE_BASE} text-status-success border-status-success/50 bg-status-success/15`
-  }
-  if (status === 'failed') return 'badge-critical'
-  if (status === 'running') return 'badge-info'
-  if (status === 'pending_approval') return 'badge-warning'
-  if (status === 'needs_review') return 'badge-warning'
-  return 'badge-muted'
+  const cls = STATUS_CLASS[status] ?? STATUS_CLASS['pending']!
+  return `${BADGE_BASE} ${cls}`
 }
 
 function isFaded(status: string): boolean {

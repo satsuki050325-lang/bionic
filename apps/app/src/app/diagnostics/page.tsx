@@ -97,14 +97,16 @@ export default async function DiagnosticsPage() {
       {/* 3. JOB QUEUE */}
       <Block title="JOB QUEUE">
         <Grid cols={5}>
-          <KV label="PENDING" value={String(diag.queue.jobs.pending)} accent={diag.queue.jobs.pending > 0 ? 'accent' : undefined} />
-          <KV label="RUNNING" value={String(diag.queue.jobs.running)} />
+          <KV size="lg" label="PENDING" value={String(diag.queue.jobs.pending)} accent={diag.queue.jobs.pending > 0 ? 'accent' : undefined} />
+          <KV size="lg" label="RUNNING" value={String(diag.queue.jobs.running)} />
           <KV
+            size="lg"
             label="NEEDS REVIEW"
             value={String(diag.queue.jobs.needsReview)}
             accent={diag.queue.jobs.needsReview > 0 ? 'warning' : undefined}
           />
           <KV
+            size="lg"
             label="FAILED 24H"
             value={String(diag.queue.jobs.failedRecent)}
             accent={diag.queue.jobs.failedRecent > 0 ? 'danger' : undefined}
@@ -124,23 +126,27 @@ export default async function DiagnosticsPage() {
       <Block title="ACTIONS">
         <Grid cols={6}>
           <KV
+            size="lg"
             label="PENDING APPROVAL"
             value={String(diag.queue.actions.pendingApproval)}
             accent={diag.queue.actions.pendingApproval > 0 ? 'accent' : undefined}
           />
-          <KV label="APPROVED" value={String(diag.queue.actions.approved)} />
-          <KV label="RUNNING" value={String(diag.queue.actions.running)} />
+          <KV size="lg" label="APPROVED" value={String(diag.queue.actions.approved)} />
+          <KV size="lg" label="RUNNING" value={String(diag.queue.actions.running)} />
           <KV
+            size="lg"
             label="FAILED 24H"
             value={String(diag.queue.actions.failedRecent)}
             accent={diag.queue.actions.failedRecent > 0 ? 'danger' : undefined}
           />
           <KV
+            size="lg"
             label="STALE 24H"
             value={String(diag.queue.actions.staleApproval24h)}
             accent={diag.queue.actions.staleApproval24h > 0 ? 'warning' : undefined}
           />
           <KV
+            size="lg"
             label="AUTO-CANCEL 48H"
             value={String(diag.queue.actions.autoCancelDue48h)}
             accent={diag.queue.actions.autoCancelDue48h > 0 ? 'danger' : undefined}
@@ -270,7 +276,7 @@ export default async function DiagnosticsPage() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card space-y-3">
-      <div className="font-mono text-xs text-text-secondary uppercase tracking-wider">
+      <div className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">
         {title}
       </div>
       {children}
@@ -292,7 +298,19 @@ function Grid({ cols = 4, children }: { cols?: number; children: React.ReactNode
 
 type Accent = 'success' | 'warning' | 'danger' | 'accent' | 'muted'
 
-function KV({ label, value, accent }: { label: string; value: string; accent?: Accent }) {
+type KVSize = 'sm' | 'lg'
+
+function KV({
+  label,
+  value,
+  accent,
+  size = 'sm',
+}: {
+  label: string
+  value: string
+  accent?: Accent
+  size?: KVSize
+}) {
   const valueClass =
     accent === 'success'
       ? 'text-status-success'
@@ -305,12 +323,16 @@ function KV({ label, value, accent }: { label: string; value: string; accent?: A
       : accent === 'muted'
       ? 'text-text-muted'
       : 'text-text-primary'
+  const sizeClass =
+    size === 'lg'
+      ? 'font-mono text-lg font-bold'
+      : 'font-mono text-sm font-bold'
   return (
     <div>
-      <div className="font-mono text-xs text-text-muted uppercase tracking-widest mb-1">
+      <div className="font-mono text-xs text-text-muted uppercase tracking-wide mb-1">
         {label}
       </div>
-      <div className={`font-heading text-lg font-semibold ${valueClass}`}>{value}</div>
+      <div className={`${sizeClass} ${valueClass}`}>{value}</div>
     </div>
   )
 }

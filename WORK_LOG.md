@@ -6,6 +6,27 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Actions status バッジの彩度を再調整: `STATUS_CLASS` map を導入し、`succeeded` / `failed` / `pending_approval` / `running` は 20% 塗り + full-intensity text + `font-semibold` でハッキリ。`skipped` / `cancelled` / `pending` は `bg-bg-elevated` + `text-text-secondary` 系で muted に寄せた。`approved` / `denied` / `needs_review` は同色カテゴリの semibold なし版
+- Diagnostics の 3 階層を整理: セクションタイトル（Block title）を `text-text-muted` + `mb-4` に、KV label を `text-xs text-text-muted tracking-wide`、KV value を既定 `text-sm font-bold`（テキスト値）+ 新規 `size="lg"` prop で `text-lg font-bold`（JOB QUEUE / ACTIONS の数値 10 カ所に適用）
+- Settings も同じ階層ルールに寄せた: `SettingSection` タイトル色を `text-text-muted` に、`SettingRow` ラベルを `text-xs text-text-muted`、値を `text-sm`（従来 `text-xs`）に拡大。Preferences / Language の custom 行も同じラベル色に揃えた
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- Actions の status クラスを map に切り出した: 9+ 状態を if 連鎖で回すと読みづらく、状態追加のたびに分岐漏れが発生する。map + `STATUS_CLASS[status] ?? STATUS_CLASS['pending']` で fallback を 1 箇所に集約
+- `font-heading` を値表示から外した: Space Grotesk は見出し・決定ラベル用途（DESIGN.md §3）。ここは「監視盤の値」なので `font-mono` が一貫。数値比較と ID が隣接するため、mono 揃えの方が grid を読みやすい
+- JOB QUEUE / ACTIONS だけ `size="lg"`: DESIGN.md の「ダッシュボードの数値は大きく」を踏襲。時刻表示（OLDEST PENDING）はテキスト寄りなので sm に残す
+- Settings 値を `text-sm` に: 旧 `text-xs` は label と同サイズで視覚階層が潰れていた。`font-bold` は入れずサイズ差だけで分離（値は多く並ぶため太字は重くなる）
+
+### 次にやること
+- Phase 2.4: 最終確認・GitHub公開
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - ナビゲーションを 6 項目に整理（Dashboard / Services / Alerts / Actions / Diagnostics / Settings）。Onboarding と Research をナビから削除（ルートは存続）
 - ナビ各リンクに lucide アイコンを追加（LayoutDashboard / Layers / TriangleAlert / ScrollText / Activity / Settings、14px、strokeWidth 1.75、`text-text-muted`）
 - Settings 下部 CTA に `System Check →`（`/onboarding`）リンクを追加（en/ja 辞書に `systemCheck` を追加）

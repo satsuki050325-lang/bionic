@@ -132,10 +132,10 @@ function SettingRow({
 
   return (
     <div className="flex items-center justify-between py-2 border-b border-border-subtle last:border-0 gap-4">
-      <span className="font-mono text-xs text-text-secondary uppercase tracking-wide shrink-0">
+      <span className="font-mono text-xs text-text-muted uppercase tracking-wide shrink-0">
         {label}
       </span>
-      <span className={`font-mono text-xs text-right break-all ${valueColor}`}>
+      <span className={`font-mono text-sm text-right break-all ${valueColor}`}>
         {value}
       </span>
     </div>
@@ -151,7 +151,7 @@ function SettingSection({
 }) {
   return (
     <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
-      <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-4">
+      <div className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">
         {title}
       </div>
       {children}
@@ -214,7 +214,7 @@ export default async function SettingsPage() {
 
       <SettingSection title={labels.preferences}>
         <div className="flex items-center justify-between py-2">
-          <span className="font-mono text-xs text-text-secondary uppercase tracking-wide">
+          <span className="font-mono text-xs text-text-muted uppercase tracking-wide">
             {labels.language}
           </span>
           <LanguageSwitcher currentLocale={locale} />
