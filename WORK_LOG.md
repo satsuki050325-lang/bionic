@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- `lucide-react` を `apps/app` に追加
+- `apps/app/src/components/StatusIcon.tsx` を新設: `AlertSeverityIcon` / `ActionStatusIcon` の2コンポーネント、7種のステータス対応（succeeded/failed/skipped/pending_approval/running/needs_review + severity 3種）
+- `apps/app/src/lib/actionUtils.ts` を新設: `humanizeSkipReason` + `getActionOutcome`。Engine 側で既知の skip 理由 5種を英語短文に変換、未知理由は原文表示（fail-safe）
+- Alerts ページの severity badge 左にアイコンを挿入（既存の badge・service ラベル構造は維持）
+- Actions ページの status badge 左にアイコンを挿入、skipped/failed 行に outcome 行を追加（`Skipped: ...` / `Failed: ...`）。failed は `text-status-critical`、skipped は `text-text-muted` で彩度を抑える
+- `EngineAction.result` / `.error` の型（`Record<string, unknown>` / `Record<string, unknown> | null`）を尊重し、`typeof reason === 'string'` で narrow
+- DESIGN.md に Icon rules セクションを追加（Typography 直後）: サイズ・stroke width・色マッピング・Avoid リスト（filled / label なし / AI themed / ◈ 置換 / 1要素複数アイコン）
+- pnpm verify 通過（typecheck + engine test 36件 + app build 11 routes）
+
+### 判断したこと
+- Nav にはアイコンを入れない（タスク指示通り。テキストラベルのみで情報階層を保つ）
+- `running` は `LoaderCircle + animate-spin`、`needs_review` は `Clock3` を選定（DESIGN.md の「functional labels, not decoration」原則に沿う）
+- `skipped` は `MinusCircle + text-text-muted`。critical 系の警告色にすると「スキップ＝悪」と誤読されるため muted で透かす
+- outcome 行は status badge の真下ではなく action.title の直下に配置（タイトルと説明の文脈が自然につながるため）
+- 未知の skip reason はエンジン側の文字列をそのまま表示（humanize辞書の取りこぼしで空欄になるより、生テキストの方が運用上有用）
+
+### 次にやること
+- Phase 2.4 Public Preview 残タスク（スクリーンショット更新・GitHub 公開準備）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

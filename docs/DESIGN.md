@@ -125,6 +125,37 @@ warmth only — no pastels, no navy emphasis, no vibrant saturation.
 - ALL CAPS in monospace = operational category label (e.g., "CRITICAL", "PENDING JOBS")
 - Never mix fonts within the same visual unit
 
+### Icons
+
+- Use `lucide-react` only. No other icon libraries.
+- Icons are functional labels, not decoration.
+- Always pair icons with text labels in operational UI.
+- Do not use more than one leading icon per row or card.
+
+Size rules:
+- Default: 16px
+- Dense list row: 14px
+- Hero / empty state: 32-48px (◈ symbol only, not lucide)
+
+Stroke width:
+- Critical states: 2
+- Normal states: 1.75
+
+Color rules:
+- critical: `text-status-critical`
+- warning: `text-status-warning`
+- success: `text-status-success`
+- info: `text-status-info`
+- neutral: `text-text-muted`
+- primary CTA: `text-accent`
+
+Avoid:
+- Filled icons
+- Icons without text labels
+- AI-themed icons (Sparkles, Bot, Zap)
+- Replacing ◈ with lucide icons
+- More than one icon per UI element
+
 ---
 
 ## 4. Spacing & Layout

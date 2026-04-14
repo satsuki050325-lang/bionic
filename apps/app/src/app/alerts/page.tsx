@@ -2,6 +2,7 @@ import type { Alert } from '@bionic/shared'
 import { getAlerts } from '@/lib/engine'
 import { formatRelativeTime } from '@/lib/time'
 import { ResolveButton } from './ResolveButton'
+import { AlertSeverityIcon } from '@/components/StatusIcon'
 
 const SEVERITY_ORDER: Record<string, number> = {
   critical: 0,
@@ -129,6 +130,9 @@ export default async function AlertsPage() {
               >
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
+                    <AlertSeverityIcon
+                      severity={alert.severity as 'critical' | 'warning' | 'info'}
+                    />
                     <span className={severityBadgeClass}>
                       {alert.severity.toUpperCase()}
                     </span>

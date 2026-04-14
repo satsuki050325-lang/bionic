@@ -1,5 +1,7 @@
 import { getActions } from '@/lib/engine'
 import { formatRelativeTime } from '@/lib/time'
+import { ActionStatusIcon, type ActionStatus } from '@/components/StatusIcon'
+import { getActionOutcome } from '@/lib/actionUtils'
 
 function badgeClass(status: string): string {
   if (status === 'succeeded') return 'badge-success'
@@ -92,38 +94,56 @@ export default async function ActionsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {otherActions.map((action) => (
-            <div
-              key={action.id}
-              className={`bg-bg-surface border border-border-subtle rounded p-3 flex items-center gap-4 ${
-                isFaded(action.status) ? 'opacity-60' : ''
-              }`}
-            >
-              <span className={badgeClass(action.status)}>
-                {action.status.toUpperCase()}
-              </span>
-              <span className="badge-muted font-mono">{action.type}</span>
-              <div className="flex-1 min-w-0">
-                <div className="text-text-primary text-sm truncate">
-                  {action.title}
+          {otherActions.map((action) => {
+            const outcome = getActionOutcome(action)
+            return (
+              <div
+                key={action.id}
+                className={`bg-bg-surface border border-border-subtle rounded p-3 flex items-center gap-4 ${
+                  isFaded(action.status) ? 'opacity-60' : ''
+                }`}
+              >
+                <div className="flex items-center gap-2 shrink-0">
+                  <ActionStatusIcon status={action.status as ActionStatus} />
+                  <span className={badgeClass(action.status)}>
+                    {action.status.toUpperCase()}
+                  </span>
                 </div>
-                <div className="font-mono text-xs text-text-muted mt-0.5">
-                  {action.requestedBy}
-                  {action.alertId && (
-                    <>
-                      {' · alert '}
-                      <span className="text-text-secondary">
-                        {action.alertId.slice(0, 8)}
-                      </span>
-                    </>
+                <span className="badge-muted font-mono">{action.type}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-text-primary text-sm truncate">
+                    {action.title}
+                  </div>
+                  {outcome && (
+                    <div
+                      className={`font-mono text-xs mt-0.5 ${
+                        action.status === 'failed'
+                          ? 'text-status-critical'
+                          : 'text-text-muted'
+                      }`}
+                    >
+                      {action.status === 'skipped' ? 'Skipped: ' : 'Failed: '}
+                      {outcome}
+                    </div>
                   )}
+                  <div className="font-mono text-xs text-text-muted mt-0.5">
+                    {action.requestedBy}
+                    {action.alertId && (
+                      <>
+                        {' · alert '}
+                        <span className="text-text-secondary">
+                          {action.alertId.slice(0, 8)}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
+                <span className="font-mono text-xs text-text-muted shrink-0">
+                  {formatRelativeTime(action.createdAt)}
+                </span>
               </div>
-              <span className="font-mono text-xs text-text-muted shrink-0">
-                {formatRelativeTime(action.createdAt)}
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
