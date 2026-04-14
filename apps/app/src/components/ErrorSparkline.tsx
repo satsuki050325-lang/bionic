@@ -1,21 +1,40 @@
 import type { EventMetricPoint } from '@/lib/engine'
 
 export function ErrorSparkline({ points }: { points: EventMetricPoint[] }) {
-  if (!points || points.length === 0) return null
+  const width = 120
+  const height = 32
+
+  if (!points || points.length === 0) {
+    return (
+      <svg
+        width={width}
+        height={height}
+        className="opacity-40"
+        aria-label="No recent events"
+        role="img"
+      >
+        <rect
+          x={0}
+          y={height - 1}
+          width={width}
+          height={1}
+          style={{ fill: 'var(--border-subtle)' }}
+        />
+      </svg>
+    )
+  }
 
   const maxVal = Math.max(
     ...points.map((p) => p.errors + p.healthDegraded),
     1
   )
-  const width = 120
-  const height = 32
   const barWidth = Math.max(1, Math.floor(width / points.length) - 1)
 
   return (
     <svg
       width={width}
       height={height}
-      className="opacity-60"
+      className="opacity-80"
       aria-label="Recent error and health trend"
       role="img"
     >
@@ -31,8 +50,7 @@ export function ErrorSparkline({ points }: { points: EventMetricPoint[] }) {
                 y={height - errorHeight - degradedHeight}
                 width={barWidth}
                 height={degradedHeight}
-                className="fill-status-warning"
-                opacity={0.6}
+                style={{ fill: 'var(--status-warning)', opacity: 0.65 }}
               />
             )}
             {errorHeight > 0 && (
@@ -41,8 +59,7 @@ export function ErrorSparkline({ points }: { points: EventMetricPoint[] }) {
                 y={height - errorHeight}
                 width={barWidth}
                 height={errorHeight}
-                className="fill-status-critical"
-                opacity={0.85}
+                style={{ fill: 'var(--status-critical)', opacity: 0.9 }}
               />
             )}
             {errorHeight === 0 && degradedHeight === 0 && (
@@ -51,7 +68,7 @@ export function ErrorSparkline({ points }: { points: EventMetricPoint[] }) {
                 y={height - 2}
                 width={barWidth}
                 height={2}
-                className="fill-border-subtle"
+                style={{ fill: 'var(--border-subtle)' }}
               />
             )}
           </g>

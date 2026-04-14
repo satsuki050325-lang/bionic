@@ -91,6 +91,68 @@ export interface DiagnosticsRunner {
   lastError: string | null
 }
 
+export type RedactedFlag = '[set]' | '[not set]'
+
+export interface RedactedEngineConfig {
+  nodeEnv: string
+  projectId: string
+  engine: {
+    port: number
+    host: string
+    token: RedactedFlag
+    isProduction: boolean
+  }
+  supabase: {
+    url: RedactedFlag
+    serviceRoleKey: RedactedFlag
+  }
+  scheduler: {
+    enabled: boolean
+    digestCron: string
+    digestTimezone: string
+  }
+  discord: {
+    mode: 'bot' | 'webhook' | 'disabled'
+    webhookUrl: RedactedFlag
+    botToken: RedactedFlag
+    channelId: string | null
+    approverIds: RedactedFlag
+  }
+  notification: {
+    quietHoursStart: number
+    quietHoursEnd: number
+    quietHoursTimezone: string
+  }
+  vercel: {
+    webhookSecret: RedactedFlag
+    projectMapSize: number
+  }
+  github: {
+    webhookSecret: RedactedFlag
+    repoMapSize: number
+    enabled: boolean
+  }
+  stripe: {
+    webhookSecret: RedactedFlag
+    serviceId: string
+    enabled: boolean
+  }
+  sentry: {
+    webhookSecret: RedactedFlag
+    serviceId: string
+    enabled: boolean
+  }
+  deploymentWatch: {
+    watchMinutes: number
+    thresholdErrorCount: number
+    thresholdIncreasePercent: number
+  }
+  anthropic: {
+    apiKey: RedactedFlag
+    enabled: boolean
+  }
+}
+
 export interface Diagnostics {
   engine: {
     status: 'running' | 'degraded'
@@ -98,7 +160,7 @@ export interface Diagnostics {
     startedAt: string
     uptimeSeconds: number
   }
-  config: Record<string, unknown>
+  config: RedactedEngineConfig
   db: { ok: boolean; checkedAt: string; error: string | null }
   scheduler: {
     enabled: boolean

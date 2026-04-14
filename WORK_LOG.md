@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-04-14 / Claude Code
+
+### やったこと
+- Settings の env 読み取りバグを修正: `apps/app/src/app/settings/page.tsx` で `process.env.*` 直読みを廃止し、Engine の `GET /api/diagnostics` から redacted config を取得する方式へ変更
+- `apps/app/src/lib/engine.ts` に `RedactedEngineConfig` 型を追加し、`Diagnostics.config` を `Record<string, unknown>` から強く型付けされたインターフェイスに置換
+- Settings にエンジンオフライン時の警告バナーを追加（en/ja 両対応の辞書エントリを追加）
+- Quiet Hours の表示を `HH:00` フォーマットで統一（notification.quietHoursStart/End は number）
+- Dashboard の `ErrorSparkline` を CSS 変数直接指定 (`style={{ fill: 'var(--status-critical)' }}`) に書き換え、Tailwind の `fill-*` 依存を除去
+- `ErrorSparkline` を points 空でも描画するようにし、Dashboard 側の `metrics?.points.length > 0` ガードを撤去（データなしでも細線を描画）
+- `pnpm verify` 通過（typecheck + engine test 36件 + app build 11 routes）
+
+### 判断したこと
+- Settings の env 読み取りは apps/app 側に .env.local が届いていないのが根本原因。symlink や Next.js の monorepo env 解決に頼るより、Engine の /api/diagnostics（すでに redactConfig 済み）を単一のソースにする方が安全（secret 値が app プロセスに露出しない + 表示と Engine の実設定が常に一致する）
+- Quiet Hours は Engine 側では hour (0-23) の number。`HH:00` に整形して表示することで未設定判定（`notSetParens`）との見分けが自然になる
+- Sparkline は Tailwind v4 で `fill-status-critical` が一応動くが、SVG + CSS カスタムプロパティへの direct 参照の方が堅牢で、将来 Tailwind 変更の影響を受けない
+- sparkline エリアは常時描画（データなしは細線）。これにより「バグで消えている」と「本当にデータがない」が UI 上区別できない問題が解消する
+
+### 未解決 / 既知リスク
+- Engine が BIONIC_ENGINE_TOKEN を要求する構成では、app プロセスにも同じトークンを渡す必要がある（既存の getStatus 等と同挙動なので追加の回帰ではない）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-14 / Claude
 
 ### やったこと

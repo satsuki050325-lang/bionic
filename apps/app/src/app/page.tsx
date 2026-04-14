@@ -275,12 +275,10 @@ export default async function DashboardPage() {
                 Top: {brief.topIssueType}
               </div>
             )}
-            {metrics?.points && metrics.points.length > 0 && (
-              <div className="flex flex-col items-end gap-1">
-                <ErrorSparkline points={metrics.points} />
-                <div className="font-mono text-xs text-text-muted">24h</div>
-              </div>
-            )}
+            <div className="flex flex-col items-end gap-1">
+              <ErrorSparkline points={metrics?.points ?? []} />
+              <div className="font-mono text-xs text-text-muted">24h</div>
+            </div>
             <Link
               href="/alerts"
               className="font-mono text-xs text-accent hover:underline mt-auto"

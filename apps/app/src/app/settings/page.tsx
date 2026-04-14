@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { LanguageSwitcher } from './LanguageSwitcher'
+import { getDiagnostics } from '@/lib/engine'
 
 type RowStatus = 'ok' | 'warn' | 'missing'
 
@@ -52,6 +53,8 @@ const t = {
     openDiagnostics: 'Open Diagnostics →',
     editHint:
       'To change settings, edit .env.local and restart the engine.',
+    engineOffline:
+      'Engine is offline. Start the engine to load configuration from .env.local.',
   },
   ja: {
     title: '設定',
@@ -100,6 +103,8 @@ const t = {
     openDiagnostics: '診断を開く →',
     editHint:
       '設定を変更するには .env.local を編集してエンジンを再起動してください。',
+    engineOffline:
+      'エンジンがオフラインです。エンジンを起動すると .env.local の設定を表示できます。',
   },
 } as const
 
@@ -159,34 +164,34 @@ export default async function SettingsPage() {
   const labels = t[locale]
 
   const engineUrl = process.env.NEXT_PUBLIC_ENGINE_URL ?? 'http://localhost:3001'
-  const projectId = process.env.BIONIC_PROJECT_ID ?? 'project_bionic'
-  const engineTokenSet = !!process.env.BIONIC_ENGINE_TOKEN
-  const supabaseUrlSet = !!process.env.SUPABASE_URL
-  const supabaseKeySet = !!process.env.SUPABASE_SERVICE_ROLE_KEY
-  const schedulerEnabled = process.env.BIONIC_SCHEDULER_ENABLED === 'true'
-  const digestCron = process.env.BIONIC_DIGEST_CRON ?? '0 9 * * 1'
-  const timezone = process.env.BIONIC_DIGEST_TIMEZONE ?? 'Asia/Tokyo'
-  const discordMode = process.env.BIONIC_DISCORD_BOT_TOKEN
-    ? 'bot'
-    : process.env.DISCORD_WEBHOOK_URL
-      ? 'webhook'
-      : 'disabled'
-  const anthropicKeySet = !!process.env.ANTHROPIC_API_KEY
-  const vercelSet = !!process.env.VERCEL_WEBHOOK_SECRET
-  const githubSet = !!process.env.GITHUB_WEBHOOK_SECRET
-  const stripeSet = !!process.env.STRIPE_WEBHOOK_SECRET
-  const sentrySet = !!process.env.SENTRY_WEBHOOK_SECRET
+  const diag = await getDiagnostics()
+  const cfg = diag?.config ?? null
 
-  const deploymentWatchMinutes =
-    process.env.BIONIC_DEPLOYMENT_WATCH_MINUTES ?? '30'
-  const deploymentThresholdErrorCount =
-    process.env.BIONIC_DEPLOYMENT_THRESHOLD_ERROR_COUNT ?? '5'
-  const deploymentThresholdIncreasePercent =
-    process.env.BIONIC_DEPLOYMENT_THRESHOLD_INCREASE_PERCENT ?? '200'
-  const quietHoursStart =
-    process.env.BIONIC_QUIET_HOURS_START ?? labels.notSetParens
-  const quietHoursEnd =
-    process.env.BIONIC_QUIET_HOURS_END ?? labels.notSetParens
+  const projectId = cfg?.projectId ?? 'project_bionic'
+  const engineTokenSet = cfg?.engine.token === '[set]'
+  const supabaseUrlSet = cfg?.supabase.url === '[set]'
+  const supabaseKeySet = cfg?.supabase.serviceRoleKey === '[set]'
+  const schedulerEnabled = cfg?.scheduler.enabled ?? false
+  const digestCron = cfg?.scheduler.digestCron ?? '0 9 * * 1'
+  const timezone = cfg?.scheduler.digestTimezone ?? 'Asia/Tokyo'
+  const discordMode = cfg?.discord.mode ?? 'disabled'
+  const anthropicKeySet = cfg?.anthropic.enabled ?? false
+  const vercelSet = cfg?.vercel.webhookSecret === '[set]'
+  const githubSet = cfg?.github.webhookSecret === '[set]'
+  const stripeSet = cfg?.stripe.webhookSecret === '[set]'
+  const sentrySet = cfg?.sentry.webhookSecret === '[set]'
+
+  const deploymentWatchMinutes = String(cfg?.deploymentWatch.watchMinutes ?? 30)
+  const deploymentThresholdErrorCount = String(
+    cfg?.deploymentWatch.thresholdErrorCount ?? 5
+  )
+  const deploymentThresholdIncreasePercent = String(
+    cfg?.deploymentWatch.thresholdIncreasePercent ?? 200
+  )
+  const formatHour = (h: number | undefined) =>
+    typeof h === 'number' ? `${String(h).padStart(2, '0')}:00` : labels.notSetParens
+  const quietHoursStart = formatHour(cfg?.notification.quietHoursStart)
+  const quietHoursEnd = formatHour(cfg?.notification.quietHoursEnd)
 
   return (
     <div className="max-w-3xl">
@@ -198,6 +203,12 @@ export default async function SettingsPage() {
           {labels.subtitle}
         </p>
       </div>
+
+      {!diag && (
+        <div className="mb-4 rounded border border-status-warning/40 bg-status-warning/5 px-4 py-3 font-mono text-xs text-status-warning">
+          {labels.engineOffline}
+        </div>
+      )}
 
       <SettingSection title={labels.preferences}>
         <div className="flex items-center justify-between py-2">
