@@ -32,7 +32,7 @@ pnpm --filter @bionic/mcp build
     "bionic-ops": {
       "command": "node",
       "args": [
-        "C:\\Users\\owner\\Desktop\\bionic\\packages\\mcp\\dist\\index.js"
+        "/path/to/bionic/packages/mcp/dist/index.js"
       ],
       "env": {
         "BIONIC_ENGINE_URL": "http://localhost:3001",
