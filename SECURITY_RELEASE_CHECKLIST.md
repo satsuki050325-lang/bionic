@@ -8,7 +8,7 @@
 
 ### 環境変数
 - [x] `.env.local` が `.gitignore` に含まれていることを確認する
-- [x] `.env.example` に値が入っていないことを確認する（変数名のみ）
+- [x] `.env.example` に実 secret が含まれていないことを確認する（placeholder またはコメントのみ）
 - [x] `SUPABASE_SERVICE_ROLE_KEY` が App/Client bundle に含まれていないことを確認する
 - [x] `NEXT_PUBLIC_` プレフィックスの変数に機密情報が含まれていないことを確認する
 - [ ] `BIONIC_ENGINE_TOKEN` が本番環境で設定されていることを確認する（本番デプロイ時に確認）

@@ -198,7 +198,7 @@ curl -X POST http://localhost:3001/api/events \
   -H "Authorization: Bearer $BIONIC_ENGINE_TOKEN" \
   -d '{
     "event": {
-      "id": "test-001",
+      "id": "'"test-$(date +%s)-$RANDOM"'",
       "projectId": "project_bionic",
       "serviceId": "my-service",
       "type": "service.health.reported",

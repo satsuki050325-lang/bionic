@@ -313,48 +313,24 @@ export default function AddServicePage({
         </div>
 
         {installMethod === 'sdk' ? (
-          <>
-            <div className="bg-status-warning/10 border border-status-warning/30 rounded p-3 mb-3">
-              <p className="font-mono text-xs text-status-warning">
-                Note: The SDK depends on @bionic/shared from the Bionic
-                monorepo and cannot be installed standalone until Bionic
-                publishes to npm. Use Direct API for now, or run both
-                services from the same Bionic repo.
-              </p>
+          <div className="bg-bg-elevated border border-border-subtle rounded p-5">
+            <div className="font-mono text-xs text-status-info uppercase tracking-widest mb-2">
+              Coming Soon
             </div>
-            <p className="font-body text-xs text-text-muted mb-3">
-              While running Bionic from source, use one of the local options
-              below.
+            <p className="font-body text-sm text-text-secondary mb-3">
+              The Bionic SDK will be published to npm in a future release.
             </p>
-            <div className="bg-bg-base border border-border-subtle rounded p-3 mb-3 overflow-x-auto">
-              <pre className="font-mono text-xs text-text-primary whitespace-pre">
-{`# Option A · copy the SDK into your project
-cp -r /path/to/bionic/packages/sdk ./bionic-sdk
-
-# Option B · npm link (development)
-cd /path/to/bionic/packages/sdk && npm link
-cd /path/to/your-project && npm link @bionic/sdk
-
-# Future
-npm install @bionic/sdk   # available once published`}
-              </pre>
-            </div>
-            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2 mt-4">
-              Add to your service
-            </div>
-            <div className="bg-bg-base border border-border-subtle rounded p-3 overflow-x-auto">
-              <pre className="font-mono text-xs text-text-primary whitespace-pre">
-                {snippet}
-              </pre>
-            </div>
-            <p className="font-mono text-xs text-text-muted mt-2">
-              If you copied the SDK locally, replace the import with{' '}
-              <code className="text-accent">
-                from &apos;./bionic-sdk/src&apos;
-              </code>
-              .
+            <p className="font-body text-xs text-text-muted">
+              For now, use the{' '}
+              <button
+                onClick={() => setInstallMethod('curl')}
+                className="text-accent hover:underline font-mono"
+              >
+                Direct API
+              </button>{' '}
+              option to connect your service.
             </p>
-          </>
+          </div>
         ) : (
           <>
             <div className="flex gap-2 flex-wrap mb-3">
