@@ -28,21 +28,24 @@ The operator is in control, but the machine is always working.
 
 ## 2. Color Palette
 
-### Background Scale
+Black-based retrofuturist control room. References P25 (Roller · Rink) for
+warmth only — no pastels, no navy emphasis, no vibrant saturation.
+
+### Background Scale — blackened navy control room
 
 ```
---bg-base:     #0A0A0A  /* Space — the primary canvas */
---bg-surface:  #111111  /* Cards, panels, elevated content */
---bg-elevated: #1A1A1A  /* Modals, dropdowns, tooltips */
---bg-hover:    #222222  /* Interactive hover states */
+--bg-base:     #090D0E  /* Space — the primary canvas */
+--bg-surface:  #101719  /* Cards, panels, elevated content */
+--bg-elevated: #182224  /* Modals, dropdowns, tooltips */
+--bg-hover:    #202D30  /* Interactive hover states */
 ```
 
-### Border Scale
+### Border Scale — dusty teal structure
 
 ```
---border-subtle:  #2A2A2A  /* Dividers, card edges (default) */
---border-default: #333333  /* More visible separators */
---border-strong:  #444444  /* High-contrast borders */
+--border-subtle:  #263437  /* Dividers, card edges (default) */
+--border-default: #34464A  /* More visible separators */
+--border-strong:  #465C61  /* High-contrast borders */
 ```
 
 ### Accent — Anthropic Orange × TVA Amber
@@ -50,36 +53,37 @@ The operator is in control, but the machine is always working.
 ```
 --accent:       #E8611A  /* Primary accent — use sparingly */
 --accent-dim:   #E8611A20 /* Background tints, glows */
---accent-hover: #F07030  /* Hover state for accent elements */
---accent-muted: #A04010  /* Subdued accent for secondary use */
+--accent-hover: #F0784D  /* Hover state for accent elements */
+--accent-muted: #A04A20  /* Subdued accent for secondary use */
+--accent-warm:  #FAA45B  /* Warm highlight (sparse retro amber) */
 ```
 
-### Text Scale
+### Text Scale — warm white + blue-gray support
 
 ```
---text-primary:   #F5F5F5  /* Main content */
---text-secondary: #888888  /* Supporting info */
---text-muted:     #555555  /* Placeholder, disabled */
---text-inverse:   #0A0A0A  /* Text on accent backgrounds */
+--text-primary:   #F5F0E8  /* Main content (warm white) */
+--text-secondary: #8E9C9E  /* Supporting info (blue-gray) */
+--text-muted:     #5E6A6D  /* Placeholder, disabled */
+--text-inverse:   #090D0E  /* Text on accent backgrounds */
 ```
 
 ### Semantic Status Colors
 
 ```
 --status-critical: #E5484D  /* Immediate attention required */
---status-warning:  #F59E0B  /* Caution, degraded state */
---status-success:  #22C55E  /* Healthy, completed */
---status-info:     #3B82F6  /* Informational */
---status-neutral:  #64748B  /* Inactive, archived */
+--status-warning:  #D8962A  /* Caution, degraded state (muted amber) */
+--status-success:  #4FAF73  /* Healthy, completed (dusty green) */
+--status-info:     #568DAC  /* Informational (dusty blue) */
+--status-neutral:  #617F7F  /* Inactive, archived (dusty teal) */
 ```
 
 ### Status with Opacity (for badge backgrounds)
 
 ```
 --status-critical-bg: #E5484D20
---status-warning-bg:  #F59E0B20
---status-success-bg:  #22C55E20
---status-info-bg:     #3B82F620
+--status-warning-bg:  #D8962A20
+--status-success-bg:  #4FAF7320
+--status-info-bg:     #568DAC20
 ```
 
 ---
@@ -344,19 +348,24 @@ border-bottom: 1px solid var(--border-subtle)
 Since Bionic uses Tailwind CSS, use these mappings:
 
 ```
-bg-bg-base            → background: #0A0A0A
-bg-bg-surface         → background: #111111
-bg-bg-elevated        → background: #1A1A1A
-border-border-subtle  → border-color: #2A2A2A
-border-border-default → border-color: #333333
-text-text-primary     → color: #F5F5F5
-text-text-secondary   → color: #888888
-text-text-muted       → color: #555555
+bg-bg-base            → background: #090D0E
+bg-bg-surface         → background: #101719
+bg-bg-elevated        → background: #182224
+bg-bg-hover           → background: #202D30
+border-border-subtle  → border-color: #263437
+border-border-default → border-color: #34464A
+border-border-strong  → border-color: #465C61
+text-text-primary     → color: #F5F0E8
+text-text-secondary   → color: #8E9C9E
+text-text-muted       → color: #5E6A6D
 text-accent           → color: #E8611A
+text-accent-warm      → color: #FAA45B
 bg-accent             → background: #E8611A
 text-status-critical  → color: #E5484D
-text-status-warning   → color: #F59E0B
-text-status-success   → color: #22C55E
+text-status-warning   → color: #D8962A
+text-status-success   → color: #4FAF73
+text-status-info      → color: #568DAC
+text-status-neutral   → color: #617F7F
 font-heading          → Space Grotesk
 font-mono             → JetBrains Mono
 ```

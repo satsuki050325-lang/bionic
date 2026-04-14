@@ -3,37 +3,44 @@
 @import "tailwindcss";
 
 @theme {
-  /* Background scale (DESIGN.md section 2) */
-  --color-bg-base: #0A0A0A;
-  --color-bg-surface: #111111;
-  --color-bg-elevated: #1A1A1A;
-  --color-bg-hover: #222222;
+  /* Background scale — blackened navy control room (DESIGN.md section 2) */
+  --color-bg-base: #090D0E;
+  --color-bg-surface: #101719;
+  --color-bg-elevated: #182224;
+  --color-bg-hover: #202D30;
 
-  /* Border scale */
-  --color-border-subtle: #2A2A2A;
-  --color-border-default: #333333;
-  --color-border-strong: #444444;
+  /* Border scale — dusty teal structure */
+  --color-border-subtle: #263437;
+  --color-border-default: #34464A;
+  --color-border-strong: #465C61;
 
-  /* Accent */
+  /* Accent — Anthropic Orange × TVA Amber */
   --color-accent: #E8611A;
-  --color-accent-dim: #E8611A33;
-  --color-accent-hover: #F07030;
-  --color-accent-muted: #A04010;
+  --color-accent-dim: #E8611A20;
+  --color-accent-hover: #F0784D;
+  --color-accent-muted: #A04A20;
+  --color-accent-warm: #FAA45B;
 
-  /* Text */
-  --color-text-primary: #F5F5F5;
-  --color-text-secondary: #888888;
-  --color-text-muted: #555555;
-  --color-text-inverse: #0A0A0A;
+  /* Text — warm white + blue-gray support */
+  --color-text-primary: #F5F0E8;
+  --color-text-secondary: #8E9C9E;
+  --color-text-muted: #5E6A6D;
+  --color-text-inverse: #090D0E;
 
   /* Semantic status */
   --color-status-critical: #E5484D;
-  --color-status-warning: #F59E0B;
-  --color-status-success: #22C55E;
-  --color-status-info: #3B82F6;
-  --color-status-neutral: #64748B;
+  --color-status-warning: #D8962A;
+  --color-status-success: #4FAF73;
+  --color-status-info: #568DAC;
+  --color-status-neutral: #617F7F;
   /* Alias for legacy callers */
   --color-status-danger: #E5484D;
+
+  /* Status backgrounds (12% alpha tints) */
+  --color-status-critical-bg: #E5484D20;
+  --color-status-warning-bg: #D8962A20;
+  --color-status-success-bg: #4FAF7320;
+  --color-status-info-bg: #568DAC20;
 
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
@@ -42,30 +49,36 @@
 }
 
 :root {
-  --bg-base: #0A0A0A;
-  --bg-surface: #111111;
-  --bg-elevated: #1A1A1A;
-  --bg-hover: #222222;
+  --bg-base: #090D0E;
+  --bg-surface: #101719;
+  --bg-elevated: #182224;
+  --bg-hover: #202D30;
 
-  --border-subtle: #2A2A2A;
-  --border-default: #333333;
-  --border-strong: #444444;
+  --border-subtle: #263437;
+  --border-default: #34464A;
+  --border-strong: #465C61;
 
   --accent: #E8611A;
   --accent-dim: #E8611A20;
-  --accent-hover: #F07030;
-  --accent-muted: #A04010;
+  --accent-hover: #F0784D;
+  --accent-muted: #A04A20;
+  --accent-warm: #FAA45B;
 
-  --text-primary: #F5F5F5;
-  --text-secondary: #888888;
-  --text-muted: #555555;
-  --text-inverse: #0A0A0A;
+  --text-primary: #F5F0E8;
+  --text-secondary: #8E9C9E;
+  --text-muted: #5E6A6D;
+  --text-inverse: #090D0E;
 
   --status-critical: #E5484D;
-  --status-warning: #F59E0B;
-  --status-success: #22C55E;
-  --status-info: #3B82F6;
-  --status-neutral: #64748B;
+  --status-warning: #D8962A;
+  --status-success: #4FAF73;
+  --status-info: #568DAC;
+  --status-neutral: #617F7F;
+
+  --status-critical-bg: #E5484D20;
+  --status-warning-bg: #D8962A20;
+  --status-success-bg: #4FAF7320;
+  --status-info-bg: #568DAC20;
 }
 
 @layer base {

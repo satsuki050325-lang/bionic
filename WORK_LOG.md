@@ -6,6 +6,30 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- カラーパレットをレトロフューチャー安全版へ更新（P25「ローラー・リンク」から温度のみ借用）
+- `apps/app/src/app/globals.css` の `@theme` と `:root` の両ブロックを同期更新（Tailwind v4 は `@theme` からユーティリティを生成するため両方必要）
+- 背景: `#0A0A0A → #090D0E` 系の blackened navy に置換（bg-base/surface/elevated/hover）
+- ボーダー: グレー → dusty teal（`#263437 / #34464A / #465C61`）
+- テキスト: `#F5F5F5 → #F5F0E8`（warm white）、secondary は blue-gray `#8E9C9E`
+- ステータス色: warning/success/info/neutral を彩度控えめに再調整（`#D8962A / #4FAF73 / #568DAC / #617F7F`）
+- アクセントに `--accent-warm: #FAA45B` を追加、status-bg（12% alpha 版）4色を追加
+- 既存の `--color-status-danger` エイリアスは維持（badge-critical @utility が参照）
+- docs/DESIGN.md section 2（Color Palette）と section 6（Tailwind Mapping）を新パレット値へ反映
+- pnpm verify 通過（typecheck + engine test 36件 + app build 11 routes）
+
+### 判断したこと
+- `@theme` と `:root` は同じ値を二重定義するが、これは Tailwind v4 の仕様: ユーティリティクラス（`bg-bg-base` 等）は `@theme` の `--color-*` から生成され、コンポーネント内で `var(--bg-base)` を直接参照するコード（ErrorSparkline 等）は `:root` を見る。片方だけ更新すると乖離するため両方を更新
+- `--color-accent-dim` は旧 `@theme` 値（33）と `:root` 値（20）が乖離していたので spec 通りの `20` に統一
+- P25 パレットから「温度」だけ借りる方針を厳守: ネイビー強調なし、パステル化なし、彩度控えめ。管制室感は border の teal シフトと text の warm white で表現
+- `--color-status-danger` エイリアスは DESIGN.md には記載しない（legacy 互換目的のため、公式パレットではない）
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Settings の env 読み取りバグを修正: `apps/app/src/app/settings/page.tsx` で `process.env.*` 直読みを廃止し、Engine の `GET /api/diagnostics` から redacted config を取得する方式へ変更
 - `apps/app/src/lib/engine.ts` に `RedactedEngineConfig` 型を追加し、`Diagnostics.config` を `Record<string, unknown>` から強く型付けされたインターフェイスに置換
 - Settings にエンジンオフライン時の警告バナーを追加（en/ja 両対応の辞書エントリを追加）
