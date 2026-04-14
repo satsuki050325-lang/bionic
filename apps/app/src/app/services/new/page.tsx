@@ -5,6 +5,43 @@ import Link from 'next/link'
 import { sendTestServiceEvent } from './actions'
 
 type Framework = 'nextjs' | 'express' | 'other'
+type InstallMethod = 'sdk' | 'curl'
+
+const ENGINE_URL =
+  process.env['NEXT_PUBLIC_ENGINE_URL'] ?? 'http://localhost:3001'
+
+function generateCurlSnippet(serviceId: string): string {
+  const sid = serviceId || 'my-service'
+  return `# Send a health signal directly (no SDK required):
+curl -X POST ${ENGINE_URL}/api/events \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "event": {
+      "id": "test-001",
+      "projectId": "project_bionic",
+      "serviceId": "${sid}",
+      "type": "service.health.reported",
+      "source": "sdk",
+      "occurredAt": "2026-01-01T00:00:00.000Z",
+      "payload": { "status": "ok" }
+    }
+  }'
+
+# Report an error:
+curl -X POST ${ENGINE_URL}/api/events \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "event": {
+      "id": "err-001",
+      "projectId": "project_bionic",
+      "serviceId": "${sid}",
+      "type": "service.error.reported",
+      "source": "sdk",
+      "occurredAt": "2026-01-01T00:00:00.000Z",
+      "payload": { "code": "ERR_CODE", "message": "What happened" }
+    }
+  }'`
+}
 
 function generateSnippet(serviceId: string, framework: Framework): string {
   const sid = serviceId || 'my-service'
@@ -73,6 +110,7 @@ export default function AddServicePage({
   searchParams: { serviceId?: string }
 }) {
   const [serviceId, setServiceId] = useState(searchParams.serviceId ?? '')
+  const [installMethod, setInstallMethod] = useState<InstallMethod>('sdk')
   const [framework, setFramework] = useState<Framework>('nextjs')
   const [testResult, setTestResult] = useState<
     'idle' | 'sending' | 'success' | 'error'
@@ -80,7 +118,10 @@ export default function AddServicePage({
   const [testError, setTestError] = useState<string | null>(null)
   const [showWebhooks, setShowWebhooks] = useState(false)
 
-  const snippet = generateSnippet(serviceId, framework)
+  const snippet =
+    installMethod === 'curl'
+      ? generateCurlSnippet(serviceId)
+      : generateSnippet(serviceId, framework)
   const trimmed = serviceId.trim()
   const isValid = trimmed.length > 0 && /^[a-z0-9-]+$/.test(trimmed)
 
@@ -97,26 +138,31 @@ export default function AddServicePage({
     }
   }
 
+  const sidOrPlaceholder = serviceId || 'my-service'
   const webhookItems = [
     {
       name: 'Vercel',
       key: 'BIONIC_VERCEL_PROJECT_MAP',
-      value: `{"prj_xxx":"${serviceId || 'my-service'}"}`,
+      value: `prj_xxx:${sidOrPlaceholder}`,
+      hint: 'Replace prj_xxx with your Vercel Project ID. Multiple entries are comma-separated (prj_a:svc-a,prj_b:svc-b).',
     },
     {
       name: 'GitHub',
       key: 'BIONIC_GITHUB_REPO_MAP',
-      value: `{"owner/repo":"${serviceId || 'my-service'}"}`,
+      value: `owner/repo:${sidOrPlaceholder}`,
+      hint: 'Replace owner/repo with the GitHub repository (e.g. acme/api). Multiple entries are comma-separated.',
     },
     {
       name: 'Stripe',
       key: 'BIONIC_STRIPE_SERVICE_ID',
-      value: serviceId || 'my-service',
+      value: sidOrPlaceholder,
+      hint: 'All Stripe webhook events are attributed to this service id.',
     },
     {
       name: 'Sentry',
       key: 'BIONIC_SENTRY_SERVICE_ID',
-      value: serviceId || 'my-service',
+      value: sidOrPlaceholder,
+      hint: 'All Sentry webhook events are attributed to this service id.',
     },
   ]
 
@@ -158,50 +204,105 @@ export default function AddServicePage({
         )}
       </div>
 
-      {/* Step 2: Framework */}
+      {/* Step 2: Integration method */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-3">
-          02 · Choose your framework
+          02 · Choose how to integrate
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {(['nextjs', 'express', 'other'] as Framework[]).map((fw) => (
+        <div className="flex gap-2 flex-wrap mb-4">
+          {(['sdk', 'curl'] as InstallMethod[]).map((m) => (
             <button
-              key={fw}
-              onClick={() => setFramework(fw)}
+              key={m}
+              onClick={() => setInstallMethod(m)}
               className={`font-mono text-xs px-4 py-2 rounded border transition-colors ${
-                framework === fw
+                installMethod === m
                   ? 'border-accent text-accent bg-accent/10'
                   : 'border-border-subtle text-text-secondary hover:border-accent/50'
               }`}
             >
-              {fw === 'nextjs'
-                ? 'Next.js'
-                : fw === 'express'
-                  ? 'Express'
-                  : 'Other'}
+              {m === 'sdk' ? 'TypeScript SDK' : 'Direct API (curl)'}
             </button>
           ))}
         </div>
+        {installMethod === 'sdk' && (
+          <div className="flex gap-2 flex-wrap">
+            {(['nextjs', 'express', 'other'] as Framework[]).map((fw) => (
+              <button
+                key={fw}
+                onClick={() => setFramework(fw)}
+                className={`font-mono text-xs px-4 py-2 rounded border transition-colors ${
+                  framework === fw
+                    ? 'border-accent text-accent bg-accent/10'
+                    : 'border-border-subtle text-text-secondary hover:border-accent/50'
+                }`}
+              >
+                {fw === 'nextjs'
+                  ? 'Next.js'
+                  : fw === 'express'
+                    ? 'Express'
+                    : 'Other'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Step 3: Install SDK */}
+      {/* Step 3: Install / wire up */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-3">
-          03 · Install SDK
+          03 · {installMethod === 'sdk' ? 'Install SDK' : 'Send signals via curl'}
         </div>
-        <div className="bg-bg-base border border-border-subtle rounded p-3 mb-3">
-          <code className="font-mono text-xs text-text-primary">
-            npm install @bionic/sdk
-          </code>
-        </div>
-        <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2 mt-4">
-          Add to your service
-        </div>
-        <div className="bg-bg-base border border-border-subtle rounded p-3 overflow-x-auto">
-          <pre className="font-mono text-xs text-text-primary whitespace-pre-wrap">
-            {snippet}
-          </pre>
-        </div>
+
+        {installMethod === 'sdk' ? (
+          <>
+            <p className="font-body text-xs text-text-muted mb-3">
+              The SDK is not yet on npm. Use one of the local options below
+              while running Bionic from source. (npm publish is planned in a
+              future release.)
+            </p>
+            <div className="bg-bg-base border border-border-subtle rounded p-3 mb-3 overflow-x-auto">
+              <pre className="font-mono text-xs text-text-primary whitespace-pre">
+{`# Option A · copy the SDK into your project
+cp -r /path/to/bionic/packages/sdk ./bionic-sdk
+
+# Option B · npm link (development)
+cd /path/to/bionic/packages/sdk && npm link
+cd /path/to/your-project && npm link @bionic/sdk
+
+# Future
+npm install @bionic/sdk   # available once published`}
+              </pre>
+            </div>
+            <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-2 mt-4">
+              Add to your service
+            </div>
+            <div className="bg-bg-base border border-border-subtle rounded p-3 overflow-x-auto">
+              <pre className="font-mono text-xs text-text-primary whitespace-pre">
+                {snippet}
+              </pre>
+            </div>
+            <p className="font-mono text-xs text-text-muted mt-2">
+              If you copied the SDK locally, replace the import with{' '}
+              <code className="text-accent">
+                from &apos;./bionic-sdk/src&apos;
+              </code>
+              .
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="font-body text-xs text-text-muted mb-3">
+              No SDK required. Any HTTP client works. Replace{' '}
+              <code className="text-accent">occurredAt</code> with the current
+              timestamp.
+            </p>
+            <div className="bg-bg-base border border-border-subtle rounded p-3 overflow-x-auto">
+              <pre className="font-mono text-xs text-text-primary whitespace-pre">
+                {snippet}
+              </pre>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Step 4: Test Event */}
@@ -263,6 +364,9 @@ export default function AddServicePage({
                     {item.key}={item.value}
                   </code>
                 </div>
+                <p className="font-mono text-xs text-text-muted mt-1">
+                  {item.hint}
+                </p>
               </div>
             ))}
           </div>

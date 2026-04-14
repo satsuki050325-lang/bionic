@@ -6,6 +6,31 @@
 ## 2026-04-14 / Claude Code
 
 ### やったこと
+- Add Service の P1/P2 finding 4件を修正
+- P1 #1: SDK install を現実に即した内容に再構成。Step 02 を「Choose how to integrate」に拡張し `TypeScript SDK` / `Direct API (curl)` トグルを追加。SDK 側は monorepo cp / npm link / 将来 npm 公開予定を明記。Direct API 側は `curl -X POST /api/events` の health/error 2 例を生成（外部ユーザーが SDK なしで即試せる）
+- P1 #2: Webhook env のフォーマット誤りを修正。`{"prj_xxx":"svc"}` JSON → `prj_xxx:svc` コロン区切り（Engine の `readVercelProjectMap` / `readGitHubRepoMap` が `split(':')` を使っているため。複数は `,` で連結）。各項目に hint 行（プレースホルダ説明・複数指定の書式）を追加
+- P2 #1: `/api/services` の DB エラーハンドリング追加。events 取得失敗時は 503 を返却、alerts 取得失敗時は警告ログを残して空配列で継続（events のみで service 列挙は機能継続できる）
+- P2 #2: open alert のみあって直近 500 件 events に出てこないサービスも一覧化。alertMap loop 内で `serviceMap.has(sid)` が false なら lastEventAt=null のエントリを追加。`ServiceSummary.lastEventAt` は元から nullable
+- 状態判定を null 安全に: `lastEventAt === null` のサービスは critical alert があれば `alerting`、なければ `stale` に分類
+- pnpm verify 通過（typecheck + engine test 36件 + app build 13 routes）
+
+### 判断したこと
+- npm publish は Phase 2.4 のスコープ外（パッケージング・semver・dist整備が必要）。リリース時の選択肢として明示しつつ、現状で動く手段（cp / npm link）を一級扱いにした
+- curl snippet の `occurredAt` は固定文字列 + UI 説明で代替（client 描画時の `new Date()` で hydration mismatch を起こすリスクを避ける）。説明文で「現在時刻に置換」を明記
+- Direct API トグル時は framework 選択を非表示（curl は framework 非依存）
+- alerts 取得失敗を fatal にしない判断: services 一覧は events ベースでも有用、alert 部分が欠けても運用継続できる方が UX 上望ましい
+- alert-only サービスの status 判定は「critical あれば alerting、なければ stale」に統一。alert があるのに events ゼロ＝既に静かなはずなので receiving/quiet には絶対分類しない
+
+### 次にやること
+- 最終 UI レビュー・公開判断
+
+担当：Claude Code
+
+---
+
+## 2026-04-14 / Claude Code
+
+### やったこと
 - Engine に `GET /api/services` を新設（`packages/engine/src/routes/services.ts`）: engine_events と engine_alerts を service_id でグルーピングし、status（alerting/receiving/quiet/stale/demo）・eventCount24h・sources（SDK/Vercel/GitHub/Stripe/Sentry/CLI 推論）・nextStep を返す
 - `packages/engine/src/index.ts` に servicesRouter を登録（`/api/services`）
 - `apps/app/src/lib/engine.ts` に `ServiceWatchStatus` / `ServiceSource` / `ServiceSummary` / `ListServicesResult` 型と `getServices()` を追加

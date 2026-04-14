@@ -102,28 +102,34 @@ servicesRouter.get('/', async (req, res) => {
 
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: allEvents } = await supabase
+  const { data: allEvents, error: eventsError } = await supabase
     .from('engine_events')
     .select('service_id, type, source, payload, occurred_at')
     .eq('project_id', projectId)
     .order('occurred_at', { ascending: false })
     .limit(500)
 
-  const { data: openAlerts } = await supabase
+  if (eventsError) {
+    console.error('[services] failed to fetch events:', eventsError)
+    res.status(503).json({ error: 'failed to fetch service data' })
+    return
+  }
+
+  const { data: openAlerts, error: alertsError } = await supabase
     .from('engine_alerts')
     .select('service_id, severity, type')
     .eq('project_id', projectId)
     .eq('status', 'open')
 
-  if (!allEvents) {
-    res.json({ services: [] } satisfies ListServicesResult)
-    return
+  if (alertsError) {
+    // Alerts are non-fatal — continue with empty list so events still surface.
+    console.error('[services] failed to fetch alerts:', alertsError)
   }
 
   const serviceMap = new Map<
     string,
     {
-      lastEventAt: string
+      lastEventAt: string | null
       eventTypes: string[]
       eventSources: string[]
       payloads: Record<string, unknown>[]
@@ -131,7 +137,7 @@ servicesRouter.get('/', async (req, res) => {
     }
   >()
 
-  for (const event of allEvents) {
+  for (const event of allEvents ?? []) {
     const sid = event.service_id as string
     if (!sid) continue
     if (!serviceMap.has(sid)) {
@@ -166,6 +172,18 @@ servicesRouter.get('/', async (req, res) => {
     entry.open++
     if (alert.severity === 'critical') entry.critical++
     if (alert.type) entry.types.push(alert.type as string)
+
+    // Surface services that have open alerts but no recent events
+    // (e.g. event aged out of the 500-row window).
+    if (!serviceMap.has(sid)) {
+      serviceMap.set(sid, {
+        lastEventAt: null,
+        eventTypes: [],
+        eventSources: [],
+        payloads: [],
+        eventCount24h: 0,
+      })
+    }
   }
 
   const now = Date.now()
@@ -178,8 +196,10 @@ servicesRouter.get('/', async (req, res) => {
       critical: 0,
       types: [],
     }
-    const lastEventMs = new Date(data.lastEventAt).getTime()
-    const elapsedMs = now - lastEventMs
+    const elapsedMs =
+      data.lastEventAt !== null
+        ? now - new Date(data.lastEventAt).getTime()
+        : Number.POSITIVE_INFINITY
 
     const sources = inferSources(
       data.eventTypes,
@@ -193,6 +213,8 @@ servicesRouter.get('/', async (req, res) => {
       status = 'demo'
     } else if (alerts.critical > 0) {
       status = 'alerting'
+    } else if (data.lastEventAt === null) {
+      status = 'stale'
     } else if (elapsedMs < 24 * 60 * 60 * 1000) {
       status = data.eventCount24h >= 3 ? 'receiving' : 'quiet'
     } else {
