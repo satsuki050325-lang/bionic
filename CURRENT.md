@@ -235,6 +235,13 @@
 - ActionsのSUCCEEDED/SKIPPED色改善
 - Diagnostics・Settingsのタイトル階層改善
 - Codexレビュー完了・問題なし
+- Settings階層強化（セクションタイトル・description追加）
+- Actions整理（Needs Attention / Recent History分割・サマリーバー）
+- ServicesにMissing integrations表示
+- Diagnosticsに総合判定バナー追加
+- 多言語対応追加（Español・中文）
+- LanguageSwitcher4言語対応
+- Codexレビュー完了・問題なし
 
 ### 設計確定（Phase 2方針）
 - 存在意義：競合（Claude Code・Codex・OpenClaw）はセッションベースでLLM推論コストがかかる。Bionicはルールベース処理をローカルで完結しコスト実質$0
@@ -253,7 +260,7 @@
 ## 次の1手
 
 ### 今すぐやること
-- Phase 2.4: 最終UIレビュー・GitHub公開判断
+- Phase 2.4: 最終スクリーンショット確認・GitHub公開
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）

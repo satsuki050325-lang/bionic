@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-04-14 / Claude
+
+### やったこと
+- Settingsのセクションタイトルを「章」として見えるよう強化した
+- 各SettingSectionにdescriptionを追加した
+- ActionsをNeeds AttentionとRecent Historyに分けた
+- Actionsの上部にサマリーバーを追加した
+- ServicesにNot connected integrationsを表示した
+- DiagnosticsにAll systems healthy / Needs attentionの総合判定バナーを追加した
+- Español・中文のナビ・Settings翻訳を追加した
+- LanguageSwitcherを4言語対応にした
+- Codexレビュー完了・問題なし
+
+### 次にやること
+- 最終スクリーンショット確認・GitHub公開
+
+担当：Claude
+
+---
+
 ## 2026-04-14 / Claude Code
 
 ### やったこと
