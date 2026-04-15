@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-04-15 / Claude Code（開始）
+
+### 着手
+- Codexレビュー `eb472b7` のfinding 5件を3グループに分けて修正する
+  - Group 1 (P1/P2): SSRFガード強化 (hex IPv4-mapped IPv6 正規化・ルート側バリデーション)
+  - Group 2 (P1/P2): runner状態管理 (payload targetId・alert resolve対象限定・atomic claim)
+  - Group 3 (P1): Services表示 (uptime_targetsからもcard合成)
+
+---
+
 ## 2026-04-15 / Claude Code
 
 ### やったこと

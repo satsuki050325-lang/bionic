@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase.js'
 import { getConfig } from '../config.js'
 import { runUptimeCheck } from '../uptime/check.js'
 import { mapUptimeRow } from '../uptime/runner.js'
+import { resolveForUptime } from '../uptime/ssrf.js'
 
 export const uptimeTargetsRouter = Router()
 
@@ -107,6 +108,12 @@ uptimeTargetsRouter.post('/', async (req, res) => {
     return
   }
 
+  const resolved = await resolveForUptime(url)
+  if (!resolved.ok) {
+    res.status(400).json({ error: `url rejected: ${resolved.reason}` })
+    return
+  }
+
   const { data, error } = await supabase
     .from('uptime_targets')
     .insert({
@@ -151,7 +158,13 @@ uptimeTargetsRouter.patch('/:id', async (req, res) => {
       res.status(400).json({ error: 'invalid url' })
       return
     }
-    update['url'] = body.url.trim()
+    const trimmedUrl = body.url.trim()
+    const resolved = await resolveForUptime(trimmedUrl)
+    if (!resolved.ok) {
+      res.status(400).json({ error: `url rejected: ${resolved.reason}` })
+      return
+    }
+    update['url'] = trimmedUrl
   }
   if (body.intervalSeconds !== undefined) {
     const interval = parseInterval(body.intervalSeconds)
