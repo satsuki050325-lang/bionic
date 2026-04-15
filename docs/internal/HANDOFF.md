@@ -3,77 +3,165 @@
 
 ---
 
-## 使い方
+## 新しいチャットを始めるとき
 
-**チャット終了前にやること**
-1. このファイルに現在の状態を書く
-2. WORK_LOG.mdに判断記録を残す
-3. GitHubにpushする
-
-**新しいチャット開始時にやること**
-1. このファイルを読む
-2. CURRENT.mdを読む
-3. WORK_LOG.mdの直近エントリを読む
-4. 状態を把握してから作業を始める
+1. `AGENTS.md` を読む（役割分担・行動規範）
+2. このファイル（`docs/internal/HANDOFF.md`）を読む
+3. `docs/internal/CURRENT.md` を読む
+4. `docs/internal/WORK_LOG.md` の直近エントリを確認する
+5. 現状把握してから作業を始める
 
 ---
 
-## 現在の状態（2026-04-08）
+## 現在の状態（2026-04-15）
 
 ### プロジェクト
-Bionicの全体設計が完了した。主要mdの初版作成も完了し、次はUbuntu作業環境でrepoを初期化する段階。
+- GitHub: https://github.com/satsuki050325-lang/bionic（**Public公開済み**）
+- Phase 2.4: **完了**（Public Preview公開・UI最終仕上げまで）
+- Phase 2.5a: **Uptime ping監視 実装済み**（コミット: `eb472b7`）
+- Supabaseマイグレーション（`20260413000004_uptime_targets.sql`）: **未適用**
 
-### 完了済み
-- Bionicの全体設計（製品仕様・技術設計・開発体制）
-- AGENTS.md / CLAUDE.md / SKILLS.md / docs/AUTOMATION.md
-- CURRENT.md / WORK_LOG.md / HANDOFF.md
-- docs/BIONIC_PRODUCT.md（v2）/ docs/TECHNICAL_DESIGN.md
-- Windows側の `bionic/` ローカル雛形作成
+### 直近の完了項目（Phase 2.5a: Uptime監視）
+- `uptime_targets` テーブル設計（interval 30/60/300, method GET/HEAD, SSRF前提のcheck制約）
+- SSRFガード（`packages/engine/src/uptime/ssrf.ts`）: localhost/.local/.internal拒否、`dns.lookup`で全解決IPを検査、private/loopback/link-local/ULA/CGNAT/multicast/benchmarkingをブロック、IPv4-mapped IPv6展開
+- SSRFハードニング（`packages/engine/src/uptime/check.ts`）: `http(s).request` の `host: resolvedIp` + `Host` header + `servername` でIPピン留めしDNS rebinding TOCTOUも塞ぐ
+- runner（`packages/engine/src/uptime/runner.ts`）: 3回連続失敗で `service.health.degraded` 初回のみ発火、degraded状態からの復旧時のみ `service.health.reported` 発火。`degraded_event_emitted` フラグで二重発火防止
+- REST API: GET/POST/PATCH/DELETE `/api/uptime-targets` + `POST /:id/test`
+- Scheduler: 毎分 `uptime_runner` 追加、diagnostics runner stateに登録
+- UI: Servicesページに Uptime バッジ（UP / DOWN / MIXED / PENDING）、Add Serviceに "URL Monitoring" タブ（URL入力・interval選択・Start/Test ボタン）
+- `pnpm verify` 全通過（typecheck 6 projects / engine test 36件 / app build 13 routes）
 
-### 次のステップ
-1. Ubuntu作業環境でbionicフォルダを作成・初期化する
-2. 6フォルダ構成で初期化する（apps/packages/docs/scripts/infra/research）
-3. 作成済みのmdを適切な場所に配置する
-4. pnpm workspaceを初期化する
-5. GitHubにpushする
+### 次のステップ（優先順）
+1. **Supabaseに uptime_targets マイグレーションを適用する**（`supabase db push` または `npx supabase migration up`）
+2. **Codexによる `eb472b7` のレビュー**（SSRFガードの抜け漏れ、状態遷移のrace、RLS前提の確認）
+3. **Uptime監視の動作確認**（実URL登録→毎分cron実行→degraded/reported両イベント発火確認）
+4. **Phase 2.5b: Cron heartbeat監視**（将来タスク・未着手）
 
-### 未解決
-- リサーチエンジンとコピペ自動化、どちらを先に実装するか
-- Mediniとの接続タイミング
+### 未解決・既知リスク
+- `pnpm-lock.yaml` は Windows環境生成のため WSL/Linux で native binding エラーが出る場合がある（既知・公開後対応）
+- Uptime機能は実DBに適用されるまで end-to-end で検証できていない
+- `app` 側の UptimeTarget 型は shared とは別に再宣言している（RSC境界の都合・Codex要確認）
 
 ### 重要な決定事項
-- 製品名は `Bionic`、本体ランナーは `Bionic Engine`
-- フォルダ名・repo名は `bionic`
-- `CURRENT.md` は人間向け正本、`engine_jobs` は機械向け実行キュー
-- 自動化は Phase 0（手動）から始め、完全自動化は目指さない
+- SDK npm公開は Phase 2.5 以降（現在は Direct API を主導線に）
+- `BIONIC_ENGINE_TOKEN` は `.env.example` では空値（ローカルは空・本番は `openssl rand -hex 32`）
+- Uptime機能の SSRF は DNS rebinding まで考慮して `http(s).request` ピン留め方式を採用（`fetch` は不採用）
+- degraded/reportedイベントの発火は状態変化時のみ（成功毎の保存は避ける）
 
 ---
 
-## 引き継ぎフォーマット
+## 開発体制・ルール
 
-チャットが変わる時はここを上書きして使う。
+### 役割分担
+- **Claude（Chat）**: 設計・戦略・UI確認・ドキュメント・コミュニケーション
+- **Claude Code**: 実装・git操作・ビルド確認
+- **Codex**: コードレビュー・品質確認・finding報告
+
+### セッションの進め方
+1. Claude Codeは**まず `AGENTS.md` を読んでから**実装を開始する
+2. 実装後は `pnpm verify` で確認する
+3. 完了後は `docs/internal/WORK_LOG.md` にエントリを記録する
+4. `git commit && git push` まで行う
+5. **コミットハッシュを報告する**
+
+---
+
+## Claudeへの行動規則
+
+- **颯紀さんは直接的なフィードバックと pushback を求めている。賛同より正直な評価を優先する**
+- 実装提案には必ずセルフレビューを含める
+- 曖昧な指示は実装前に確認する
+- 「問題なし」は**Codexが明言した場合のみ**使う
+- premature summarization や抽象的な質問を避ける
+- 設計判断で妥協するときは「これは妥協である」と明示する
+
+---
+
+## Claude Codeへの行動規則
+
+- **`AGENTS.md` を必ず最初に読む**
+- `pnpm verify` が通らない場合は**止まってエラーを報告する**（勝手に修正しない）
+- **`AGENTS.md` ・ `ROADMAP.md` は変更しない**
+- **hex直書き禁止**（CSS変数・Tailwind semantic tokenを使う）
+- UI実装前に `docs/DESIGN.md` を参照する
+- DB変更時はスキーマ・既存マイグレーション・モデルを調査してから着手する
+- `docs/BIONIC_PRODUCT.md` ・ `docs/TECHNICAL_DESIGN.md` は触らない
+- 作業開始前に `WORK_LOG.md` に開始エントリ、終了時に完了エントリを書く
+
+---
+
+## Codexへの行動規則
+
+- **変更は加えない**（レビューのみ）
+- findingがなければ**「問題なし」と明言する**
+- **P1/P2/P3の優先度**をつけてfindingを報告する
+  - P1: 動かない・セキュリティリスク・公開すると危険
+  - P2: 期待仕様とのズレ・再現性欠如
+  - P3: 改善提案
+- レビュー前に `git pull` を実行してから確認する
+- findingは「どこが・なぜ・どう直すか」を具体的に書く
+
+---
+
+## 技術スタック
+
+- **Engine**: Express + Supabase + node-cron（port 3001）
+- **App**: Next.js 14 App Router + TypeScript + TailwindCSS（port 3000）
+- **SDK**: `@bionic/sdk`（monorepo内包、npm未公開）
+- **CLI**: `bionic init` / `bionic doctor` / `bionic demo` / `bionic status` / `bionic approve|deny`
+- **MCP**: `packages/mcp`（Claude Desktop登録済み・6ツール）
+- **DB**: Supabase（RLS有効・service_role経由のみ）
+
+### 起動コマンド
+
+```bash
+cd /mnt/c/Users/owner/Desktop/bionic && claude --dangerously-skip-permissions
+```
+
+### 既知の環境問題
+- `pnpm-lock.yaml` は Windows側で生成されたもの。WSL/Linux で native binding エラーが出る場合がある（公開後対応予定）
+
+---
+
+## 参照ドキュメント
+
+- `AGENTS.md` — 役割分担・行動規範（変更禁止）
+- `CLAUDE.md` — Claudeの担当範囲
+- `SKILLS.md` — コマンドごとの担当と手順
+- `docs/BIONIC_PRODUCT.md` — 製品仕様書（変更禁止）
+- `docs/TECHNICAL_DESIGN.md` — 技術設計（変更禁止）
+- `docs/DESIGN.md` — デザインシステム正本
+- `docs/ROADMAP.md` — フェーズ・優先順位
+- `docs/AUTOMATION.md` — 自動化フェーズ
+- `docs/internal/CURRENT.md` — 今の状態・次の1手
+- `docs/internal/WORK_LOG.md` — 時系列作業記録
+- `IDEAS.md` — 未成熟な発想の保管庫（参照タイミング付き）
+
+---
+
+## 引き継ぎフォーマット（次回以降の上書き用）
 
 ```markdown
 ## 現在の状態（YYYY-MM-DD）
 
 ### プロジェクト
-[今何をやっているか]
+[今何をやっているか・1-2文]
 
-### 完了済み
-- 
+### 直近の完了項目
+- [今回のチャットで終わったこと]
 
-### 次のステップ
-1. 
-2. 
-3. 
+### 次のステップ（優先順）
+1.
+2.
+3.
 
-### 未解決
-- 
+### 未解決・既知リスク
+-
 
 ### 重要な決定事項
-- 
+- [今回のチャットで決めたこと]
 ```
 
 ---
 
-_最終更新：2026-04-08 / Claude_
+_最終更新：2026-04-15 / Claude Code（Phase 2.5a Uptime監視実装直後）_
