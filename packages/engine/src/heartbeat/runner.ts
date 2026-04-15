@@ -81,13 +81,12 @@ export async function processHeartbeat(target: HeartbeatTarget): Promise<void> {
     return
   }
 
-  // Await the alert-creation path so a thrown failure rolls the claim back
-  // and the next runner tick can retry. Mirrors routes/heartbeats.ts (Group
-  // 1) for symmetry. NOTE: evaluateAlertForEvent's internal DB errors are
-  // logged-and-swallowed rather than thrown, so this only recovers from
-  // programming errors / unhandled exceptions. See self-review in WORK_LOG.
+  // evaluateAlertForEvent now returns a boolean: true on success (including
+  // "alert already exists" races), false on persistent DB failure. Roll the
+  // claim back on false so the next runner tick re-emits the miss.
+  let alertOk = false
   try {
-    await evaluateAlertForEvent({
+    alertOk = await evaluateAlertForEvent({
       id: eventId,
       projectId: target.projectId,
       serviceId: target.serviceId,
@@ -98,7 +97,11 @@ export async function processHeartbeat(target: HeartbeatTarget): Promise<void> {
     })
   } catch (err) {
     console.error('[heartbeat] alert creation threw:', err)
-    await rollbackClaim('alert-creation throw')
+    alertOk = false
+  }
+
+  if (!alertOk) {
+    await rollbackClaim('alert-creation failure')
   }
 }
 

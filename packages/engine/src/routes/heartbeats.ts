@@ -149,10 +149,12 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
       })
 
       let resolveErr: unknown = null
+      let resolveOk = true
       if (!eventInsertErr) {
-        // Await the evaluate path so a failed alert-resolve triggers rollback.
-        // evaluateAlertForEvent for heartbeat.recovered only does the resolve
-        // UPDATE — no additional side effects we care about here.
+        // evaluateAlertForEvent returns true when the resolve UPDATE
+        // succeeded (or there was nothing to resolve) and false on DB
+        // failure. Either a thrown exception OR a false return means the
+        // recovery chain is incomplete and we must roll the claim back.
         try {
           const event: EngineEvent = {
             id: eventId,
@@ -163,14 +165,15 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
             source: 'engine',
             payload,
           }
-          await evaluateAlertForEvent(event)
+          resolveOk = await evaluateAlertForEvent(event)
         } catch (err) {
           resolveErr = err
+          resolveOk = false
           console.error('[heartbeats] alert auto-resolve failed:', err)
         }
       }
 
-      if (eventInsertErr || resolveErr) {
+      if (eventInsertErr || resolveErr || !resolveOk) {
         console.error(
           '[heartbeats] recovery chain failed; rolling back claim so the next ping retries'
         )

@@ -73,7 +73,20 @@ function getSeverityForError(code?: string): 'critical' | 'warning' {
   return 'warning'
 }
 
-export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
+/**
+ * Evaluate an incoming event against the alert decision pipeline.
+ *
+ * Returns `true` when the evaluation completed without a persistent DB error
+ * — including the "nothing to do" cases (event type not actionable, noop
+ * payload) and the "alert already exists (duplicate insert, 23505)" race.
+ *
+ * Returns `false` when a DB write failed and the caller should consider the
+ * downstream side effects (e.g. event row already emitted, claim flag
+ * flipped) as incomplete, so rollback or retry is appropriate.
+ */
+export async function evaluateAlertForEvent(
+  event: EngineEvent
+): Promise<boolean> {
   // service.health.reported with status=ok → auto resolve open health alerts
   if (event.type === 'service.health.reported') {
     const payload = event.payload as Record<string, unknown>
@@ -87,12 +100,15 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
           'service_health',
           payload
         )
-        await autoResolveHealthAlerts(event.projectId, event.serviceId, fingerprint)
-      } else {
-        await autoResolveHealthAlerts(event.projectId, event.serviceId)
+        return await autoResolveHealthAlerts(
+          event.projectId,
+          event.serviceId,
+          fingerprint
+        )
       }
+      return await autoResolveHealthAlerts(event.projectId, event.serviceId)
     }
-    return
+    return true
   }
 
   // heartbeat.recovered → resolve the matching cron_missing alert by fingerprint
@@ -105,7 +121,7 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
         'cron_missing',
         payload
       )
-      const { data: openAlerts } = await supabase
+      const { data: openAlerts, error: selectErr } = await supabase
         .from('engine_alerts')
         .select('id')
         .eq('project_id', event.projectId)
@@ -113,8 +129,15 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
         .eq('type', 'cron_missing')
         .eq('fingerprint', fingerprint)
         .eq('status', 'open')
+      if (selectErr) {
+        console.error(
+          '[decision] heartbeat.recovered select failed:',
+          selectErr
+        )
+        return false
+      }
       for (const a of openAlerts ?? []) {
-        await supabase
+        const { error: updErr } = await supabase
           .from('engine_alerts')
           .update({
             status: 'resolved',
@@ -125,9 +148,16 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
           })
           .eq('id', a.id)
           .eq('status', 'open')
+        if (updErr) {
+          console.error(
+            '[decision] heartbeat.recovered resolve update failed:',
+            updErr
+          )
+          return false
+        }
       }
     }
-    return
+    return true
   }
 
   if (
@@ -135,7 +165,7 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
     event.type !== 'service.error.reported' &&
     event.type !== 'heartbeat.missing.detected'
   ) {
-    return
+    return true
   }
 
   let alertType: 'service_health' | 'service_error' | 'cron_missing'
@@ -223,7 +253,7 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
       if (actionId) {
         await failAction(actionId, { message: 'select failed', code: selectError.code })
       }
-      return
+      return false
     }
 
     if (existing) {
@@ -244,20 +274,75 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
         if (actionId) {
           await failAction(actionId, { message: 'update failed', code: updateError.code })
         }
-      } else if (actionId) {
+        return false
+      }
+      if (actionId) {
         await completeAction(actionId, {
           operation: 'updated',
           alertId: existing.id,
           newCount: (existing.count ?? 1) + 1,
         })
       }
-    } else {
-      // Step 2b: 存在しない場合はinsertする
-      const { data: inserted, error: insertError } = await supabase
-        .from('engine_alerts')
-        .insert({
-          project_id: event.projectId,
-          service_id: event.serviceId,
+      return true
+    }
+
+    // Step 2b: 存在しない場合はinsertする
+    const { data: inserted, error: insertError } = await supabase
+      .from('engine_alerts')
+      .insert({
+        project_id: event.projectId,
+        service_id: event.serviceId,
+        type: alertType,
+        severity,
+        title,
+        message,
+        status: 'open',
+        fingerprint,
+        count: 1,
+        last_seen_at: new Date().toISOString(),
+      })
+      .select('id')
+      .maybeSingle()
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        // Concurrent insert: the alert row already exists, which IS the
+        // caller's desired end state. Report success so the runner doesn't
+        // roll back its claim or re-fire the event.
+        console.warn('[decision] alert already created by concurrent process, skipping:', fingerprint)
+        if (actionId) {
+          await skipAction(actionId, 'race condition: duplicate insert skipped')
+        }
+        return true
+      }
+      console.error('[decision] failed to insert alert:', insertError)
+      if (actionId) {
+        await failAction(actionId, { message: 'insert failed', code: insertError.code })
+      }
+      return false
+    }
+
+    if (actionId) {
+      await completeAction(actionId, {
+        operation: 'created',
+        alertId: inserted?.id ?? null,
+      })
+    }
+
+    const discordClient = getDiscordClient()
+    if (discordClient && inserted?.id) {
+      const now = new Date()
+      const decision = shouldNotify({
+        kind: 'alert_created',
+        severity,
+        status: 'open',
+        now,
+      })
+      if (decision.shouldNotify) {
+        void sendAlertNotification(discordClient, {
+          id: inserted.id,
+          projectId: event.projectId,
+          serviceId: event.serviceId,
           type: alertType,
           severity,
           title,
@@ -265,71 +350,25 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
           status: 'open',
           fingerprint,
           count: 1,
-          last_seen_at: new Date().toISOString(),
+          lastSeenAt: now.toISOString(),
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          lastNotifiedAt: null,
+          notificationCount: 0,
+          resolvedAt: null,
+          resolvedBy: null,
+          resolvedReason: null,
         })
-        .select('id')
-        .maybeSingle()
-
-      if (insertError) {
-        if (insertError.code === '23505') {
-          console.warn('[decision] alert already created by concurrent process, skipping:', fingerprint)
-          if (actionId) {
-            await skipAction(actionId, 'race condition: duplicate insert skipped')
-          }
-        } else {
-          console.error('[decision] failed to insert alert:', insertError)
-          if (actionId) {
-            await failAction(actionId, { message: 'insert failed', code: insertError.code })
-          }
-        }
       } else {
-        if (actionId) {
-          await completeAction(actionId, {
-            operation: 'created',
-            alertId: inserted?.id ?? null,
-          })
-        }
-
-        const discordClient = getDiscordClient()
-        if (discordClient && inserted?.id) {
-          const now = new Date()
-          const decision = shouldNotify({
-            kind: 'alert_created',
-            severity,
-            status: 'open',
-            now,
-          })
-          if (decision.shouldNotify) {
-            void sendAlertNotification(discordClient, {
-              id: inserted.id,
-              projectId: event.projectId,
-              serviceId: event.serviceId,
-              type: alertType,
-              severity,
-              title,
-              message,
-              status: 'open',
-              fingerprint,
-              count: 1,
-              lastSeenAt: now.toISOString(),
-              createdAt: now.toISOString(),
-              updatedAt: now.toISOString(),
-              lastNotifiedAt: null,
-              notificationCount: 0,
-              resolvedAt: null,
-              resolvedBy: null,
-              resolvedReason: null,
-            })
-          } else {
-            console.log(`[decision] alert notification suppressed: ${decision.reason}`)
-          }
-        }
+        console.log(`[decision] alert notification suppressed: ${decision.reason}`)
       }
     }
+    return true
   } catch (err) {
     console.error('[decision] failed to evaluate alert:', err)
     if (actionId) {
       await failAction(actionId, { message: String(err) })
     }
+    return false
   }
 }

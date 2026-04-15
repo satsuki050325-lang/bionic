@@ -50,8 +50,9 @@ describe('evaluateAlertForEvent', () => {
 
   it('対象外eventではsupabaseを呼ばない', async () => {
     const event = makeEvent({ type: 'service.health.reported' })
-    await evaluateAlertForEvent(event)
+    const ok = await evaluateAlertForEvent(event)
     expect(supabase.from).not.toHaveBeenCalled()
+    expect(ok).toBe(true)
   })
 
   it('service.health.degradedでopen alertがない場合insertする', async () => {
@@ -124,16 +125,17 @@ describe('evaluateAlertForEvent', () => {
     )
   })
 
-  it('throwせずに完了する（エラー時もベストエフォート）', async () => {
+  it('select失敗時はfalseを返す（throwしない）', async () => {
     const chain = makeMockChain([
       { data: null, error: { code: '500', message: 'db error' } },
     ])
     vi.mocked(supabase.from).mockReturnValue(chain as never)
 
-    await expect(evaluateAlertForEvent(makeEvent())).resolves.toBeUndefined()
+    const result = await evaluateAlertForEvent(makeEvent())
+    expect(result).toBe(false)
   })
 
-  it('insert時に23505が返った場合skipActionが呼ばれthrowしない', async () => {
+  it('insert時に23505が返った場合skipActionが呼ばれtrueを返す（alert存在=成功）', async () => {
     const { skipAction } = await import('../actions/logAction.js')
 
     const chain = makeMockChain([
@@ -144,7 +146,8 @@ describe('evaluateAlertForEvent', () => {
       .mockResolvedValueOnce({ data: null, error: { code: '23505', message: 'duplicate key' } })
     vi.mocked(supabase.from).mockReturnValue(chain as never)
 
-    await expect(evaluateAlertForEvent(makeEvent())).resolves.toBeUndefined()
+    const result = await evaluateAlertForEvent(makeEvent())
+    expect(result).toBe(true)
     expect(skipAction).toHaveBeenCalled()
   })
 })

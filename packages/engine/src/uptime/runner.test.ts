@@ -10,7 +10,7 @@ vi.mock('./check.js', () => ({
 }))
 
 vi.mock('../decisions/alerts.js', () => ({
-  evaluateAlertForEvent: vi.fn(),
+  evaluateAlertForEvent: vi.fn().mockResolvedValue(true),
 }))
 
 // Supabase client mock shared across the tests. We hand-roll the chain so we

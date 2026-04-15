@@ -112,7 +112,17 @@ eventsRouter.post('/', async (req, res) => {
     return
   }
 
-  void evaluateAlertForEvent(e)
+  // evaluateAlertForEvent is fire-and-forget here because event capture
+  // must not block on downstream decision latency. Failures are logged by
+  // the helper itself; no rollback because the event row is the source of
+  // truth and a future backfill could re-evaluate if needed.
+  void evaluateAlertForEvent(e).then((ok) => {
+    if (!ok) {
+      console.error(
+        `[events] evaluateAlertForEvent returned false for ${e.type} on ${e.serviceId}`
+      )
+    }
+  })
 
   const result: CaptureEventResult = {
     accepted: true,

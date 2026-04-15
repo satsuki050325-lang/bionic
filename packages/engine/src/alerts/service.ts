@@ -73,11 +73,17 @@ export async function resolveAlert(
   return { resolved: true, alertId: params.alertId }
 }
 
+/**
+ * Auto-resolve open service_health alerts for a service.
+ * Returns true when every matching alert was resolved (or there were none).
+ * Returns false when the select errored or any resolveAlert call failed, so
+ * callers can treat a partial failure as a retryable condition.
+ */
 export async function autoResolveHealthAlerts(
   projectId: string,
   serviceId: string,
   fingerprint?: string
-): Promise<void> {
+): Promise<boolean> {
   let query = supabase
     .from('engine_alerts')
     .select('id')
@@ -92,14 +98,22 @@ export async function autoResolveHealthAlerts(
 
   const { data: openAlerts, error } = await query
 
-  if (error || !openAlerts || openAlerts.length === 0) return
+  if (error) {
+    console.error('[alerts/service] autoResolveHealthAlerts select failed:', error)
+    return false
+  }
 
+  if (!openAlerts || openAlerts.length === 0) return true
+
+  let ok = true
   for (const alert of openAlerts) {
-    await resolveAlert({
+    const result = await resolveAlert({
       alertId: alert.id,
       resolvedBy: 'engine',
       reason: 'health_ok_event',
       projectId,
     })
+    if (!result.resolved) ok = false
   }
+  return ok
 }

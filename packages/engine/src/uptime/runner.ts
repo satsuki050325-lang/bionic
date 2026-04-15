@@ -54,6 +54,12 @@ async function emitEvent(params: {
     return
   }
 
+  // evaluateAlertForEvent now returns Promise<boolean>. We still dispatch
+  // fire-and-forget from the uptime emit helper — the uptime runner does
+  // not currently rollback on alert failure (distinct from the heartbeat
+  // runner) because the uptime runner naturally retries on the next tick
+  // once the degraded state persists. We surface failures via the return
+  // value so future callers can opt in to rollback if desired.
   void evaluateAlertForEvent({
     id: eventId,
     projectId: params.projectId,
@@ -62,6 +68,12 @@ async function emitEvent(params: {
     occurredAt,
     source: 'engine',
     payload: params.payload,
+  }).then((ok) => {
+    if (!ok) {
+      console.error(
+        `[uptime] evaluateAlertForEvent returned false for ${params.type} on ${params.serviceId}`
+      )
+    }
   })
 }
 

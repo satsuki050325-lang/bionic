@@ -3,6 +3,61 @@
 
 ---
 
+## 2026-04-16 / Claude Code（完了・evaluateAlertForEvent の戻り値を boolean 化）
+
+### やったこと
+- `packages/engine/src/decisions/alerts.ts` `evaluateAlertForEvent` の戻り値を `Promise<void>` → `Promise<boolean>` に変更
+  - 成功条件: `true` を返す
+    - 対象外 event（非トリガータイプ）
+    - health.reported / heartbeat.recovered の resolve 完了
+    - alert insert 成功
+    - alert update 成功
+    - `23505` 重複 insert（alert が既に存在 = 呼び出し側の desired 状態なので成功扱い）
+  - 失敗条件: `false` を返す
+    - select/update/insert の DB エラー
+    - heartbeat.recovered の resolve UPDATE 失敗
+    - autoResolveHealthAlerts からの失敗伝播
+    - try/catch で捕捉した予期せぬ例外
+  - **throw しない**（既存の呼び出し規約を保持）
+- `packages/engine/src/alerts/service.ts` `autoResolveHealthAlerts` も `Promise<void>` → `Promise<boolean>` に。select エラー・resolveAlert 失敗時 false
+- 呼び出し側の対応:
+  - `packages/engine/src/heartbeat/runner.ts`: missing path で `alertOk = await evaluateAlertForEvent(...)` に変更。`!alertOk` の時は `rollbackClaim('alert-creation failure')` を呼ぶ。これで DB エラーでも rollback が効くようになった（従来は throw された場合のみ）
+  - `packages/engine/src/routes/heartbeats.ts`: recovery path で `resolveOk` を追加し、event insert 失敗 OR throw OR `!resolveOk` のいずれかで recovery claim を roll back
+  - `packages/engine/src/uptime/runner.ts`: fire-and-forget のまま残しつつ `.then(ok => { if (!ok) console.error(...) })` で警告ログだけ出す。uptime は degraded 状態が続く限り次 tick で再評価されるので rollback は不要
+  - `packages/engine/src/routes/events.ts`: 同様に fire-and-forget + 警告ログ。event capture は decision 失敗でブロックしない規約を維持
+- テスト修正:
+  - `decisions/alerts.test.ts`: `resolves.toBeUndefined()` を `resolves.toBe(true/false)` に変更。select 失敗→false、23505→true (alert 存在) を検証
+  - `uptime/runner.test.ts` / `heartbeat/runner.test.ts`: mock を `vi.fn()` から `vi.fn().mockResolvedValue(true)` に変更（undefined に `.then` 呼び出しで TypeError になるため）
+
+### 検証
+- `pnpm verify` 全通過（engine test 96件・app build 13 routes・typecheck 6 projects）
+
+### セルフレビュー（変更範囲）
+- **変更ファイル**: 7 ファイル
+  1. `packages/engine/src/decisions/alerts.ts` — シグネチャ変更 + 戻り値結線
+  2. `packages/engine/src/alerts/service.ts` — autoResolveHealthAlerts シグネチャ変更
+  3. `packages/engine/src/heartbeat/runner.ts` — boolean 消費 + rollback 結線
+  4. `packages/engine/src/routes/heartbeats.ts` — boolean 消費 + rollback 結線
+  5. `packages/engine/src/uptime/runner.ts` — 警告ログだけ（rollback なし）
+  6. `packages/engine/src/routes/events.ts` — 警告ログだけ
+  7. テスト 3 ファイル更新
+- **挙動変更の範囲**:
+  - heartbeat missing → 従来は DB error で silent に flag=true のまま残ったが、今は rollback して次 tick 再試行
+  - heartbeat recovered → 同様に DB error で silent に flag=false のまま alert open だったが、今は rollback
+  - uptime/events → fire-and-forget のまま。警告ログが増えただけ。意図的に rollback しない理由は runner 側の定期再評価で自然回復するため
+- **23505 を `true` 扱いにした判断**: 並行 insert で他プロセスが先に同じ fingerprint の alert を作った場合、呼び出し側の目的（alert が存在する状態）は達成されている。`false` 返すと runner が不必要に rollback + 再発火して event 行が増えるだけなので、意図的に `true`
+- **`autoResolveHealthAlerts` の `resolveAlert` が false を返した場合も `false` 伝播**: DB エラーと race（既に resolved 済み）を厳密に区別していない。保守的に `false` を返すことで呼び出し側が必要に応じて retry できる。過剰反応のコストは受け入れ
+- **互換性**: `evaluateAlertForEvent` の戻り値を `await` なしで無視している呼び出し側はない。`void evaluateAlertForEvent(...)` で無視している箇所（uptime/events）は `.then` を追加して明示的にハンドル
+
+### 見落としの可能性
+- **Discord 通知 (`sendAlertNotification`) は `void` で fire-and-forget のまま**: alert insert 成功後の通知失敗は戻り値に反映されない。通知失敗で rollback する設計にはしていない（alert 本体は作成済みだから rollback するとむしろ不整合）
+- **`createAction` / `completeAction` 系 audit log の失敗は戻り値に反映しない**: audit log が欠落しても alert pipeline の正否とは別事象と判断した
+- **race で `existing` 経由の update 中に別プロセスが resolve した場合**: UPDATE が 0 行になるが現在のコードは戻り値 data をチェックせず error のみ見ている。既存の挙動を温存（別タスク）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-16 / Claude Code（完了・heartbeat runner rollback 対称化）
 
 ### やったこと

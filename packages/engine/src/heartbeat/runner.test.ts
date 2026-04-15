@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { HeartbeatTarget } from '@bionic/shared'
 
 vi.mock('../decisions/alerts.js', () => ({
-  evaluateAlertForEvent: vi.fn(),
+  evaluateAlertForEvent: vi.fn().mockResolvedValue(true),
 }))
 
 const fromInserts: unknown[] = []
