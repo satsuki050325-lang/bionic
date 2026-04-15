@@ -12,6 +12,7 @@ export type ServiceSource =
   | 'stripe'
   | 'sentry'
   | 'manual'
+  | 'uptime'
 
 export interface ServiceSummary {
   serviceId: string
@@ -34,9 +35,12 @@ function inferSources(
   eventTypes: string[],
   eventSources: string[],
   alertTypes: string[],
-  payloads: Record<string, unknown>[]
+  payloads: Record<string, unknown>[],
+  hasUptimeTarget: boolean
 ): ServiceSource[] {
   const sources = new Set<ServiceSource>()
+
+  if (hasUptimeTarget) sources.add('uptime')
 
   if (
     eventSources.includes('sdk') ||
@@ -126,6 +130,16 @@ servicesRouter.get('/', async (req, res) => {
     console.error('[services] failed to fetch alerts:', alertsError)
   }
 
+  const { data: uptimeTargets, error: uptimeError } = await supabase
+    .from('uptime_targets')
+    .select('service_id, last_checked_at, last_status, enabled')
+    .eq('project_id', projectId)
+
+  if (uptimeError) {
+    // Uptime is non-fatal — continue so event-based services still surface.
+    console.error('[services] failed to fetch uptime targets:', uptimeError)
+  }
+
   const serviceMap = new Map<
     string,
     {
@@ -134,20 +148,30 @@ servicesRouter.get('/', async (req, res) => {
       eventSources: string[]
       payloads: Record<string, unknown>[]
       eventCount24h: number
+      hasUptimeTarget: boolean
+      uptimeLastCheckedAt: string | null
+      uptimeAnyDown: boolean
     }
   >()
+
+  const emptyEntry = () => ({
+    lastEventAt: null as string | null,
+    eventTypes: [] as string[],
+    eventSources: [] as string[],
+    payloads: [] as Record<string, unknown>[],
+    eventCount24h: 0,
+    hasUptimeTarget: false,
+    uptimeLastCheckedAt: null as string | null,
+    uptimeAnyDown: false,
+  })
 
   for (const event of allEvents ?? []) {
     const sid = event.service_id as string
     if (!sid) continue
     if (!serviceMap.has(sid)) {
-      serviceMap.set(sid, {
-        lastEventAt: event.occurred_at as string,
-        eventTypes: [],
-        eventSources: [],
-        payloads: [],
-        eventCount24h: 0,
-      })
+      const entry = emptyEntry()
+      entry.lastEventAt = event.occurred_at as string
+      serviceMap.set(sid, entry)
     }
     const entry = serviceMap.get(sid)!
     entry.eventTypes.push(event.type as string)
@@ -176,13 +200,34 @@ servicesRouter.get('/', async (req, res) => {
     // Surface services that have open alerts but no recent events
     // (e.g. event aged out of the 500-row window).
     if (!serviceMap.has(sid)) {
-      serviceMap.set(sid, {
-        lastEventAt: null,
-        eventTypes: [],
-        eventSources: [],
-        payloads: [],
-        eventCount24h: 0,
-      })
+      serviceMap.set(sid, emptyEntry())
+    }
+  }
+
+  // Fold uptime_targets in so a service card appears even when the only signal
+  // is a registered probe (no SDK events, no alerts, never failed).
+  for (const target of uptimeTargets ?? []) {
+    const sid = target.service_id as string | null
+    if (!sid) continue
+    if (!serviceMap.has(sid)) {
+      serviceMap.set(sid, emptyEntry())
+    }
+    const entry = serviceMap.get(sid)!
+    entry.hasUptimeTarget = true
+    const checkedAt = target.last_checked_at as string | null
+    if (checkedAt) {
+      if (
+        !entry.uptimeLastCheckedAt ||
+        new Date(checkedAt) > new Date(entry.uptimeLastCheckedAt)
+      ) {
+        entry.uptimeLastCheckedAt = checkedAt
+      }
+      if (new Date(checkedAt) >= new Date(since24h)) {
+        entry.eventCount24h++
+      }
+    }
+    if (target.last_status === 'down' && target.enabled) {
+      entry.uptimeAnyDown = true
     }
   }
 
@@ -196,25 +241,36 @@ servicesRouter.get('/', async (req, res) => {
       critical: 0,
       types: [],
     }
+    // Treat an uptime probe's last check as an additional positive signal:
+    // a healthy service with no SDK events but a responding probe should look
+    // "receiving", not "stale".
+    const effectiveLastSignalAt =
+      data.lastEventAt && data.uptimeLastCheckedAt
+        ? new Date(data.lastEventAt) > new Date(data.uptimeLastCheckedAt)
+          ? data.lastEventAt
+          : data.uptimeLastCheckedAt
+        : (data.lastEventAt ?? data.uptimeLastCheckedAt)
     const elapsedMs =
-      data.lastEventAt !== null
-        ? now - new Date(data.lastEventAt).getTime()
+      effectiveLastSignalAt !== null
+        ? now - new Date(effectiveLastSignalAt).getTime()
         : Number.POSITIVE_INFINITY
 
     const sources = inferSources(
       data.eventTypes,
       data.eventSources,
       alerts.types,
-      data.payloads
+      data.payloads,
+      data.hasUptimeTarget
     )
 
     let status: ServiceStatus
     if (isDemo) {
       status = 'demo'
-    } else if (alerts.critical > 0) {
+    } else if (alerts.critical > 0 || data.uptimeAnyDown) {
       status = 'alerting'
-    } else if (data.lastEventAt === null) {
-      status = 'stale'
+    } else if (effectiveLastSignalAt === null) {
+      // Has uptime target but never checked, or alert-only without events → quiet.
+      status = data.hasUptimeTarget ? 'quiet' : 'stale'
     } else if (elapsedMs < 24 * 60 * 60 * 1000) {
       status = data.eventCount24h >= 3 ? 'receiving' : 'quiet'
     } else {
@@ -226,7 +282,7 @@ servicesRouter.get('/', async (req, res) => {
       projectId,
       isDemo,
       status,
-      lastEventAt: data.lastEventAt,
+      lastEventAt: effectiveLastSignalAt,
       eventCount24h: data.eventCount24h,
       openAlerts: alerts.open,
       criticalAlerts: alerts.critical,

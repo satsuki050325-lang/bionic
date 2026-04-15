@@ -13,6 +13,44 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了）
+
+### やったこと
+- **Group 1 (`4855c9e`)**: SSRFガード強化
+  - `packages/engine/src/uptime/ssrf.ts` を regex ベースから `expandIPv6()` による完全な正規化に書き換え。`::ffff:7f00:1` のような hex 形式 IPv4-mapped IPv6、IPv4-compatible (`::a.b.c.d`) deprecated 形式も `tryExtractEmbeddedIPv4()` で IPv4 に展開して private 判定に通す。上位レンジ (ff00::/8, fc00::/7, fe80::/10) はビットマスク判定に置き換え
+  - `packages/engine/src/uptime/ssrf.test.ts` 新規追加（45件）。`::ffff:7f00:1` / `::ffff:a9fe:a9fe` (AWS metadata) / IPv4-compatible / ULA / link-local / multicast のリグレッションを含む
+  - `packages/engine/src/routes/uptimeTargets.ts` POST/PATCH で `resolveForUptime()` を事前呼び出し、private/reserved/非http(s) URL は 400 で拒否
+- **Group 2 (`f5f41b1`)**: runner状態管理修正
+  - `packages/engine/src/decisions/alerts.ts` `buildFingerprint()` を probe-scoped に拡張。payload に `targetId` があれば `health:target:<id>` で dedupe し、degraded/recovery イベント間で fingerprint が一致。異なる target は別 alert に
+  - `packages/engine/src/alerts/service.ts` `autoResolveHealthAlerts()` に `fingerprint` 引数を追加。指定時はその fingerprint の alert のみ resolve
+  - `packages/engine/src/decisions/alerts.ts` `evaluateAlertForEvent()` は `payload.targetId` が文字列なら probe-scoped resolve、なければ従来の service-wide sweep を維持（SDK legacy 互換）
+  - `packages/engine/src/uptime/runner.ts` degraded 発火を atomic claim 化。`UPDATE ... WHERE degraded_event_emitted=false AND consecutive_failures>=3` + `.select('id')` で claim 成功時のみ emit。recovery も `UPDATE ... WHERE (degraded_event_emitted=true OR last_status=down)` で同様の atomic claim。targetId を両 payload に含める
+- **Group 3 (本コミット)**: Services一覧への uptime_targets 合成
+  - **セルフレビュー結果**: Engine 側 merge を採用。理由は (1) `/api/services` は CLI/MCP/App の single source of truth、(2) status decision を Engine に集約しておくと全クライアントで一貫、(3) App 側 merge は aggregation ロジックの二重化と drift リスクあり
+  - `packages/engine/src/routes/services.ts` `ServiceSource` に `'uptime'` を追加。uptime_targets を project 単位で取得し `serviceMap` に fold。`uptimeLastCheckedAt` を実質的な lastSignal として events と統合、`uptime_targets.last_status='down'` は `status='alerting'` に寄与、never-checked target は `quiet` (stale ではなく)
+  - `apps/app/src/lib/engine.ts` / `apps/app/src/app/services/page.tsx` `ServiceSource` と `SOURCE_LABELS` に `uptime` を追加
+- `pnpm verify` 各グループで全通過 (typecheck 6 projects / engine test 81件 / app build 13 routes)
+
+### 判断したこと
+- IPv4-compatible IPv6 (`::a.b.c.d` deprecated) も `tryExtractEmbeddedIPv4` で IPv4 として扱って private 判定に通す。RFC 4291 で deprecate されているが攻撃入力として入ってくる可能性があるため fail-closed
+- atomic claim では `consecutive_failures` の increment 自体の race は許容（冪等的に同じ値を書くだけ）。claim 対象は emit flag のみとした。真の DB-side atomic increment には RPC が必要だが P2 の emit 重複防止には claim update で十分
+- Services 合成は Engine 側に寄せた結果、CLI・MCP・App 全てに反映される。App 側で `getUptimeTargets()` を直接叩くバッジ表示は引き続き残す（詳細数値表示のため）
+- legacy SDK 互換のため `payload.targetId` が無い health event は従来の service-wide resolve を維持。uptime runner 経由のイベントのみ probe-scoped
+
+### セルフレビュー（見落とし報告）
+- **app 側の badge 表示は旧 `/api/uptime-targets` 直接呼び出しのまま**。Engine 側 `/api/services` が既に uptime 状態を反映する今、badge は機能重複している。ただし badge は「2/3 targets down」のような詳細を出せるので、一覧カードの sources pill とは役割が違い残して OK と判断
+- **fingerprint v2 マイグレーション**: 既存 DB に残っている旧 fingerprint (`v2:...:health:down:uptime`) の alert は新 fingerprint (`v2:...:health:target:<id>`) の recovery と一致しない。初回 Group 2 デプロイ直後に限って古い alert が resolve されない可能性がある。恒久的問題ではないのでスキップ
+- **`ServiceSource` 型の shared 未昇格**: Engine と App が別々に `'uptime'` を追加した。本来は `@bionic/shared` に ServiceSummary 型を昇格すべきだが、既存コードも同じ構造で別宣言しているためスコープ外として保留
+- **runner の atomic claim の race 境界**: supabase `.or()` の PostgREST syntax (`degraded_event_emitted.eq.true,last_status.eq.down`) は OR 展開されることをドキュメント確認済み。ただし手元では統合テストしておらず実 DB での動作は未検証
+
+### 次にやること
+- migration 適用後に手動で以下を検証: (1) 実 URL を down させて 3 回失敗で degraded イベント 1 件のみ発火、(2) 復旧時に正しい fingerprint の alert のみ resolve、(3) Services 一覧に uptime-only の service card が現れる
+- Codex に Group 1/2/3 の再レビューを依頼
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code
 
 ### やったこと

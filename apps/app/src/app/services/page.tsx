@@ -43,6 +43,7 @@ const SOURCE_LABELS: Record<string, string> = {
   stripe: 'Stripe',
   sentry: 'Sentry',
   manual: 'CLI',
+  uptime: 'Uptime',
 }
 
 const ALL_INTEGRATION_SOURCES = ['sdk', 'vercel', 'github', 'stripe', 'sentry'] as const

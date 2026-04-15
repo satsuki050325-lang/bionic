@@ -273,6 +273,7 @@ export type ServiceSource =
   | 'stripe'
   | 'sentry'
   | 'manual'
+  | 'uptime'
 
 export interface ServiceSummary {
   serviceId: string
