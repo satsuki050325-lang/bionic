@@ -8,6 +8,7 @@ import { getConfig } from '../config.js'
 import { runStaleApprovalCheck } from '../runners/approvals.js'
 import { runCriticalAlertReminders } from '../runners/alertReminders.js'
 import { runApprovedActions } from '../runners/approvedActions.js'
+import { runDueUptimeChecks } from '../uptime/runner.js'
 import {
   recordRunnerStart,
   recordRunnerSuccess,
@@ -175,6 +176,16 @@ export function startScheduler(): void {
       recordRunnerSuccess('stale_approvals')
     } catch (err) {
       recordRunnerError('stale_approvals', err instanceof Error ? err.message : String(err))
+    }
+  })
+
+  cron.schedule('* * * * *', async () => {
+    recordRunnerStart('uptime_runner')
+    try {
+      await runDueUptimeChecks()
+      recordRunnerSuccess('uptime_runner')
+    } catch (err) {
+      recordRunnerError('uptime_runner', err instanceof Error ? err.message : String(err))
     }
   })
 

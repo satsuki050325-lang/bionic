@@ -292,6 +292,65 @@ export interface ListActionsResult {
   actions: EngineAction[]
 }
 
+// ── UptimeTarget ───────────────────────────────────────────────────
+export type UptimeInterval = 30 | 60 | 300
+export type UptimeMethod = 'GET' | 'HEAD'
+export type UptimeStatus = 'up' | 'down'
+
+export interface UptimeTarget {
+  id: string
+  projectId: string
+  serviceId: string
+  url: string
+  method: UptimeMethod
+  intervalSeconds: UptimeInterval
+  timeoutMs: number
+  expectedStatusMin: number
+  expectedStatusMax: number
+  enabled: boolean
+  lastCheckedAt: ISODateString | null
+  lastStatus: UptimeStatus | null
+  lastLatencyMs: number | null
+  lastStatusCode: number | null
+  lastFailureReason: string | null
+  consecutiveFailures: number
+  degradedEventEmitted: boolean
+  createdAt: ISODateString
+  updatedAt: ISODateString
+}
+
+export interface ListUptimeTargetsResult {
+  targets: UptimeTarget[]
+}
+
+export interface CreateUptimeTargetInput {
+  projectId?: string
+  serviceId: string
+  url: string
+  intervalSeconds: UptimeInterval
+  method?: UptimeMethod
+  timeoutMs?: number
+  expectedStatusMin?: number
+  expectedStatusMax?: number
+}
+
+export interface UpdateUptimeTargetInput {
+  url?: string
+  intervalSeconds?: UptimeInterval
+  method?: UptimeMethod
+  timeoutMs?: number
+  expectedStatusMin?: number
+  expectedStatusMax?: number
+  enabled?: boolean
+}
+
+export interface UptimeCheckOutcome {
+  ok: boolean
+  statusCode: number | null
+  latencyMs: number | null
+  reason: string | null
+}
+
 // ── BionicEngineService ────────────────────────────────────────────
 export interface BionicEngineService {
   captureEvent(input: CaptureEventInput): Promise<CaptureEventResult>

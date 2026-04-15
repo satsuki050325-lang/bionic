@@ -1,5 +1,10 @@
 import Link from 'next/link'
-import { getServices, type ServiceWatchStatus } from '@/lib/engine'
+import {
+  getServices,
+  getUptimeTargets,
+  type ServiceWatchStatus,
+  type UptimeTarget,
+} from '@/lib/engine'
 import { formatRelativeTime } from '@/lib/time'
 
 const STATUS_BADGE: Record<
@@ -42,8 +47,45 @@ const SOURCE_LABELS: Record<string, string> = {
 
 const ALL_INTEGRATION_SOURCES = ['sdk', 'vercel', 'github', 'stripe', 'sentry'] as const
 
+function summarizeUptime(targets: UptimeTarget[]): {
+  label: string
+  className: string
+  detail: string
+} | null {
+  if (targets.length === 0) return null
+  const hasDown = targets.some((t) => t.lastStatus === 'down')
+  const allUp = targets.every((t) => t.lastStatus === 'up')
+  const anyChecked = targets.some((t) => t.lastCheckedAt !== null)
+
+  if (hasDown) {
+    const down = targets.filter((t) => t.lastStatus === 'down').length
+    return {
+      label: 'UPTIME DOWN',
+      className:
+        'text-status-critical border-status-critical/50 bg-status-critical/10',
+      detail: `${down}/${targets.length} target${targets.length > 1 ? 's' : ''} down`,
+    }
+  }
+  if (allUp) {
+    return {
+      label: 'UPTIME UP',
+      className:
+        'text-status-success border-status-success/50 bg-status-success/10',
+      detail: `${targets.length} target${targets.length > 1 ? 's' : ''} responding`,
+    }
+  }
+  return {
+    label: anyChecked ? 'UPTIME MIXED' : 'UPTIME PENDING',
+    className: 'text-text-muted border-border-subtle',
+    detail: `${targets.length} target${targets.length > 1 ? 's' : ''}`,
+  }
+}
+
 export default async function ServicesPage() {
-  const data = await getServices()
+  const [data, uptimeData] = await Promise.all([
+    getServices(),
+    getUptimeTargets(),
+  ])
 
   if (!data) {
     return (
@@ -63,6 +105,12 @@ export default async function ServicesPage() {
 
   const services = data.services
   const realServices = services.filter((s) => !s.isDemo)
+  const uptimeByService = new Map<string, UptimeTarget[]>()
+  for (const t of uptimeData?.targets ?? []) {
+    const existing = uptimeByService.get(t.serviceId) ?? []
+    existing.push(t)
+    uptimeByService.set(t.serviceId, existing)
+  }
 
   return (
     <div>
@@ -114,6 +162,9 @@ export default async function ServicesPage() {
       <div className="space-y-3">
         {services.map((service) => {
           const badge = STATUS_BADGE[service.status] ?? STATUS_BADGE.quiet
+          const uptimeSummary = summarizeUptime(
+            uptimeByService.get(service.serviceId) ?? []
+          )
           return (
             <div
               key={service.serviceId}
@@ -136,6 +187,14 @@ export default async function ServicesPage() {
                   {service.isDemo && (
                     <span className="font-mono text-xs text-text-muted">
                       (demo data)
+                    </span>
+                  )}
+                  {uptimeSummary && (
+                    <span
+                      className={`font-mono text-xs px-2 py-0.5 rounded border uppercase tracking-wider ${uptimeSummary.className}`}
+                      title={uptimeSummary.detail}
+                    >
+                      {uptimeSummary.label}
                     </span>
                   )}
                 </div>

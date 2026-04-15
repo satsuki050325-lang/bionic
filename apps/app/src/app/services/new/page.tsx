@@ -2,11 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { sendTestServiceEvent } from './actions'
+import {
+  createUptimeTarget,
+  sendTestServiceEvent,
+  testUptimeTarget,
+} from './actions'
 
 type Framework = 'nextjs' | 'express' | 'other'
-type InstallMethod = 'sdk' | 'curl'
+type InstallMethod = 'sdk' | 'curl' | 'url'
 type ShellType = 'bash' | 'powershell'
+type UptimeInterval = 30 | 60 | 300
 
 const ENGINE_URL =
   process.env['NEXT_PUBLIC_ENGINE_URL'] ?? 'http://localhost:3001'
@@ -173,6 +178,29 @@ export default function AddServicePage({
   const [testError, setTestError] = useState<string | null>(null)
   const [showWebhooks, setShowWebhooks] = useState(false)
 
+  // URL monitoring state
+  const [uptimeUrl, setUptimeUrl] = useState('')
+  const [uptimeInterval, setUptimeInterval] = useState<UptimeInterval>(60)
+  const [uptimeState, setUptimeState] = useState<
+    'idle' | 'creating' | 'created' | 'error'
+  >('idle')
+  const [uptimeTargetId, setUptimeTargetId] = useState<string | null>(null)
+  const [uptimeError, setUptimeError] = useState<string | null>(null)
+  const [uptimeTest, setUptimeTest] = useState<
+    | {
+        kind: 'idle'
+      }
+    | { kind: 'running' }
+    | {
+        kind: 'done'
+        ok: boolean
+        statusCode: number | null
+        latencyMs: number | null
+        reason: string | null
+      }
+    | { kind: 'error'; error: string }
+  >({ kind: 'idle' })
+
   const snippet =
     installMethod === 'curl'
       ? shellType === 'powershell'
@@ -181,6 +209,35 @@ export default function AddServicePage({
       : generateSnippet(serviceId, framework)
   const trimmed = serviceId.trim()
   const isValid = trimmed.length > 0 && /^[a-z0-9-]+$/.test(trimmed)
+
+  async function handleStartMonitoring() {
+    if (!isValid || !uptimeUrl.trim()) return
+    setUptimeState('creating')
+    setUptimeError(null)
+    const result = await createUptimeTarget({
+      serviceId: trimmed,
+      url: uptimeUrl.trim(),
+      intervalSeconds: uptimeInterval,
+    })
+    if (result.ok) {
+      setUptimeTargetId(result.targetId)
+      setUptimeState('created')
+    } else {
+      setUptimeState('error')
+      setUptimeError(result.error)
+    }
+  }
+
+  async function handleTestUrl() {
+    if (!uptimeTargetId) return
+    setUptimeTest({ kind: 'running' })
+    const result = await testUptimeTarget(uptimeTargetId)
+    if (result.ok) {
+      setUptimeTest({ kind: 'done', ...result.outcome })
+    } else {
+      setUptimeTest({ kind: 'error', error: result.error })
+    }
+  }
 
   async function handleTestEvent() {
     if (!isValid) return
@@ -267,7 +324,7 @@ export default function AddServicePage({
           02 · Choose how to integrate
         </div>
         <div className="flex gap-2 flex-wrap mb-4">
-          {(['curl', 'sdk'] as InstallMethod[]).map((m) => (
+          {(['curl', 'url', 'sdk'] as InstallMethod[]).map((m) => (
             <button
               key={m}
               onClick={() => setInstallMethod(m)}
@@ -279,7 +336,9 @@ export default function AddServicePage({
             >
               {m === 'curl'
                 ? 'Direct API (recommended)'
-                : 'TypeScript SDK (advanced)'}
+                : m === 'url'
+                  ? 'URL Monitoring'
+                  : 'TypeScript SDK (advanced)'}
             </button>
           ))}
         </div>
@@ -309,10 +368,121 @@ export default function AddServicePage({
       {/* Step 3: Install / wire up */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-3">
-          03 · {installMethod === 'sdk' ? 'Install SDK' : 'Send signals via curl'}
+          03 ·{' '}
+          {installMethod === 'sdk'
+            ? 'Install SDK'
+            : installMethod === 'url'
+              ? 'Set up URL monitoring'
+              : 'Send signals via curl'}
         </div>
 
-        {installMethod === 'sdk' ? (
+        {installMethod === 'url' ? (
+          <div className="space-y-4">
+            <p className="font-body text-xs text-text-muted">
+              Bionic polls this URL on a fixed schedule. Three consecutive
+              failures emit <code className="text-accent">service.health.degraded</code>;
+              the next success emits <code className="text-accent">service.health.reported</code>.
+              Private and loopback addresses are blocked for safety.
+            </p>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                URL
+              </label>
+              <input
+                type="url"
+                value={uptimeUrl}
+                onChange={(e) => setUptimeUrl(e.target.value)}
+                placeholder="https://your-service.example.com/health"
+                className="w-full font-mono text-sm bg-bg-base border border-border-default rounded px-3 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                Interval
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {([30, 60, 300] as UptimeInterval[]).map((iv) => (
+                  <button
+                    key={iv}
+                    onClick={() => setUptimeInterval(iv)}
+                    className={`font-mono text-xs px-4 py-2 rounded border transition-colors ${
+                      uptimeInterval === iv
+                        ? 'border-accent text-accent bg-accent/10'
+                        : 'border-border-subtle text-text-secondary hover:border-accent/50'
+                    }`}
+                  >
+                    {iv === 30 ? '30s' : iv === 60 ? '1 min' : '5 min'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={handleStartMonitoring}
+                disabled={
+                  !isValid ||
+                  !uptimeUrl.trim() ||
+                  uptimeState === 'creating' ||
+                  uptimeState === 'created'
+                }
+                className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uptimeState === 'creating'
+                  ? 'Starting…'
+                  : uptimeState === 'created'
+                    ? 'Monitoring active'
+                    : 'Start monitoring'}
+              </button>
+              <button
+                onClick={handleTestUrl}
+                disabled={!uptimeTargetId || uptimeTest.kind === 'running'}
+                className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-border-default text-text-secondary rounded hover:border-accent hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uptimeTest.kind === 'running' ? 'Testing…' : 'Test URL'}
+              </button>
+            </div>
+
+            {uptimeState === 'error' && uptimeError && (
+              <div className="font-mono text-xs text-status-critical">
+                Failed to start monitoring: {uptimeError}
+              </div>
+            )}
+            {uptimeState === 'created' && (
+              <div className="font-mono text-xs text-status-success">
+                ◈ Monitoring started. The scheduler will check this URL every{' '}
+                {uptimeInterval === 30
+                  ? '30 seconds'
+                  : uptimeInterval === 60
+                    ? '1 minute'
+                    : '5 minutes'}
+                .
+              </div>
+            )}
+
+            {uptimeTest.kind === 'done' &&
+              (uptimeTest.ok ? (
+                <div className="font-mono text-xs text-status-success">
+                  ◈ Test passed ·{' '}
+                  {uptimeTest.statusCode !== null
+                    ? `HTTP ${uptimeTest.statusCode}`
+                    : 'ok'}{' '}
+                  · {uptimeTest.latencyMs ?? '—'}ms
+                </div>
+              ) : (
+                <div className="font-mono text-xs text-status-critical">
+                  Test failed: {uptimeTest.reason ?? 'unknown reason'}
+                </div>
+              ))}
+            {uptimeTest.kind === 'error' && (
+              <div className="font-mono text-xs text-status-critical">
+                Test request failed: {uptimeTest.error}
+              </div>
+            )}
+          </div>
+        ) : installMethod === 'sdk' ? (
           <div className="bg-bg-elevated border border-border-subtle rounded p-5">
             <div className="font-mono text-xs text-status-info uppercase tracking-widest mb-2">
               Coming Soon
@@ -361,7 +531,8 @@ export default function AddServicePage({
         )}
       </div>
 
-      {/* Step 4: Test Event */}
+      {/* Step 4: Test Event (SDK / curl only) */}
+      {installMethod !== 'url' && (
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-3">
           04 · Send a test signal
@@ -391,6 +562,7 @@ export default function AddServicePage({
           </div>
         )}
       </div>
+      )}
 
       {/* Optional webhooks */}
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-6">
@@ -429,7 +601,7 @@ export default function AddServicePage({
         )}
       </div>
 
-      {testResult === 'success' && (
+      {(testResult === 'success' || uptimeState === 'created') && (
         <div className="flex gap-3 flex-wrap">
           <Link
             href="/services"

@@ -3,6 +3,39 @@
 
 ---
 
+## 2026-04-15 / Claude Code
+
+### やったこと
+- URL Monitoring (uptime_targets) 機能を新規追加
+  - `supabase/migrations/20260413000004_uptime_targets.sql` — uptime_targets テーブル・RLS・check制約(interval 30/60/300, method GET/HEAD, timeout 1s〜30s, status range 100〜599)・unique index (project_id, service_id, url)
+  - `packages/shared/src/types.ts` — `UptimeTarget` / `UptimeInterval` / `UptimeMethod` / `UptimeStatus` / `ListUptimeTargetsResult` / `CreateUptimeTargetInput` / `UpdateUptimeTargetInput` / `UptimeCheckOutcome` を追加
+  - `packages/engine/src/uptime/ssrf.ts` — SSRFガード (`resolveForUptime`)。protocol http/https 限定、localhost/.local/.internal 拒否、`dns.lookup` で解決した全IPに対し private/loopback/link-local/ULA/CGNAT/multicast/benchmarking を拒否、IPv4-mapped IPv6 展開、IP literal も検査
+  - `packages/engine/src/uptime/check.ts` — `runUptimeCheck`。`https.request` / `http.request` に `host: resolvedIp` + `Host` header + `servername` で DNS rebinding を回避しつつ TLS 検証を維持。timeout/connection:close/latency 計測
+  - `packages/engine/src/uptime/runner.ts` — `runDueUptimeChecks()`。enabled=true の中から `last_checked_at + interval_seconds` を過ぎたものを並列処理。成功→`consecutive_failures=0` と復旧イベント (`service.health.reported`) を degraded から抜ける時のみ発火。失敗→`consecutive_failures` インクリメント、3回目に初めて `service.health.degraded` を発火 (`degraded_event_emitted=true` フラグで二重発火防止)。events は `evaluateAlertForEvent` に通してアラート連携
+  - `packages/engine/src/routes/uptimeTargets.ts` — GET/POST/PATCH/DELETE `/api/uptime-targets`、`POST /api/uptime-targets/:id/test`。serviceId は `^[a-z0-9-]+$`、interval は 30/60/300 のみ受付、timeout 1000〜30000、status range 検証、unique conflict は 409
+  - `packages/engine/src/index.ts` — ルーター登録 (`/api/uptime-targets`)
+  - `packages/engine/src/scheduler/index.ts` — `* * * * *` で `runDueUptimeChecks` を呼ぶ cron を追加。diagnostics の runner state に `uptime_runner` を追加
+  - `apps/app/src/lib/engine.ts` — `UptimeTarget` 型と `getUptimeTargets()` 追加
+  - `apps/app/src/app/services/page.tsx` — サービスカードに Uptime バッジ (UP / DOWN / MIXED / PENDING) を表示
+  - `apps/app/src/app/services/new/actions.ts` — `createUptimeTarget` / `testUptimeTarget` server action を追加
+  - `apps/app/src/app/services/new/page.tsx` — 統合方法タブに "URL Monitoring" を追加。URL 入力・interval (30s/1min/5min) 選択・Start monitoring / Test URL ボタン・テスト結果表示
+- `pnpm verify` 全通過 (typecheck 6 projects / engine test 36件 / app build 13 routes)
+
+### 判断したこと
+- SSRF 対策は DNS rebinding まで考慮し `http(s).request` の `host: resolvedIp` + `Host` header + `servername` でピン留めする方式を採用 (fetch だと DNS再解決の TOCTOU リスクが残る)
+- `service.health.degraded` は 3回連続失敗の**初回のみ**発火し、`degraded_event_emitted` フラグで二重発火を防ぐ
+- `service.health.reported` (復旧) は degraded 状態から抜ける時のみ発火 (成功毎の保存を避ける仕様どおり)
+- テスト用エンドポイントは spec どおり `POST /api/uptime-targets/:id/test` のみ実装。URL プレビュー用の ad-hoc エンドポイントは今回スコープ外
+- 型は shared に追加した上で、Next.js (app) 側は別途ローカル型を再宣言 (RSC 境界で `@bionic/shared` import が bundler に嫌われないようにするため)
+
+### 次にやること
+- Codex レビューを依頼 (SSRF ガードの抜け漏れ・状態遷移の race・RLS 前提の確認)
+- migration を実環境に適用 (`supabase db push` / `npx supabase migration up`)
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude
 
 ### やったこと

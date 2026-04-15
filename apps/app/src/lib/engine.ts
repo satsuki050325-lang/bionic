@@ -291,6 +291,49 @@ export interface ListServicesResult {
   services: ServiceSummary[]
 }
 
+export type UptimeInterval = 30 | 60 | 300
+export type UptimeMethod = 'GET' | 'HEAD'
+export type UptimeStatus = 'up' | 'down'
+
+export interface UptimeTarget {
+  id: string
+  projectId: string
+  serviceId: string
+  url: string
+  method: UptimeMethod
+  intervalSeconds: UptimeInterval
+  timeoutMs: number
+  expectedStatusMin: number
+  expectedStatusMax: number
+  enabled: boolean
+  lastCheckedAt: string | null
+  lastStatus: UptimeStatus | null
+  lastLatencyMs: number | null
+  lastStatusCode: number | null
+  lastFailureReason: string | null
+  consecutiveFailures: number
+  degradedEventEmitted: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ListUptimeTargetsResult {
+  targets: UptimeTarget[]
+}
+
+export async function getUptimeTargets(): Promise<ListUptimeTargetsResult | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/uptime-targets`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 export async function getServices(): Promise<ListServicesResult | null> {
   try {
     const res = await fetch(`${ENGINE_URL}/api/services`, {

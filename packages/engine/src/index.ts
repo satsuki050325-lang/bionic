@@ -10,6 +10,7 @@ import { diagnosticsRouter } from './routes/diagnostics.js'
 import { incidentBriefRouter } from './routes/incidentBrief.js'
 import { metricsRouter } from './routes/metrics.js'
 import { servicesRouter } from './routes/services.js'
+import { uptimeTargetsRouter } from './routes/uptimeTargets.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { githubWebhookRouter } from './routes/webhooks/github.js'
 import { stripeWebhookRouter } from './routes/webhooks/stripe.js'
@@ -69,6 +70,7 @@ app.use('/api/diagnostics', diagnosticsRouter)
 app.use('/api/incident-brief', incidentBriefRouter)
 app.use('/api/metrics', metricsRouter)
 app.use('/api/services', servicesRouter)
+app.use('/api/uptime-targets', uptimeTargetsRouter)
 
 app.listen(config.engine.port, config.engine.host, () => {
   console.log(`Bionic Engine running on http://${config.engine.host}:${config.engine.port}`)
