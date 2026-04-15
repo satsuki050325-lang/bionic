@@ -3,6 +3,37 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・Codex Heartbeat findings 修正）
+
+### やったこと
+- **Group 1 (`557c98d`)** P1×2 rollback 対応
+  - `runner.ts`: `claim_heartbeat_missing` 成功後の `engine_events` insert が失敗した場合、`missed_event_emitted=true→false` に戻す（`eq('missed_event_emitted', true)` 条件付き atomic rollback）。ロールバック自体が失敗した場合は CRITICAL ログで人に escalate
+  - `routes/heartbeats.ts`: recovery 側も同パターン。`evaluateAlertForEvent` を `void` から `await` に変更し、event insert と alert resolve のいずれかが失敗したら `missed_event_emitted=false→true` に戻す。last_ping_at は更新済みなので runner は再 claim しない → rollback しないと alert が永久未解決
+- **Group 2 (`e684a14`)** P2×2
+  - slug 衝突 (500→secret で target 一意特定): `(project_id, slug)` unique を維持したまま、同一 slug の複数 row を取得して提示 secret を全候補と timingSafeEqual 比較。最初に一致した row を採用
+  - **設計判断（セルフレビュー）**: secret で target 特定を採用。理由:
+    - `(project_id, slug)` unique を維持 → マルチプロジェクトで slug 名前空間が独立する前提を壊さない
+    - migration 不要・後方互換
+    - 設計原則「secret is source of truth」に合致
+    - グローバル unique にするとチーム利用時に他プロジェクトが先に同 slug を取ると登録できない副作用
+  - timing side-channel: 未登録 slug・Authorization 欠落・正規表現不一致のいずれも **必ず `verifyHeartbeatSecret` を 1 回走らせてから 401** を返す。`DUMMY_SECRET_HASH`（64-char ゼロ hex）を固定定数として使う
+- **Group 3 (本コミット)** P2
+  - `.env.example` に `BIONIC_HEARTBEAT_HMAC_KEY=` を追加。production 必須である旨、`openssl rand -hex 32` で生成する旨、既存の BIONIC_ENGINE_TOKEN と同じ表記ルールでコメントを付与
+
+### 検証
+- 各グループで `pnpm verify` 全通過（engine test 96件 / app build 13 routes）
+
+### セルフレビュー（見落とし報告）
+1. **Group 1 の rollback 自体の race**: 通常の runner 再起動タイミングと rollback タイミングが重なる可能性はゼロではない。ただし rollback 条件 `.eq('missed_event_emitted', true)` が DB 側で row lock を取るので、並行 runner がすでに再 claim していれば UPDATE が 0 行になるだけ。動作としては安全
+2. **Group 1 で event insert は成功したが evaluateAlertForEvent 内部で alert 作成が失敗するケース**は rollback しない。理由: event row が存在する以上、次回 runner が同じ event を再発行することはできない（client_event_id unique）。結果として cron_missing alert が作成されないまま残るが、event は audit trail に残るので silent failure ではない
+3. **Group 2 の secret-by-target は衝突頻度に比例して HMAC 計算コストが増える**: 256-bit random slug なら衝突は統計的ゼロだが、ユーザーが短い名前（例: `nightly`）を複数 project で使うと衝突が発生する。各候補に HMAC を走らせるので最悪ケースでも ms オーダーで済む（100 target 衝突で約 100×0.01ms = 1ms）
+4. **Group 2 で「候補が 1 件以上あるが全部 mismatch」と「候補が 0 件」の timing は依然区別可能**（前者は N 回 compare、後者は 1 回）。厳密な timing 一致を目指すなら常に一定回数の compare を強制する必要があるが、攻撃者が slug 衝突数を知るメリットは極めて薄いので MVP としては許容
+5. **`.env.example` の `ANTHROPIC_API_KEY` は空値表記**だが、他のシークレット系（`VERCEL_WEBHOOK_SECRET` など）は placeholder 文字列表記。heartbeat に揃えて空値表記にしたが、ファイル全体としての表記ルールは統一されていない。本タスクのスコープ外なので保留
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（開始・Codex Heartbeat findings 修正）
 
 ### 着手
