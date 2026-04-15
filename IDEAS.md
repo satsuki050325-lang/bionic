@@ -629,3 +629,33 @@ Supabaseが落ちるとEngineの記録・判断が止まる。
 ### 参照タイミング
 - uptime runner を再度修正するタスクの時
 - claim_uptime_recovery の責務を見直す時
+
+---
+
+### アイデア12: heartbeat ping timing 一致の厳密化
+
+**現状の問題**
+- `packages/engine/src/routes/heartbeats.ts` の ping 受信処理で、slug に
+  マッチする候補が 0 件のときは DUMMY_SECRET_HASH に対して HMAC compare を
+  1 回走らせるが、候補が 1 件以上あるときは最大 N 回 compare する
+- 結果として「slug が存在するが secret 不一致」と「slug 自体が存在しない」で
+  レスポンス時間に差が出る可能性がある
+- 攻撃者側のメリットは極めて薄い（slug 衝突数を知っても secret は得られない）ため、
+  MVP として許容済み
+
+**改善案**
+- 常に固定回数（例: 最大衝突想定 N=5）の compare を走らせる
+- 候補が足りない分は DUMMY_SECRET_HASH を埋めて compare する
+- 最初に match したらその値を保持しつつ残りの compare を走らせきる
+  （early-break しない）
+
+### なぜ気になったか
+- P2 codex finding 「未登録 slug の timing side-channel」を修正した後の残り物
+- セキュリティ強度として筋を通したい場面
+
+### いまの判断
+- MVP として許容（攻撃メリットが低い）・Phase 3 で厳密化を検討
+
+### 参照タイミング
+- heartbeat 関連のセキュリティ強化タスクの時
+- 監査観点でのレスポンス timing 一貫性をテーマにする時

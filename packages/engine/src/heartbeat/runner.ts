@@ -53,34 +53,53 @@ export async function processHeartbeat(target: HeartbeatTarget): Promise<void> {
     payload,
   })
 
-  if (insertError) {
-    console.error('[heartbeat] failed to insert missing event:', insertError)
-    // Roll back the claim so the next runner tick can re-fire the miss.
-    // Without this, `missed_event_emitted=true` would persist with no
-    // corresponding event / alert — a silent hole in the audit trail.
+  const rollbackClaim = async (cause: string) => {
+    // Flip missed_event_emitted back to false so the next runner tick can
+    // re-claim and re-emit. Only rollback if the flag is still true — a
+    // concurrent runner may have already processed or cleared it.
     const { error: rollbackError } = await supabase
       .from('heartbeat_targets')
-      .update({ missed_event_emitted: false, updated_at: new Date().toISOString() })
+      .update({
+        missed_event_emitted: false,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', target.id)
       .eq('missed_event_emitted', true)
     if (rollbackError) {
       console.error(
-        '[heartbeat] CRITICAL: failed to rollback claim after event-insert failure:',
+        `[heartbeat] CRITICAL: rollback after ${cause} failed:`,
         rollbackError
       )
     }
+  }
+
+  if (insertError) {
+    console.error('[heartbeat] failed to insert missing event:', insertError)
+    // Without rollback, `missed_event_emitted=true` would persist with no
+    // corresponding event / alert — a silent hole in the audit trail.
+    await rollbackClaim('event-insert failure')
     return
   }
 
-  void evaluateAlertForEvent({
-    id: eventId,
-    projectId: target.projectId,
-    serviceId: target.serviceId,
-    type: 'heartbeat.missing.detected',
-    occurredAt: now,
-    source: 'engine',
-    payload,
-  })
+  // Await the alert-creation path so a thrown failure rolls the claim back
+  // and the next runner tick can retry. Mirrors routes/heartbeats.ts (Group
+  // 1) for symmetry. NOTE: evaluateAlertForEvent's internal DB errors are
+  // logged-and-swallowed rather than thrown, so this only recovers from
+  // programming errors / unhandled exceptions. See self-review in WORK_LOG.
+  try {
+    await evaluateAlertForEvent({
+      id: eventId,
+      projectId: target.projectId,
+      serviceId: target.serviceId,
+      type: 'heartbeat.missing.detected',
+      occurredAt: now,
+      source: 'engine',
+      payload,
+    })
+  } catch (err) {
+    console.error('[heartbeat] alert creation threw:', err)
+    await rollbackClaim('alert-creation throw')
+  }
 }
 
 export async function runDueHeartbeatChecks(): Promise<{

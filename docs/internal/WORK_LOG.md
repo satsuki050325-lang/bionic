@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-04-16 / Claude Code（完了・heartbeat runner rollback 対称化）
+
+### やったこと
+- `packages/engine/src/heartbeat/runner.ts` の missing 処理を Group 1 (heartbeats.ts) と同じパターンに統一
+  - `rollbackClaim(cause: string)` ヘルパーを抽出し、event-insert 失敗・alert-creation throw の両方で同じ UPDATE（`eq('missed_event_emitted', true)` 付きの atomic rollback）を呼ぶ
+  - `evaluateAlertForEvent` を `void` から `await` + try/catch に変更
+  - throw 時は rollback して次回 runner tick で再試行可能に
+- `IDEAS.md` にアイデア12を追加: heartbeat ping timing 厳密化（候補 0件 vs 1件以上の compare 回数差）の MVP 許容について
+
+### 検証
+- `pnpm verify` 全通過（engine test 96件 / app build 13 routes）
+
+### セルフレビュー（見落とし・正直な報告）
+- **rollback の実効性は限定的**: `evaluateAlertForEvent` の内部は DB エラーを try/catch + console.error で握りつぶしており、throw してこない。今回の `await + try/catch` で catch できるのは programming error / unhandled exception のみ
+- これは Group 1 の `routes/heartbeats.ts` rollback も同じ制限を持つ既知事実で、今回は「Group 1 と同じパターンに統一」という指示を優先した
+- 真に alert 作成失敗でも rollback するには `evaluateAlertForEvent` の戻り値を成功/失敗の boolean に拡張するか、heartbeat 専用の helper を切り出すのが筋。スコープ外のリファクタなので IDEAS か別タスクで扱うべき課題として記録しておく
+- rollback 後に次回 tick が再 claim して新 `eventId` で event を再 insert するため、rollback を経由した場合は event row が複数作られる可能性がある。`evaluateAlertForEvent` は fingerprint (`cron:target:<id>`) で dedupe するので alert 側は同一 row が更新されるだけ。audit trail のノイズとしては許容
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（完了・Codex Heartbeat findings 修正）
 
 ### やったこと
