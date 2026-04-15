@@ -55,6 +55,20 @@ export async function processHeartbeat(target: HeartbeatTarget): Promise<void> {
 
   if (insertError) {
     console.error('[heartbeat] failed to insert missing event:', insertError)
+    // Roll back the claim so the next runner tick can re-fire the miss.
+    // Without this, `missed_event_emitted=true` would persist with no
+    // corresponding event / alert — a silent hole in the audit trail.
+    const { error: rollbackError } = await supabase
+      .from('heartbeat_targets')
+      .update({ missed_event_emitted: false, updated_at: new Date().toISOString() })
+      .eq('id', target.id)
+      .eq('missed_event_emitted', true)
+    if (rollbackError) {
+      console.error(
+        '[heartbeat] CRITICAL: failed to rollback claim after event-insert failure:',
+        rollbackError
+      )
+    }
     return
   }
 

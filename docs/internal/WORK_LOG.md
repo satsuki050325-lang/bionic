@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-04-15 / Claude Code（開始・Codex Heartbeat findings 修正）
+
+### 着手
+- Phase 2.5b に対する Codex finding 5件を 3 グループに分けて修正する
+  - Group 1 (P1×2): claim 後の event insert / alert resolve 失敗時の flag rollback
+  - Group 2 (P2×2): slug 衝突で 500 になる問題 / 未登録 slug の timing side-channel
+  - Group 3 (P2×1): `.env.example` に `BIONIC_HEARTBEAT_HMAC_KEY` を追記
+
+---
+
 ## 2026-04-15 / Claude Code（完了・heartbeat HMAC key P1 修正）
 
 ### やったこと

@@ -100,11 +100,18 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
   })
 
   if (wasMissed) {
-    const { data: recovered } = await supabase.rpc(
+    const { data: recovered, error: recoveryErr } = await supabase.rpc(
       'claim_heartbeat_recovery',
       { p_target_id: data['id'] as string }
     )
-    if (recovered === true) {
+    if (recoveryErr) {
+      console.error('[heartbeats] claim_heartbeat_recovery failed:', recoveryErr)
+    } else if (recovered === true) {
+      // The flag is now false. We still need to (a) insert the recovered
+      // event and (b) auto-resolve the open cron_missing alert. If either
+      // fails, roll the flag back to true so a subsequent ping retries the
+      // whole transition — otherwise the alert would stay open forever
+      // (runner won't re-claim because last_ping_at was just refreshed).
       const eventId = randomUUID()
       const payload = {
         targetId: data['id'] as string,
@@ -112,7 +119,8 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
         check: 'heartbeat',
         status: 'ok' as const,
       }
-      await supabase.from('engine_events').insert({
+
+      const { error: eventInsertErr } = await supabase.from('engine_events').insert({
         client_event_id: `heartbeat_recovered_${eventId}`,
         project_id: data['project_id'] as string,
         service_id: data['service_id'] as string,
@@ -121,16 +129,48 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
         source: 'engine',
         payload,
       })
-      const event: EngineEvent = {
-        id: eventId,
-        projectId: data['project_id'] as string,
-        serviceId: data['service_id'] as string,
-        type: 'heartbeat.recovered',
-        occurredAt: now,
-        source: 'engine',
-        payload,
+
+      let resolveErr: unknown = null
+      if (!eventInsertErr) {
+        // Await the evaluate path so a failed alert-resolve triggers rollback.
+        // evaluateAlertForEvent for heartbeat.recovered only does the resolve
+        // UPDATE — no additional side effects we care about here.
+        try {
+          const event: EngineEvent = {
+            id: eventId,
+            projectId: data['project_id'] as string,
+            serviceId: data['service_id'] as string,
+            type: 'heartbeat.recovered',
+            occurredAt: now,
+            source: 'engine',
+            payload,
+          }
+          await evaluateAlertForEvent(event)
+        } catch (err) {
+          resolveErr = err
+          console.error('[heartbeats] alert auto-resolve failed:', err)
+        }
       }
-      void evaluateAlertForEvent(event)
+
+      if (eventInsertErr || resolveErr) {
+        console.error(
+          '[heartbeats] recovery chain failed; rolling back claim so the next ping retries'
+        )
+        const { error: rollbackErr } = await supabase
+          .from('heartbeat_targets')
+          .update({
+            missed_event_emitted: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', data['id'] as string)
+          .eq('missed_event_emitted', false)
+        if (rollbackErr) {
+          console.error(
+            '[heartbeats] CRITICAL: rollback of recovery claim failed:',
+            rollbackErr
+          )
+        }
+      }
     }
   }
 
