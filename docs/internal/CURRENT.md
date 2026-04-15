@@ -266,6 +266,10 @@
 ## 次の1手
 
 ### 今すぐやること
+- **[必須] uptime RPC atomic claim の実DB検証**: migration 適用後、
+  `SELECT public.claim_uptime_degraded(...)` を2セッションで同時実行し、
+  片方のみ `true` を返すことを確認する。
+  確認前は atomic claim を「実装済み・未検証」として扱うこと
 - Phase 2.4: GitHub公開（リポジトリをpublicに変更）
 
 ### done条件

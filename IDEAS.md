@@ -606,3 +606,26 @@ Supabaseが落ちるとEngineの記録・判断が止まる。
 ### 参照タイミング
 - `@bionic/shared` に型を追加するタスクの時
 - App 側の Next.js bundling 問題を再検証する時
+
+---
+
+### アイデア11: uptime runner の二重書き込み整理
+
+**現状の問題**
+- `packages/engine/src/uptime/runner.ts` の recovery パスで、RPC `claim_uptime_recovery` 側が `last_status='up', degraded_event_emitted=false, last_failure_reason=null, consecutive_failures=0` を書くのに加えて、直後のアプリ側通常 UPDATE でも同じフィールドを再度書いている
+- 挙動は同値（害はない）が、片方を変更したときのdrift源になる
+
+**整理案**
+- RPC 側に書き込みを寄せ、アプリ側 UPDATE は probe-result 系のフィールドのみ（`last_checked_at`, `last_latency_ms`, `last_status_code`, `updated_at`）に絞る
+- 逆にアプリ側に寄せる手もあるが、atomic claim の副作用として state flip を RPC 内で完結させる今の形が読みやすい
+
+### なぜ気になったか
+- Task1 のセルフレビューで自覚した冗長
+- 将来 last_status の値集合を増やす等の変更時に片方だけ追従忘れの危険
+
+### いまの判断
+- 後で仕様化（影響範囲が小さい・動作は正しい・次に runner を触る時に掃除する）
+
+### 参照タイミング
+- uptime runner を再度修正するタスクの時
+- claim_uptime_recovery の責務を見直す時

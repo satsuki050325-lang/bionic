@@ -3,6 +3,20 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・follow-up docs）
+
+### やったこと
+- `docs/internal/CURRENT.md` の「次の1手 > 今すぐやること」先頭に **[必須] uptime RPC atomic claim の実DB検証** を追加
+- `docs/internal/HANDOFF.md` の「次のステップ（優先順）」先頭に同じ項目を追加（番号を繰り下げ）
+- `IDEAS.md` にアイデア11を追加: uptime runner の RPC 側とアプリ側 UPDATE で `consecutive_failures=0 / last_failure_reason=null` が重複して書かれている件を将来タスク化
+
+### 判断したこと
+- 指示は「CURRENT.md に『次のステップ（優先順）』の先頭へ」だったが、CURRENT.md 側には「次の1手」セクションしかなく、「次のステップ（優先順）」は HANDOFF.md 側の見出し。意図は「必須検証を正本にマーキングする」ことと解釈し、**両ファイルに追記**した（section 名の不一致は明示）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（開始・Task1+2）
 
 ### 着手

@@ -32,10 +32,11 @@
 - `pnpm verify` 全通過（typecheck 6 projects / engine test 36件 / app build 13 routes）
 
 ### 次のステップ（優先順）
-1. **Supabaseに uptime_targets マイグレーションを適用する**（`supabase db push` または `npx supabase migration up`）
-2. **Codexによる `eb472b7` のレビュー**（SSRFガードの抜け漏れ、状態遷移のrace、RLS前提の確認）
-3. **Uptime監視の動作確認**（実URL登録→毎分cron実行→degraded/reported両イベント発火確認）
-4. **Phase 2.5b: Cron heartbeat監視**（将来タスク・未着手）
+1. **[必須] uptime RPC atomic claim の実DB検証**: migration 適用後、`SELECT public.claim_uptime_degraded(...)` を2セッションで同時実行し、片方のみ `true` を返すことを確認する。確認前は atomic claim を「実装済み・未検証」として扱うこと
+2. **Supabaseに uptime_targets マイグレーションを適用する**（`supabase db push` または `npx supabase migration up`）
+3. **Codexによる `eb472b7` のレビュー**（SSRFガードの抜け漏れ、状態遷移のrace、RLS前提の確認）
+4. **Uptime監視の動作確認**（実URL登録→毎分cron実行→degraded/reported両イベント発火確認）
+5. **Phase 2.5b: Cron heartbeat監視**（将来タスク・未着手）
 
 ### 未解決・既知リスク
 - `pnpm-lock.yaml` は Windows環境生成のため WSL/Linux で native binding エラーが出る場合がある（既知・公開後対応）
