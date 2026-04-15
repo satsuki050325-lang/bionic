@@ -120,9 +120,25 @@ describe('validateConfigForStartup', () => {
       BIONIC_ENGINE_TOKEN: 'token',
       SUPABASE_URL: 'https://xxx.supabase.co',
       SUPABASE_SERVICE_ROLE_KEY: 'key',
+      BIONIC_HEARTBEAT_HMAC_KEY: 'prod-pepper-abcdef',
     })
     expect(() => validateConfigForStartup(config)).not.toThrow()
     expect(exitSpy).not.toHaveBeenCalled()
+  })
+
+  it('productionでBIONIC_HEARTBEAT_HMAC_KEYが未設定だとexit(1)する', () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called')
+    })
+    const config = loadConfig({
+      NODE_ENV: 'production',
+      BIONIC_ENGINE_TOKEN: 'token',
+      SUPABASE_URL: 'https://xxx.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'key',
+      // BIONIC_HEARTBEAT_HMAC_KEY intentionally missing → must refuse to boot
+    })
+    expect(() => validateConfigForStartup(config)).toThrow('process.exit called')
+    expect(exitSpy).toHaveBeenCalledWith(1)
   })
 
   it('developmentではtoken未設定でもexitしない', () => {

@@ -333,6 +333,12 @@ export function validateConfigForStartup(config: EngineConfig): void {
     if (!config.supabase.serviceRoleKey) {
       errors.push('SUPABASE_SERVICE_ROLE_KEY is required in production')
     }
+    if (!config.heartbeat.hmacKeyFromEnv) {
+      errors.push(
+        'BIONIC_HEARTBEAT_HMAC_KEY is required in production ' +
+          '(dev default pepper must not be used to hash live heartbeat secrets)'
+      )
+    }
   }
 
   if (errors.length > 0) {

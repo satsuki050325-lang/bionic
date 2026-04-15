@@ -3,6 +3,23 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・heartbeat HMAC key P1 修正）
+
+### やったこと
+- セルフレビュー 2番（P1）を修正: production NODE_ENV かつ `BIONIC_HEARTBEAT_HMAC_KEY` 未設定なら起動拒否
+  - `packages/engine/src/config.ts` `validateConfigForStartup` に `!config.heartbeat.hmacKeyFromEnv` ブランチを追加。既存の `BIONIC_ENGINE_TOKEN` / `SUPABASE_*` と同じ errors 配列に積み、`process.exit(1)` で終了
+  - エラーメッセージに「dev default pepper must not be used to hash live heartbeat secrets」を明示
+  - `config.test.ts`: 既存の「全必須env揃ってexitしない」テストを `BIONIC_HEARTBEAT_HMAC_KEY: 'prod-pepper-abcdef'` を追加する形で修正。新規テスト「productionでBIONIC_HEARTBEAT_HMAC_KEYが未設定だとexit(1)する」を追加
+- `pnpm verify` 全通過（engine test: 95 → **96件**）
+
+### 判断したこと
+- `hmacKeyFromEnv` フラグは config 内で定義済みだったので、検証は既存情報のチェック 1 行で足りた
+- production では起動を止める設計に揃える（ENGINE_TOKEN と同じルール）。development では dev default のまま警告ログだけで続行するのを維持
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（完了・Phase 2.5b Cron heartbeat監視）
 
 ### やったこと
