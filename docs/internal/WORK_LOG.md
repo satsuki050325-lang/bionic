@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-04-15 / Claude Code（開始・Phase 2.5b Cron heartbeat監視）
+
+### 着手
+- `docs/HEARTBEAT_SPEC.md` 新規作成（push型死活監視の仕様書）
+- 4グループ分割で実装予定
+  - Group 1: DB migration + `@bionic/shared` 型追加
+  - Group 2: Engine API（ping受信 + CRUD）
+  - Group 3: Runner + `claim_heartbeat_missing` RPC
+  - Group 4: UI（Services バッジ + Add Service タブ）
+
+---
+
 ## 2026-04-15 / Claude Code（完了・CURRENT.md 現況同期）
 
 ### やったこと

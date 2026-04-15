@@ -22,6 +22,9 @@ export type EventType =
   | 'stripe.refund.created'
   | 'sentry.issue'
   | 'sentry.metric_alert'
+  | 'heartbeat.ping.received'
+  | 'heartbeat.missing.detected'
+  | 'heartbeat.recovered'
 
 export type AlertType =
   | 'service_health'
@@ -33,6 +36,7 @@ export type AlertType =
   | 'payment_failure'
   | 'revenue_change'
   | 'sentry_issue'
+  | 'cron_missing'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 export type AlertStatus = 'open' | 'resolved'
@@ -349,6 +353,58 @@ export interface UptimeCheckOutcome {
   statusCode: number | null
   latencyMs: number | null
   reason: string | null
+}
+
+// ── HeartbeatTarget ────────────────────────────────────────────────
+export type HeartbeatSeverity = 'info' | 'warning' | 'critical'
+
+export interface HeartbeatTarget {
+  id: string
+  projectId: string
+  serviceId: string
+  slug: string
+  name: string | null
+  description: string | null
+  secretAlgo: 'hmac-sha256'
+  expectedIntervalSeconds: number
+  graceSeconds: number
+  severity: HeartbeatSeverity
+  enabled: boolean
+  lastPingAt: ISODateString | null
+  lastPingFromIp: string | null
+  missedEventEmitted: boolean
+  createdAt: ISODateString
+  updatedAt: ISODateString
+}
+
+export interface ListHeartbeatTargetsResult {
+  targets: HeartbeatTarget[]
+}
+
+export interface CreateHeartbeatTargetInput {
+  projectId?: string
+  serviceId: string
+  slug: string
+  name?: string
+  description?: string
+  expectedIntervalSeconds: number
+  graceSeconds?: number
+  severity?: HeartbeatSeverity
+}
+
+export interface CreateHeartbeatTargetResult {
+  target: HeartbeatTarget
+  /** Plain-text secret. Returned exactly once at creation time. */
+  secret: string
+}
+
+export interface UpdateHeartbeatTargetInput {
+  name?: string | null
+  description?: string | null
+  expectedIntervalSeconds?: number
+  graceSeconds?: number
+  severity?: HeartbeatSeverity
+  enabled?: boolean
 }
 
 // ── BionicEngineService ────────────────────────────────────────────
