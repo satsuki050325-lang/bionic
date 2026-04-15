@@ -13,6 +13,7 @@ export type ServiceSource =
   | 'sentry'
   | 'manual'
   | 'uptime'
+  | 'heartbeat'
 
 export interface ServiceSummary {
   serviceId: string
@@ -36,11 +37,13 @@ function inferSources(
   eventSources: string[],
   alertTypes: string[],
   payloads: Record<string, unknown>[],
-  hasUptimeTarget: boolean
+  hasUptimeTarget: boolean,
+  hasHeartbeatTarget: boolean
 ): ServiceSource[] {
   const sources = new Set<ServiceSource>()
 
   if (hasUptimeTarget) sources.add('uptime')
+  if (hasHeartbeatTarget) sources.add('heartbeat')
 
   if (
     eventSources.includes('sdk') ||
@@ -140,6 +143,17 @@ servicesRouter.get('/', async (req, res) => {
     console.error('[services] failed to fetch uptime targets:', uptimeError)
   }
 
+  const { data: heartbeatTargets, error: heartbeatError } = await supabase
+    .from('heartbeat_targets')
+    .select(
+      'service_id, last_ping_at, missed_event_emitted, enabled, expected_interval_seconds, grace_seconds, created_at'
+    )
+    .eq('project_id', projectId)
+
+  if (heartbeatError) {
+    console.error('[services] failed to fetch heartbeat targets:', heartbeatError)
+  }
+
   const serviceMap = new Map<
     string,
     {
@@ -151,6 +165,9 @@ servicesRouter.get('/', async (req, res) => {
       hasUptimeTarget: boolean
       uptimeLastCheckedAt: string | null
       uptimeAnyDown: boolean
+      hasHeartbeatTarget: boolean
+      heartbeatLastPingAt: string | null
+      heartbeatAnyMissing: boolean
     }
   >()
 
@@ -163,6 +180,9 @@ servicesRouter.get('/', async (req, res) => {
     hasUptimeTarget: false,
     uptimeLastCheckedAt: null as string | null,
     uptimeAnyDown: false,
+    hasHeartbeatTarget: false,
+    heartbeatLastPingAt: null as string | null,
+    heartbeatAnyMissing: false,
   })
 
   for (const event of allEvents ?? []) {
@@ -231,6 +251,33 @@ servicesRouter.get('/', async (req, res) => {
     }
   }
 
+  // Fold heartbeat_targets: register the service + surface missing state so a
+  // scheduled-job-only service shows up in the Services list.
+  for (const target of heartbeatTargets ?? []) {
+    const sid = target.service_id as string | null
+    if (!sid) continue
+    if (!serviceMap.has(sid)) {
+      serviceMap.set(sid, emptyEntry())
+    }
+    const entry = serviceMap.get(sid)!
+    entry.hasHeartbeatTarget = true
+    const pingAt = target.last_ping_at as string | null
+    if (pingAt) {
+      if (
+        !entry.heartbeatLastPingAt ||
+        new Date(pingAt) > new Date(entry.heartbeatLastPingAt)
+      ) {
+        entry.heartbeatLastPingAt = pingAt
+      }
+      if (new Date(pingAt) >= new Date(since24h)) {
+        entry.eventCount24h++
+      }
+    }
+    if (target.missed_event_emitted === true && target.enabled) {
+      entry.heartbeatAnyMissing = true
+    }
+  }
+
   const now = Date.now()
   const services: ServiceSummary[] = []
 
@@ -244,12 +291,17 @@ servicesRouter.get('/', async (req, res) => {
     // Treat an uptime probe's last check as an additional positive signal:
     // a healthy service with no SDK events but a responding probe should look
     // "receiving", not "stale".
+    const signalCandidates = [
+      data.lastEventAt,
+      data.uptimeLastCheckedAt,
+      data.heartbeatLastPingAt,
+    ].filter((v): v is string => v !== null)
     const effectiveLastSignalAt =
-      data.lastEventAt && data.uptimeLastCheckedAt
-        ? new Date(data.lastEventAt) > new Date(data.uptimeLastCheckedAt)
-          ? data.lastEventAt
-          : data.uptimeLastCheckedAt
-        : (data.lastEventAt ?? data.uptimeLastCheckedAt)
+      signalCandidates.length > 0
+        ? signalCandidates.reduce((a, b) =>
+            new Date(a) > new Date(b) ? a : b
+          )
+        : null
     const elapsedMs =
       effectiveLastSignalAt !== null
         ? now - new Date(effectiveLastSignalAt).getTime()
@@ -260,17 +312,19 @@ servicesRouter.get('/', async (req, res) => {
       data.eventSources,
       alerts.types,
       data.payloads,
-      data.hasUptimeTarget
+      data.hasUptimeTarget,
+      data.hasHeartbeatTarget
     )
 
     let status: ServiceStatus
     if (isDemo) {
       status = 'demo'
-    } else if (alerts.critical > 0 || data.uptimeAnyDown) {
+    } else if (alerts.critical > 0 || data.uptimeAnyDown || data.heartbeatAnyMissing) {
       status = 'alerting'
     } else if (effectiveLastSignalAt === null) {
-      // Has uptime target but never checked, or alert-only without events → quiet.
-      status = data.hasUptimeTarget ? 'quiet' : 'stale'
+      // Has probe target (uptime/heartbeat) but no signal yet → quiet.
+      status =
+        data.hasUptimeTarget || data.hasHeartbeatTarget ? 'quiet' : 'stale'
     } else if (elapsedMs < 24 * 60 * 60 * 1000) {
       status = data.eventCount24h >= 3 ? 'receiving' : 'quiet'
     } else {

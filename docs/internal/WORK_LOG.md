@@ -3,6 +3,55 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・Phase 2.5b Cron heartbeat監視）
+
+### やったこと
+- **仕様書** (`docs/HEARTBEAT_SPEC.md`) 新規作成: push型死活監視の設計。認証・hash方式・first-miss grace window・atomic claim・fingerprint・API・UI・非スコープを10セクションで網羅
+- **Group 1 (`5816086`)**: DB + 型
+  - `supabase/migrations/20260413000006_heartbeat_targets.sql` テーブル作成（RLS・unique(project_id,slug)・severity/interval/grace check制約・slug regex制約）
+  - `@bionic/shared` に `HeartbeatTarget` / `HeartbeatSeverity` / `CreateHeartbeatTargetInput` / `CreateHeartbeatTargetResult` / `UpdateHeartbeatTargetInput` / `ListHeartbeatTargetsResult` と EventType 3件・AlertType `cron_missing` を追加
+- **Group 2 (`0fcd3b5`)**: Engine API
+  - `POST /api/heartbeats/:slug` を `engineAuthMiddleware` の**前**にマウント。per-target Bearer secret で認証。成功時は ping event 保存 + 復旧なら `claim_heartbeat_recovery` RPC 呼び出し + `heartbeat.recovered` emit
+  - `GET/POST/PATCH/DELETE /api/heartbeat-targets` + `POST /:id/regenerate-secret` を engine-wide auth 内に実装
+  - `packages/engine/src/heartbeat/secret.ts`: `generateHeartbeatSecret()` (256-bit base64url) / `hashHeartbeatSecret()` (HMAC-SHA256 + pepper) / `verifyHeartbeatSecret()` (timingSafeEqual)
+  - `config.ts` に `heartbeat.hmacKey` セクション追加。`BIONIC_HEARTBEAT_HMAC_KEY` 未設定時は dev default + 起動 warn
+  - App `RedactedEngineConfig` に optional `heartbeat` セクションを追加（旧 Engine ビルドと互換）
+- **Group 3 (`aa607a3`)**: Runner + claim RPC
+  - `supabase/migrations/20260413000007_heartbeat_claim_functions.sql` に `claim_heartbeat_missing(p_target_id)` / `claim_heartbeat_recovery(p_target_id)`（SECURITY DEFINER・単一UPDATE で atomic claim）
+  - `packages/engine/src/heartbeat/runner.ts`: due判定 (`coalesce(last_ping_at, created_at) + interval + grace`)、flag/enable 短絡、`claim_heartbeat_missing` RPC → event insert → `evaluateAlertForEvent` で `cron_missing` alert 生成
+  - `decisions/alerts.ts`: `cron_missing` を `buildFingerprint`（targetId スコープ）・`evaluateAlertForEvent`（create / heartbeat.recovered での auto-resolve）に結線
+  - scheduler に `heartbeat_missing_runner` を 1分cron で追加 + diagnostics runner state に登録
+  - `runner.test.ts` 7件（emit-on-true / skip-on-false / not-due / already-emitted / first-miss grace / overdue first-miss / 2並列 exactly-one）
+- **Group 4 (本コミット)**: UI
+  - `/api/services` が `heartbeat_targets` も fold し、`'heartbeat'` source・heartbeat missing による `alerting` ステータス・ping を signal とみなす lastEventAt 合成を実装
+  - Services ページに Heartbeat badge（UP / MISSING / PENDING）を追加
+  - Add Service ページに「Monitor scheduled job」タブを追加（slug / name / interval [1m/5m/15m/1h/daily] / severity 選択・Create ボタン）
+  - 作成直後に平文 secret + curl snippet をパネル表示（再表示不可の警告付き）
+  - `apps/app/src/lib/engine.ts` に `HeartbeatTarget` 型と `getHeartbeatTargets()` を追加
+
+### 検証
+- `pnpm verify` 各グループで全通過
+- engine test: 88 → **95件**（+7 heartbeat runner tests）
+- app build: 13 routes（services/new は 4.79 kB → 5.74 kB に増加・heartbeat UI 分）
+
+### セルフレビュー（見落とし報告）
+1. **timing-safe path が slug 不在時に短絡している**: `POST /api/heartbeats/:slug` で slug が未登録のとき 404 を即返す → 攻撃者が slug 列挙で「存在する slug」を速度差で絞り込める余地。本来は `verifyHeartbeatSecret` を必ず一度通して一定時間消費させるべき。MVP として記録し将来 Codex P2 として修正候補
+2. **heartbeat secret pepper のローテーション設計なし**: `BIONIC_HEARTBEAT_HMAC_KEY` を変えると既存 hash が全部無効化される。rotation key を 2 つ持たせる等の設計は Phase 3 課題
+3. **heartbeat_targets 実DB検証 未実施**: uptime claim RPC と同様に `claim_heartbeat_missing` / `claim_heartbeat_recovery` の2並列実DB検証は未実施。後続タスクで実施すべき
+4. **alert severity の `info` 対応**: 既存の `AlertSeverity` は `'info' | 'warning' | 'critical'` を含むが、`decisions/alerts.ts` 内の `severity` 型拡張で `'info'` を許可する場所のみ拡張し、他箇所（Discord 通知・alert reminders）は未確認。`info` severity heartbeat が来たら表示のみされて reminder 対象外の可能性あり
+5. **heartbeat/recovered の event insert で `occurred_at` を ping 時刻に寄せている**: `claim_heartbeat_recovery` の row lock が取れていれば ping 時刻で問題ないが、実際は claim 後に event を書いているので 100ms 程度ずれる。監査精度としては十分
+6. **`BIONIC_HEARTBEAT_HMAC_KEY` の dev default は production で絶対 NG** だが、起動時 warn のみで拒否していない。production NODE_ENV かつ未設定時は `validateConfigForStartup` で reject するべきだった（後続タスク）
+
+### 次にやること
+- Codex に eb472b7 以降の Phase 2.5a/2.5b をまとめてレビュー依頼
+- Supabase 本番に migrations 20260413000006 + 20260413000007 を適用
+- 適用後に heartbeat claim RPC の実DB検証（uptime と同様のスクリプト）
+- production 配布前に `BIONIC_HEARTBEAT_HMAC_KEY` の必須化を検討
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（開始・Phase 2.5b Cron heartbeat監視）
 
 ### 着手

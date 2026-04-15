@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import {
+  getHeartbeatTargets,
   getServices,
   getUptimeTargets,
+  type HeartbeatTarget,
   type ServiceWatchStatus,
   type UptimeTarget,
 } from '@/lib/engine'
@@ -44,9 +46,43 @@ const SOURCE_LABELS: Record<string, string> = {
   sentry: 'Sentry',
   manual: 'CLI',
   uptime: 'Uptime',
+  heartbeat: 'Heartbeat',
 }
 
 const ALL_INTEGRATION_SOURCES = ['sdk', 'vercel', 'github', 'stripe', 'sentry'] as const
+
+function summarizeHeartbeat(targets: HeartbeatTarget[]): {
+  label: string
+  className: string
+  detail: string
+} | null {
+  if (targets.length === 0) return null
+  const anyMissing = targets.some((t) => t.missedEventEmitted)
+  const everPinged = targets.some((t) => t.lastPingAt !== null)
+
+  if (anyMissing) {
+    const missing = targets.filter((t) => t.missedEventEmitted).length
+    return {
+      label: 'HEARTBEAT MISSING',
+      className:
+        'text-status-critical border-status-critical/50 bg-status-critical/10',
+      detail: `${missing}/${targets.length} heartbeat${targets.length > 1 ? 's' : ''} missing`,
+    }
+  }
+  if (everPinged) {
+    return {
+      label: 'HEARTBEAT UP',
+      className:
+        'text-status-success border-status-success/50 bg-status-success/10',
+      detail: `${targets.length} heartbeat${targets.length > 1 ? 's' : ''} tracked`,
+    }
+  }
+  return {
+    label: 'HEARTBEAT PENDING',
+    className: 'text-text-muted border-border-subtle',
+    detail: `${targets.length} heartbeat${targets.length > 1 ? 's' : ''} awaiting first ping`,
+  }
+}
 
 function summarizeUptime(targets: UptimeTarget[]): {
   label: string
@@ -83,9 +119,10 @@ function summarizeUptime(targets: UptimeTarget[]): {
 }
 
 export default async function ServicesPage() {
-  const [data, uptimeData] = await Promise.all([
+  const [data, uptimeData, heartbeatData] = await Promise.all([
     getServices(),
     getUptimeTargets(),
+    getHeartbeatTargets(),
   ])
 
   if (!data) {
@@ -111,6 +148,12 @@ export default async function ServicesPage() {
     const existing = uptimeByService.get(t.serviceId) ?? []
     existing.push(t)
     uptimeByService.set(t.serviceId, existing)
+  }
+  const heartbeatByService = new Map<string, HeartbeatTarget[]>()
+  for (const t of heartbeatData?.targets ?? []) {
+    const existing = heartbeatByService.get(t.serviceId) ?? []
+    existing.push(t)
+    heartbeatByService.set(t.serviceId, existing)
   }
 
   return (
@@ -166,6 +209,9 @@ export default async function ServicesPage() {
           const uptimeSummary = summarizeUptime(
             uptimeByService.get(service.serviceId) ?? []
           )
+          const heartbeatSummary = summarizeHeartbeat(
+            heartbeatByService.get(service.serviceId) ?? []
+          )
           return (
             <div
               key={service.serviceId}
@@ -196,6 +242,14 @@ export default async function ServicesPage() {
                       title={uptimeSummary.detail}
                     >
                       {uptimeSummary.label}
+                    </span>
+                  )}
+                  {heartbeatSummary && (
+                    <span
+                      className={`font-mono text-xs px-2 py-0.5 rounded border uppercase tracking-wider ${heartbeatSummary.className}`}
+                      title={heartbeatSummary.detail}
+                    >
+                      {heartbeatSummary.label}
                     </span>
                   )}
                 </div>

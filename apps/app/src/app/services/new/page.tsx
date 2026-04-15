@@ -3,15 +3,26 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import {
+  createHeartbeatTarget,
   createUptimeTarget,
   sendTestServiceEvent,
   testUptimeTarget,
 } from './actions'
 
 type Framework = 'nextjs' | 'express' | 'other'
-type InstallMethod = 'sdk' | 'curl' | 'url'
+type InstallMethod = 'sdk' | 'curl' | 'url' | 'heartbeat'
 type ShellType = 'bash' | 'powershell'
 type UptimeInterval = 30 | 60 | 300
+type HeartbeatInterval = 60 | 300 | 900 | 3600 | 86400
+type HeartbeatSeverity = 'info' | 'warning' | 'critical'
+
+const HEARTBEAT_INTERVAL_LABELS: Record<HeartbeatInterval, string> = {
+  60: '1 min',
+  300: '5 min',
+  900: '15 min',
+  3600: '1 hour',
+  86400: 'Daily',
+}
 
 const ENGINE_URL =
   process.env['NEXT_PUBLIC_ENGINE_URL'] ?? 'http://localhost:3001'
@@ -201,6 +212,23 @@ export default function AddServicePage({
     | { kind: 'error'; error: string }
   >({ kind: 'idle' })
 
+  // Heartbeat monitoring state
+  const [heartbeatSlug, setHeartbeatSlug] = useState('')
+  const [heartbeatInterval, setHeartbeatInterval] =
+    useState<HeartbeatInterval>(3600)
+  const [heartbeatSeverity, setHeartbeatSeverity] =
+    useState<HeartbeatSeverity>('warning')
+  const [heartbeatName, setHeartbeatName] = useState('')
+  const [heartbeatState, setHeartbeatState] = useState<
+    'idle' | 'creating' | 'created' | 'error'
+  >('idle')
+  const [heartbeatError, setHeartbeatError] = useState<string | null>(null)
+  const [heartbeatSecret, setHeartbeatSecret] = useState<string | null>(null)
+  const [heartbeatTargetInfo, setHeartbeatTargetInfo] = useState<{
+    id: string
+    slug: string
+  } | null>(null)
+
   const snippet =
     installMethod === 'curl'
       ? shellType === 'powershell'
@@ -225,6 +253,37 @@ export default function AddServicePage({
     } else {
       setUptimeState('error')
       setUptimeError(result.error)
+    }
+  }
+
+  async function handleCreateHeartbeat() {
+    if (!isValid) return
+    const slugTrimmed = heartbeatSlug.trim().toLowerCase()
+    if (!slugTrimmed || !/^[a-z0-9-]{3,64}$/.test(slugTrimmed)) {
+      setHeartbeatState('error')
+      setHeartbeatError('slug must be 3-64 chars of lowercase / digits / hyphen')
+      return
+    }
+    setHeartbeatState('creating')
+    setHeartbeatError(null)
+    const result = await createHeartbeatTarget({
+      serviceId: trimmed,
+      slug: slugTrimmed,
+      name: heartbeatName.trim() || undefined,
+      expectedIntervalSeconds: heartbeatInterval,
+      graceSeconds: 60,
+      severity: heartbeatSeverity,
+    })
+    if (result.ok) {
+      setHeartbeatSecret(result.secret)
+      setHeartbeatTargetInfo({
+        id: result.target.id,
+        slug: result.target.slug,
+      })
+      setHeartbeatState('created')
+    } else {
+      setHeartbeatState('error')
+      setHeartbeatError(result.error)
     }
   }
 
@@ -324,7 +383,7 @@ export default function AddServicePage({
           02 · Choose how to integrate
         </div>
         <div className="flex gap-2 flex-wrap mb-4">
-          {(['curl', 'url', 'sdk'] as InstallMethod[]).map((m) => (
+          {(['curl', 'url', 'heartbeat', 'sdk'] as InstallMethod[]).map((m) => (
             <button
               key={m}
               onClick={() => setInstallMethod(m)}
@@ -338,7 +397,9 @@ export default function AddServicePage({
                 ? 'Direct API (recommended)'
                 : m === 'url'
                   ? 'URL Monitoring'
-                  : 'TypeScript SDK (advanced)'}
+                  : m === 'heartbeat'
+                    ? 'Monitor scheduled job'
+                    : 'TypeScript SDK (advanced)'}
             </button>
           ))}
         </div>
@@ -373,10 +434,154 @@ export default function AddServicePage({
             ? 'Install SDK'
             : installMethod === 'url'
               ? 'Set up URL monitoring'
-              : 'Send signals via curl'}
+              : installMethod === 'heartbeat'
+                ? 'Monitor a scheduled job'
+                : 'Send signals via curl'}
         </div>
 
-        {installMethod === 'url' ? (
+        {installMethod === 'heartbeat' ? (
+          <div className="space-y-4">
+            <p className="font-body text-xs text-text-muted">
+              Your job (cron, worker, scheduled task) sends a ping on every
+              successful run. If no ping arrives within the expected interval +
+              grace window, Bionic raises a <code className="text-accent">cron_missing</code>{' '}
+              alert.
+            </p>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                Slug (used in ping URL)
+              </label>
+              <input
+                type="text"
+                value={heartbeatSlug}
+                onChange={(e) =>
+                  setHeartbeatSlug(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+                  )
+                }
+                placeholder="daily-reconcile"
+                className="w-full font-mono text-sm bg-bg-base border border-border-default rounded px-3 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                Name (optional)
+              </label>
+              <input
+                type="text"
+                value={heartbeatName}
+                onChange={(e) => setHeartbeatName(e.target.value)}
+                placeholder="Nightly reconciliation job"
+                className="w-full font-mono text-sm bg-bg-base border border-border-default rounded px-3 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                Expected interval
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {([60, 300, 900, 3600, 86400] as HeartbeatInterval[]).map(
+                  (iv) => (
+                    <button
+                      key={iv}
+                      onClick={() => setHeartbeatInterval(iv)}
+                      className={`font-mono text-xs px-4 py-2 rounded border transition-colors ${
+                        heartbeatInterval === iv
+                          ? 'border-accent text-accent bg-accent/10'
+                          : 'border-border-subtle text-text-secondary hover:border-accent/50'
+                      }`}
+                    >
+                      {HEARTBEAT_INTERVAL_LABELS[iv]}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="font-mono text-xs text-text-secondary block mb-1">
+                Alert severity when missing
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {(['info', 'warning', 'critical'] as HeartbeatSeverity[]).map(
+                  (s) => (
+                    <button
+                      key={s}
+                      onClick={() => setHeartbeatSeverity(s)}
+                      className={`font-mono text-xs px-4 py-2 rounded border uppercase tracking-wider transition-colors ${
+                        heartbeatSeverity === s
+                          ? 'border-accent text-accent bg-accent/10'
+                          : 'border-border-subtle text-text-secondary hover:border-accent/50'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div>
+              <button
+                onClick={handleCreateHeartbeat}
+                disabled={
+                  !isValid ||
+                  !heartbeatSlug.trim() ||
+                  heartbeatState === 'creating' ||
+                  heartbeatState === 'created'
+                }
+                className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-accent text-text-inverse rounded hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {heartbeatState === 'creating'
+                  ? 'Creating…'
+                  : heartbeatState === 'created'
+                    ? 'Heartbeat registered'
+                    : 'Create heartbeat'}
+              </button>
+            </div>
+
+            {heartbeatState === 'error' && heartbeatError && (
+              <div className="font-mono text-xs text-status-critical">
+                {heartbeatError}
+              </div>
+            )}
+
+            {heartbeatState === 'created' && heartbeatSecret && heartbeatTargetInfo && (
+              <div className="bg-bg-elevated border border-accent/40 rounded p-4 space-y-3">
+                <div>
+                  <div className="font-mono text-xs text-status-warning uppercase tracking-widest mb-1">
+                    ⚠ Save this secret now — it will not be shown again
+                  </div>
+                  <pre className="font-mono text-xs text-text-primary bg-bg-base border border-border-subtle rounded p-2 overflow-x-auto whitespace-pre-wrap break-all">
+                    {heartbeatSecret}
+                  </pre>
+                </div>
+                <div>
+                  <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-1">
+                    Ping your job with curl
+                  </div>
+                  <pre className="font-mono text-xs text-text-primary bg-bg-base border border-border-subtle rounded p-2 overflow-x-auto whitespace-pre">
+                    {`curl -fsS -X POST ${ENGINE_URL}/api/heartbeats/${heartbeatTargetInfo.slug} \\
+  -H "Authorization: Bearer ${heartbeatSecret}"`}
+                  </pre>
+                </div>
+                <p className="font-body text-xs text-text-muted">
+                  Add this curl at the end of your cron job, worker, or scheduled
+                  task. No ping for{' '}
+                  <span className="text-accent">
+                    {HEARTBEAT_INTERVAL_LABELS[heartbeatInterval]}
+                  </span>{' '}
+                  (+60s grace) = <code className="text-accent">cron_missing</code>{' '}
+                  alert at{' '}
+                  <span className="text-accent uppercase">{heartbeatSeverity}</span>.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : installMethod === 'url' ? (
           <div className="space-y-4">
             <p className="font-body text-xs text-text-muted">
               Bionic polls this URL on a fixed schedule. Three consecutive
@@ -532,7 +737,7 @@ export default function AddServicePage({
       </div>
 
       {/* Step 4: Test Event (SDK / curl only) */}
-      {installMethod !== 'url' && (
+      {installMethod !== 'url' && installMethod !== 'heartbeat' && (
       <div className="bg-bg-surface border border-border-subtle rounded p-5 mb-4">
         <div className="font-mono text-xs text-text-secondary uppercase tracking-widest mb-3">
           04 · Send a test signal
@@ -601,7 +806,9 @@ export default function AddServicePage({
         )}
       </div>
 
-      {(testResult === 'success' || uptimeState === 'created') && (
+      {(testResult === 'success' ||
+        uptimeState === 'created' ||
+        heartbeatState === 'created') && (
         <div className="flex gap-3 flex-wrap">
           <Link
             href="/services"

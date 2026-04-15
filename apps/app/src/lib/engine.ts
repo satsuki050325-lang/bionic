@@ -277,6 +277,7 @@ export type ServiceSource =
   | 'sentry'
   | 'manual'
   | 'uptime'
+  | 'heartbeat'
 
 export interface ServiceSummary {
   serviceId: string
@@ -328,6 +329,44 @@ export interface ListUptimeTargetsResult {
 export async function getUptimeTargets(): Promise<ListUptimeTargetsResult | null> {
   try {
     const res = await fetch(`${ENGINE_URL}/api/uptime-targets`, {
+      cache: 'no-store',
+      headers: engineHeaders(),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+export type HeartbeatSeverity = 'info' | 'warning' | 'critical'
+
+export interface HeartbeatTarget {
+  id: string
+  projectId: string
+  serviceId: string
+  slug: string
+  name: string | null
+  description: string | null
+  secretAlgo: 'hmac-sha256'
+  expectedIntervalSeconds: number
+  graceSeconds: number
+  severity: HeartbeatSeverity
+  enabled: boolean
+  lastPingAt: string | null
+  lastPingFromIp: string | null
+  missedEventEmitted: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ListHeartbeatTargetsResult {
+  targets: HeartbeatTarget[]
+}
+
+export async function getHeartbeatTargets(): Promise<ListHeartbeatTargetsResult | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/heartbeat-targets`, {
       cache: 'no-store',
       headers: engineHeaders(),
     })
