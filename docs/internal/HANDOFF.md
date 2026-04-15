@@ -43,6 +43,7 @@
 - `app` 側の UptimeTarget 型は shared とは別に再宣言している（RSC境界の都合・Codex要確認）
 - **fingerprint断絶**: Group 2（`f5f41b1`）デプロイ直後、旧 fingerprint（`v2:...:health:down:uptime`）を持つ open alert は新 fingerprint（`v2:...:health:target:<id>`）の recovery と一致しない。デプロイ後に手動 resolve が必要
 - ~~**atomic claim 実DB未検証**~~ → **解消（2026-04-15）**: `claim_uptime_degraded` / `claim_uptime_recovery` は Supabase MCP 経由で本番DBに適用し、2並列 RPC で exactly-one claim を確認済み
+- **MCP経由migration適用とsupabase CLI migrationの同期**: `20260413000005` は Supabase MCP（`apply_migration`）で本番適用済み。supabase CLI の migration list との整合性は未確認。次回 CLI で `supabase db push` を実行する前に `migration_version` テーブルを確認すること（`create or replace` のため重複適用の実害はないが、不整合が残る）
 
 ### 重要な決定事項
 - SDK npm公開は Phase 2.5 以降（現在は Direct API を主導線に）
