@@ -3,6 +3,47 @@
 
 ---
 
+## 2026-04-15 / Claude Code（開始・Task1+2）
+
+### 着手
+- Task1: `degraded_event_emitted` の atomic claim を PostgREST OR 依存から DB-side RPC 関数に移行する
+- Task2: IDEAS.md 追記（Services status 役割分担 / ServiceSource shared 昇格）、HANDOFF.md 未解決に fingerprint 断絶リスク追記
+
+---
+
+## 2026-04-15 / Claude Code（完了・Task1 = atomic claim RPC化）
+
+### やったこと
+- `supabase/migrations/20260413000005_uptime_claim_functions.sql` 追加
+  - `claim_uptime_degraded(p_target_id text, p_threshold int) returns boolean` — 単一 `UPDATE ... WHERE degraded_event_emitted=false AND consecutive_failures>=threshold` を plpgsql の SECURITY DEFINER 関数に封入し、`GET DIAGNOSTICS row_count` で claim 成否を返す
+  - `claim_uptime_recovery(p_target_id text) returns boolean` — 同様に `UPDATE ... WHERE (degraded_event_emitted=true OR last_status='down')` を封入
+  - 両関数に `service_role` への EXECUTE grant を追加
+- `packages/engine/src/uptime/runner.ts` の claim 処理を PostgREST `.or()` / `.eq()` チェーンから `supabase.rpc('claim_uptime_degraded', {...})` / `supabase.rpc('claim_uptime_recovery', {...})` へ置き換え
+  - processTarget を `export` して並行シミュレーション可能に
+  - 成功・失敗いずれの RPC 結果でも probe result カラム (last_checked_at / latency / status_code) は別の通常 UPDATE で書き込むフローを維持
+- `packages/engine/src/uptime/runner.test.ts` 新規（7件）
+  - degraded/recovery 各 3 シナリオ: claim=true→emit 1件、claim=false→emit 0件、`Promise.all([processTarget, processTarget])` 2並列で queue が [true, false] を返すDB挙動を再現 → emit は **ちょうど 1 件**
+  - 閾値未満での claim スキップ
+- `pnpm verify` 全通過（typecheck 6 / engine test **88件** / app build 13 routes）
+
+### 実 DB 2並列実行の検証について（正直な報告）
+- **ローカル Supabase が起動していない**（`supabase` CLI 未インストール）ため、**実 DB での2並列再現は未実施**
+- 代替として:
+  1. RPC 本体は単一 SQL `UPDATE ... WHERE (まだ flip していない)` で、Postgres MVCC は単一 UPDATE の `row_count` を行ロック下で評価する（これは Postgres の基礎的な保証）
+  2. 上記を unit test で「先行呼び出しが true、後続が false を返す」パターンとして再現し、emit が 1 件になることを検証済み（`runner.test.ts`）
+- 実 DB 検証は migration 適用時に再確認する次タスクとして残す
+
+### セルフレビュー（見落とし報告）
+- **RPC に `security definer` を付与した**：呼び出し元の権限ではなく関数定義者 (postgres role) の権限で動く。service_role 経由のみで呼ばれる前提なら不要だが、将来 anon key からの誤呼び出しを防ぐため `grant execute ... to service_role` のみ（public には grant していない）で閉じている
+- **`claim_uptime_recovery` は `last_failure_reason=null, consecutive_failures=0` まで RPC 側で書く**：直後のアプリ側通常 UPDATE でも同値を書いており二重。害は無いが将来 RPC 側だけに寄せてアプリ側を削れる。今回は挙動同値を優先してリファクタは見送り
+- **`.rpc()` 戻り値の型**：supabase-js では `{data, error}`。本来は `{data: boolean | null}`。null は function エラー扱いだが今回は `=== true` での厳密比較で null/undefined を安全側に倒している
+- **RLS は uptime_targets に有効 (policy なし)** なので、anon key / authenticated では RPC があっても行が見えず UPDATE は 0 件になる。想定どおり service_role 以外からは claim できない
+- **実 DB 検証未実施** は最大の未達。migration 適用時に `INSERT` で2行並行に `SELECT pg_sleep(0.1); SELECT public.claim_uptime_degraded(...)` を走らせて片方のみ true が返ることを確認するのが望ましい
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（開始）
 
 ### 着手

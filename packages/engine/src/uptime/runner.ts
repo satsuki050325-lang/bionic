@@ -65,7 +65,7 @@ async function emitEvent(params: {
   })
 }
 
-async function processTarget(target: UptimeTarget): Promise<void> {
+export async function processTarget(target: UptimeTarget): Promise<void> {
   const outcome = await runUptimeCheck({
     url: target.url,
     method: target.method,
@@ -77,10 +77,22 @@ async function processTarget(target: UptimeTarget): Promise<void> {
   const now = new Date().toISOString()
 
   if (outcome.ok) {
-    // Atomically claim a recovery transition: only one concurrent runner gets
-    // to flip a degraded/down target back to 'up'. The .select('id') return
-    // set tells us whether we were the claimer.
-    const { data: recoveryClaim, error: recoveryErr } = await supabase
+    // Claim the recovery transition atomically at the DB level via RPC.
+    // The function body is a single UPDATE ... WHERE (degraded OR down);
+    // Postgres MVCC guarantees at most one concurrent caller observes
+    // row_count > 0 and therefore at most one runner emits the event.
+    const { data: recoveryClaimed, error: recoveryErr } = await supabase.rpc(
+      'claim_uptime_recovery',
+      { p_target_id: target.id }
+    )
+    if (recoveryErr) {
+      console.error('[uptime] recovery claim RPC failed:', recoveryErr)
+    }
+
+    // Always refresh the probe-result columns (latency / status code /
+    // last_checked_at). These are outside the claim window and are
+    // idempotent under concurrent writes.
+    await supabase
       .from('uptime_targets')
       .update({
         last_checked_at: now,
@@ -89,18 +101,11 @@ async function processTarget(target: UptimeTarget): Promise<void> {
         last_status_code: outcome.statusCode,
         last_failure_reason: null,
         consecutive_failures: 0,
-        degraded_event_emitted: false,
         updated_at: now,
       })
       .eq('id', target.id)
-      .or('degraded_event_emitted.eq.true,last_status.eq.down')
-      .select('id')
 
-    if (recoveryErr) {
-      console.error('[uptime] recovery claim failed:', recoveryErr)
-    }
-
-    if (recoveryClaim && recoveryClaim.length > 0) {
+    if (recoveryClaimed === true) {
       await emitEvent({
         projectId: target.projectId,
         serviceId: target.serviceId,
@@ -115,29 +120,12 @@ async function processTarget(target: UptimeTarget): Promise<void> {
           source: 'uptime_runner',
         },
       })
-      return
     }
-
-    // No state transition (already 'up' or never been down) — just refresh the
-    // probe fields. Idempotent even under concurrent runs.
-    await supabase
-      .from('uptime_targets')
-      .update({
-        last_checked_at: now,
-        last_status: 'up',
-        last_latency_ms: outcome.latencyMs,
-        last_status_code: outcome.statusCode,
-        last_failure_reason: null,
-        consecutive_failures: 0,
-        updated_at: now,
-      })
-      .eq('id', target.id)
     return
   }
 
-  // Failure path: first write the new counters/status (non-atomic increment is
-  // acceptable — worst case a concurrent run writes the same value), then
-  // atomically claim the "emit degraded" transition.
+  // Failure path: write probe-result + failure counters first, then claim the
+  // degraded emit atomically via RPC.
   const newFailures = target.consecutiveFailures + 1
   const { error: failErr } = await supabase
     .from('uptime_targets')
@@ -159,25 +147,17 @@ async function processTarget(target: UptimeTarget): Promise<void> {
 
   if (newFailures < DEGRADED_THRESHOLD) return
 
-  // Atomically claim the degraded emit. If another runner already claimed,
-  // this update matches zero rows and we skip the event.
-  const { data: degradedClaim, error: claimErr } = await supabase
-    .from('uptime_targets')
-    .update({
-      degraded_event_emitted: true,
-      updated_at: now,
-    })
-    .eq('id', target.id)
-    .eq('degraded_event_emitted', false)
-    .gte('consecutive_failures', DEGRADED_THRESHOLD)
-    .select('id')
+  const { data: degradedClaimed, error: claimErr } = await supabase.rpc(
+    'claim_uptime_degraded',
+    { p_target_id: target.id, p_threshold: DEGRADED_THRESHOLD }
+  )
 
   if (claimErr) {
-    console.error('[uptime] degraded claim failed:', claimErr)
+    console.error('[uptime] degraded claim RPC failed:', claimErr)
     return
   }
 
-  if (!degradedClaim || degradedClaim.length === 0) return
+  if (degradedClaimed !== true) return
 
   await emitEvent({
     projectId: target.projectId,
