@@ -5,6 +5,8 @@
 
 ## 2026-04-15 / Claude Code（完了・follow-up docs）
 
+commit: f4893a5
+
 ### やったこと
 - `docs/internal/CURRENT.md` の「次の1手 > 今すぐやること」先頭に **[必須] uptime RPC atomic claim の実DB検証** を追加
 - `docs/internal/HANDOFF.md` の「次のステップ（優先順）」先頭に同じ項目を追加（番号を繰り下げ）
