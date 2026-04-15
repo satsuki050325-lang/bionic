@@ -41,6 +41,8 @@
 - `pnpm-lock.yaml` は Windows環境生成のため WSL/Linux で native binding エラーが出る場合がある（既知・公開後対応）
 - Uptime機能は実DBに適用されるまで end-to-end で検証できていない
 - `app` 側の UptimeTarget 型は shared とは別に再宣言している（RSC境界の都合・Codex要確認）
+- **fingerprint断絶**: Group 2（`f5f41b1`）デプロイ直後、旧 fingerprint（`v2:...:health:down:uptime`）を持つ open alert は新 fingerprint（`v2:...:health:target:<id>`）の recovery と一致しない。デプロイ後に手動 resolve が必要
+- **atomic claim 実DB未検証**: Task1（`9007c93`）で導入した `claim_uptime_degraded` / `claim_uptime_recovery` RPC は unit test の mock queue で並行挙動を再現済みだが、実 Supabase DB での2プロセス並行 UPDATE 検証は未実施（supabase CLI がローカル未導入のため）。migration 適用時に確認すること
 
 ### 重要な決定事項
 - SDK npm公開は Phase 2.5 以降（現在は Direct API を主導線に）

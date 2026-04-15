@@ -556,3 +556,53 @@ Supabaseが落ちるとEngineの記録・判断が止まる。
 - Discord Botを実装する時
 - CLIにstale approval表示を追加する時
 - Schedulerにstale approval再通知を追加する時
+
+---
+
+## 2026-04-15 / Claude Code（Phase 2.5a uptime実装の派生）
+
+### アイデア9: Servicesのstatus表現の役割分担整理
+
+**現状の問題**
+- Servicesページは Engine `/api/services` のレスポンスに基づいて status/sources バッジを出している（`'uptime'` source含む）
+- 同じページが `/api/uptime-targets` も直接叩き、「UPTIME UP / DOWN / MIXED / PENDING」という独自バッジを追加表示している
+- 両者は情報の重なりがあり、UP/DOWN を2つのバッジが別表現で語っている状態
+
+**整理案**
+- Engine `/api/services` にサービスごとの uptime サマリ（target数・down数・latest latency）を含めて、App側は1経路で描画する
+- またはバッジ2つの役割を明示的に分ける: source pill は「Uptime監視が有効」、詳細バッジは「現在のupタイミング・Nms遅延」のように読み解かせる
+
+### なぜ気になったか
+- 情報密度が高いダッシュボードで「同じ事実を2つの場所で語る」のは可読性を下げる
+- 将来 Cron heartbeat / Synthetic monitoring を足すと同じ重複構造が増える
+
+### いまの判断
+- 後で仕様化（Phase 2.5b Cron heartbeat 実装時にまとめて再設計する）
+
+### 参照タイミング
+- Phase 2.5b Cron heartbeat 監視を着手する時
+- ダッシュボード情報密度を見直す時
+
+---
+
+### アイデア10: ServiceSource型の shared 昇格
+
+**現状の問題**
+- `ServiceSource` 型は `packages/engine/src/routes/services.ts` と `apps/app/src/lib/engine.ts` で別々に宣言されている（Phase 2.5a で `'uptime'` を両方に追加済み）
+- 同じ union を二箇所で保守しており、新 source を追加するたびに片方更新漏れのリスクがある
+
+**改善案**
+- `packages/shared/src/types.ts` に `ServiceSource` / `ServiceStatus` / `ServiceSummary` を昇格
+- Engine/App の両方でそれを import してローカル宣言を削除
+- 他の UI 型（`ServiceWatchStatus`等）も機械的に昇格できる
+
+### なぜ気になったか
+- `@bionic/shared` のための分離なのに、境界で drift すると型安全の意義が薄れる
+- Next.js の RSC 境界で `@bionic/shared` import が bundle 問題を起こす懸念は Phase 2.5a の実装時に取り越し苦労だった可能性がある（再検証要）
+
+### いまの判断
+- 後で仕様化（次の shared 型追加タスクと合流）
+
+### 参照タイミング
+- `@bionic/shared` に型を追加するタスクの時
+- App 側の Next.js bundling 問題を再検証する時

@@ -11,6 +11,20 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・Task2 = ドキュメント更新）
+
+### やったこと
+- `IDEAS.md` にアイデア2件追加
+  - アイデア9: Servicesのstatus表現の役割分担整理（uptime バッジと Engine `/api/services` sources pill の重複）
+  - アイデア10: ServiceSource型の shared 昇格（Engine と App で別宣言を統合）
+- `docs/internal/HANDOFF.md` の「未解決・既知リスク」に2件追記
+  - fingerprint 断絶リスク（Group 2 デプロイ直後の旧 fingerprint alert）
+  - atomic claim 実DB未検証（Task1 の unit test 検証済み・実 DB 検証は migration 適用時）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（完了・Task1 = atomic claim RPC化）
 
 ### やったこと
