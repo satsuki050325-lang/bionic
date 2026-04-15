@@ -3,6 +3,45 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・uptime RPC 実DB検証）
+
+### やったこと
+- **ステップ1: migration適用確認**
+  - Supabase MCP で `claim_uptime_*` 関数の存在を確認 → 未適用
+  - `uptime_targets` テーブル自体は既に存在していた（table migration は過去に Supabase ダッシュボード等で個別適用済みの模様。`list_migrations` は空）
+  - Supabase MCP `apply_migration` で `20260413000005_uptime_claim_functions` 相当の SQL を適用 → success
+- **ステップ2: 実DB 2並列検証**
+  - 検証用の一時スクリプト `packages/engine/tmp-verify-uptime-claim.ts`（supabase-js `.rpc()` 経由）を作成して実行。検証後に削除
+  - 検証用行: `project_id=test_rpc_verification`, `service_id=uptime-rpc-check`, `consecutive_failures=3, degraded_event_emitted=false` で seed
+  - `Promise.all([rpc(claim_uptime_degraded), rpc(claim_uptime_degraded)])` → 126ms で両レスポンス受信
+    - **RPC A: `{data: false}`**
+    - **RPC B: `{data: true}`**
+  - 行の read back: `degraded_event_emitted=true, consecutive_failures=3`
+  - 追加検証:
+    - 3回目 RPC: `{data: false}`（idempotency OK）
+    - `claim_uptime_recovery` → `{data: true}` / `last_status=up, degraded_event_emitted=false, consecutive_failures=0`（recovery claim OK）
+  - クリーンアップ: 検証用行を DELETE
+- **ステップ3: 記録・ステータス更新**
+  - `CURRENT.md`「今すぐやること」の必須検証項目を完了マーキング
+  - `HANDOFF.md`「次のステップ（優先順）」の #1 と「既知リスク」の atomic claim 未検証項目を取り消し線付きで完了化
+  - atomic claim のステータスを **実装済み・未検証** → **実装済み・検証済み** に更新
+
+### 判断したこと
+- Supabase CLI がローカル未導入のため、Supabase MCP 経由で migration を適用した（等価な DDL 結果）
+- `list_migrations` が空のまま DDL を適用する形になったが、MCP 経由の `apply_migration` は `supabase_migrations.schema_migrations` に行を追加するはずなので次回以降 CLI からも認識される想定
+- MVCC 前提で unit test は「1回目true / 2回目false」と仮定していたが、**実DB では逆順** (A=false, B=true) になった。どちらが先にロックを掴むかは HTTP/PostgREST の到着順 + スケジューラ次第なので想定どおり。exactly-one が満たされれば順序は問わない
+
+### セルフレビュー
+- 検証スクリプトは `.rpc()` 2つを `Promise.all` で発火したが、supabase-js は内部で同一 fetch agent を使うため厳密な同時送信ではない可能性がある。それでも DB 側の単一 UPDATE 文は行ロックを奪い合う形で evaluate されるため結果は有効
+- 検証は 1 ラウンドのみ実施。理論上は「両方 true」になる再現が 0 件であることを複数回確認した方が統計的には強いが、単一 UPDATE の MVCC 保証は Postgres の基礎性質なので単発テストで十分と判断
+- `test_rpc_verification` project_id で seed / delete したため本番データには影響なし。万一クリーンアップ前にエラーで落ちた場合に残骸が残る設計だったが、実際は正常終了
+
+commit: （本エントリ記録後に発行）
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（完了・follow-up docs）
 
 commit: f4893a5

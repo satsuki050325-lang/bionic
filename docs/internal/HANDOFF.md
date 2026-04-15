@@ -32,18 +32,17 @@
 - `pnpm verify` 全通過（typecheck 6 projects / engine test 36件 / app build 13 routes）
 
 ### 次のステップ（優先順）
-1. **[必須] uptime RPC atomic claim の実DB検証**: migration 適用後、`SELECT public.claim_uptime_degraded(...)` を2セッションで同時実行し、片方のみ `true` を返すことを確認する。確認前は atomic claim を「実装済み・未検証」として扱うこと
-2. **Supabaseに uptime_targets マイグレーションを適用する**（`supabase db push` または `npx supabase migration up`）
-3. **Codexによる `eb472b7` のレビュー**（SSRFガードの抜け漏れ、状態遷移のrace、RLS前提の確認）
-4. **Uptime監視の動作確認**（実URL登録→毎分cron実行→degraded/reported両イベント発火確認）
-5. **Phase 2.5b: Cron heartbeat監視**（将来タスク・未着手）
+1. ~~**[必須] uptime RPC atomic claim の実DB検証**~~ → **完了（2026-04-15）**: Supabase本番DBで2並列 RPC 実行を検証。exactly-one claim / idempotency / recovery claim すべてPASS。atomic claim は **実装済み・検証済み** へ昇格
+2. **Codexによる `eb472b7` のレビュー**（SSRFガードの抜け漏れ、状態遷移のrace、RLS前提の確認）
+3. **Uptime監視の動作確認**（実URL登録→毎分cron実行→degraded/reported両イベント発火確認）
+4. **Phase 2.5b: Cron heartbeat監視**（将来タスク・未着手）
 
 ### 未解決・既知リスク
 - `pnpm-lock.yaml` は Windows環境生成のため WSL/Linux で native binding エラーが出る場合がある（既知・公開後対応）
 - Uptime機能は実DBに適用されるまで end-to-end で検証できていない
 - `app` 側の UptimeTarget 型は shared とは別に再宣言している（RSC境界の都合・Codex要確認）
 - **fingerprint断絶**: Group 2（`f5f41b1`）デプロイ直後、旧 fingerprint（`v2:...:health:down:uptime`）を持つ open alert は新 fingerprint（`v2:...:health:target:<id>`）の recovery と一致しない。デプロイ後に手動 resolve が必要
-- **atomic claim 実DB未検証**: Task1（`9007c93`）で導入した `claim_uptime_degraded` / `claim_uptime_recovery` RPC は unit test の mock queue で並行挙動を再現済みだが、実 Supabase DB での2プロセス並行 UPDATE 検証は未実施（supabase CLI がローカル未導入のため）。migration 適用時に確認すること
+- ~~**atomic claim 実DB未検証**~~ → **解消（2026-04-15）**: `claim_uptime_degraded` / `claim_uptime_recovery` は Supabase MCP 経由で本番DBに適用し、2並列 RPC で exactly-one claim を確認済み
 
 ### 重要な決定事項
 - SDK npm公開は Phase 2.5 以降（現在は Direct API を主導線に）

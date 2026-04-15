@@ -266,10 +266,11 @@
 ## 次の1手
 
 ### 今すぐやること
-- **[必須] uptime RPC atomic claim の実DB検証**: migration 適用後、
-  `SELECT public.claim_uptime_degraded(...)` を2セッションで同時実行し、
-  片方のみ `true` を返すことを確認する。
-  確認前は atomic claim を「実装済み・未検証」として扱うこと
+- **[完了・検証済み] uptime RPC atomic claim の実DB検証**: 2026-04-15 に Supabase 本番DBで実施。
+  `claim_uptime_degraded` を2並列で呼び、一方のみ `true` を返し `degraded_event_emitted` が
+  `false→true` に遷移することを確認。3回目の呼び出しは `false`（idempotency）、
+  `claim_uptime_recovery` で正しく状態が戻ることも確認した。
+  atomic claim のステータスは **実装済み・検証済み** に更新
 - Phase 2.4: GitHub公開（リポジトリをpublicに変更）
 
 ### done条件
