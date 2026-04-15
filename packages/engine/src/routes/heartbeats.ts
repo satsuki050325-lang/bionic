@@ -14,6 +14,12 @@ import type { EngineEvent } from '@bionic/shared'
 
 export const heartbeatsRouter = Router()
 
+// Fixed-length dummy hash (hex of a 256-bit zero block) used when no row
+// matches the slug, so the ping endpoint's response time is independent of
+// slug existence. timingSafeEqual always runs exactly once on the failure
+// path, matching the success-path's per-candidate compare.
+const DUMMY_SECRET_HASH = '0'.repeat(64)
+
 function parseBearer(header: string | undefined): string | null {
   if (!header) return null
   const m = /^Bearer\s+(.+)$/i.exec(header)
@@ -22,22 +28,26 @@ function parseBearer(header: string | undefined): string | null {
 
 heartbeatsRouter.post('/:slug', async (req, res) => {
   const slug = req.params['slug']
-  if (!slug || !/^[a-z0-9-]{3,64}$/.test(slug)) {
-    res.status(404).json({ error: 'heartbeat target not found' })
-    return
-  }
-
   const presented = parseBearer(req.headers['authorization'])
-  if (!presented) {
-    res.status(401).json({ error: 'missing Authorization Bearer token' })
+
+  // Reject obviously malformed requests without a DB lookup, but still
+  // consume a constant-time compare so the response time is flat regardless
+  // of which early-exit fired.
+  if (!slug || !/^[a-z0-9-]{3,64}$/.test(slug) || !presented) {
+    verifyHeartbeatSecret(presented ?? '', DUMMY_SECRET_HASH)
+    res.status(401).json({ error: 'invalid heartbeat credentials' })
     return
   }
 
-  const { data, error } = await supabase
+  // Fetch ALL rows matching the slug. The (project_id, slug) unique index
+  // means different projects can share a slug; the presented secret is the
+  // canonical identifier that pins the request to a single target. This
+  // avoids maybeSingle()'s "multiple rows" 500 error, keeps multi-project
+  // slug namespacing, and requires no migration.
+  const { data: rows, error } = await supabase
     .from('heartbeat_targets')
     .select('*')
     .eq('slug', slug)
-    .maybeSingle()
 
   if (error) {
     console.error('[heartbeats] select failed:', error)
@@ -45,25 +55,33 @@ heartbeatsRouter.post('/:slug', async (req, res) => {
     return
   }
 
-  if (!data) {
-    res.status(404).json({ error: 'heartbeat target not found' })
+  // Always run at least one timingSafeEqual call. When zero rows match the
+  // slug we compare against DUMMY_SECRET_HASH so slug existence cannot be
+  // inferred from response latency.
+  let matched: Record<string, unknown> | null = null
+  if (!rows || rows.length === 0) {
+    verifyHeartbeatSecret(presented, DUMMY_SECRET_HASH)
+  } else {
+    for (const row of rows) {
+      const storedHash = (row['secret_hash'] as string | null) ?? ''
+      if (verifyHeartbeatSecret(presented, storedHash)) {
+        matched = row as Record<string, unknown>
+        break
+      }
+    }
+  }
+
+  if (!matched) {
+    res.status(401).json({ error: 'invalid heartbeat credentials' })
     return
   }
 
-  // Always run the timing-safe compare even on shape mismatches so failure
-  // paths have similar latency regardless of whether the row existed.
-  const storedHash = (data['secret_hash'] as string | null) ?? ''
-  const ok = verifyHeartbeatSecret(presented, storedHash)
-  if (!ok) {
-    res.status(401).json({ error: 'invalid secret' })
-    return
-  }
-
-  if (!(data['enabled'] as boolean)) {
+  if (!(matched['enabled'] as boolean)) {
     res.status(403).json({ error: 'heartbeat target is disabled' })
     return
   }
 
+  const data = matched
   const now = new Date().toISOString()
   const ip =
     (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ??
