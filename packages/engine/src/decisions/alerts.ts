@@ -58,6 +58,9 @@ export function buildFingerprint(
     }
   } else if (alertType === 'deployment_regression') {
     parts.push((payload.deploymentId as string | undefined) ?? 'unknown')
+  } else if (alertType === 'cron_missing') {
+    const targetId = payload.targetId as string | undefined
+    parts.push(`cron:target:${targetId ?? 'unknown'}`)
   } else {
     parts.push('default')
   }
@@ -92,22 +95,79 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
     return
   }
 
+  // heartbeat.recovered → resolve the matching cron_missing alert by fingerprint
+  if (event.type === 'heartbeat.recovered' && event.serviceId) {
+    const payload = event.payload as Record<string, unknown>
+    if (typeof payload.targetId === 'string') {
+      const fingerprint = buildFingerprint(
+        event.projectId,
+        event.serviceId,
+        'cron_missing',
+        payload
+      )
+      const { data: openAlerts } = await supabase
+        .from('engine_alerts')
+        .select('id')
+        .eq('project_id', event.projectId)
+        .eq('service_id', event.serviceId)
+        .eq('type', 'cron_missing')
+        .eq('fingerprint', fingerprint)
+        .eq('status', 'open')
+      for (const a of openAlerts ?? []) {
+        await supabase
+          .from('engine_alerts')
+          .update({
+            status: 'resolved',
+            resolved_at: new Date().toISOString(),
+            resolved_by: 'engine',
+            resolved_reason: 'heartbeat_recovered',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', a.id)
+          .eq('status', 'open')
+      }
+    }
+    return
+  }
+
   if (
     event.type !== 'service.health.degraded' &&
-    event.type !== 'service.error.reported'
+    event.type !== 'service.error.reported' &&
+    event.type !== 'heartbeat.missing.detected'
   ) {
     return
   }
 
-  let alertType: 'service_health' | 'service_error'
-  let severity: 'critical' | 'warning'
+  let alertType: 'service_health' | 'service_error' | 'cron_missing'
+  let severity: 'critical' | 'warning' | 'info'
   let title: string
   let message: string
   let fingerprint: string
 
   const payload = event.payload as Record<string, unknown>
 
-  if (event.type === 'service.health.degraded') {
+  if (event.type === 'heartbeat.missing.detected') {
+    alertType = 'cron_missing'
+    const sev = payload.severity as string | undefined
+    severity =
+      sev === 'critical' || sev === 'info' || sev === 'warning'
+        ? (sev as 'critical' | 'info' | 'warning')
+        : 'warning'
+    const slug = (payload.slug as string | undefined) ?? event.serviceId
+    title = `${slug} cron heartbeat missing`
+    const interval = payload.expectedIntervalSeconds as number | undefined
+    const grace = payload.graceSeconds as number | undefined
+    const lastPing = payload.lastPingAt as string | null | undefined
+    message = lastPing
+      ? `No ping for ${slug} since ${lastPing}. Expected every ${interval}s (+${grace}s grace).`
+      : `No ping yet for ${slug}. Expected every ${interval}s (+${grace}s grace).`
+    fingerprint = buildFingerprint(
+      event.projectId,
+      event.serviceId,
+      'cron_missing',
+      payload
+    )
+  } else if (event.type === 'service.health.degraded') {
     const status = (payload.status as string) ?? 'degraded'
     const latencyMs = payload.latencyMs as number | undefined
 

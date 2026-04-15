@@ -9,6 +9,7 @@ import { runStaleApprovalCheck } from '../runners/approvals.js'
 import { runCriticalAlertReminders } from '../runners/alertReminders.js'
 import { runApprovedActions } from '../runners/approvedActions.js'
 import { runDueUptimeChecks } from '../uptime/runner.js'
+import { runDueHeartbeatChecks } from '../heartbeat/runner.js'
 import {
   recordRunnerStart,
   recordRunnerSuccess,
@@ -186,6 +187,19 @@ export function startScheduler(): void {
       recordRunnerSuccess('uptime_runner')
     } catch (err) {
       recordRunnerError('uptime_runner', err instanceof Error ? err.message : String(err))
+    }
+  })
+
+  cron.schedule('* * * * *', async () => {
+    recordRunnerStart('heartbeat_missing_runner')
+    try {
+      await runDueHeartbeatChecks()
+      recordRunnerSuccess('heartbeat_missing_runner')
+    } catch (err) {
+      recordRunnerError(
+        'heartbeat_missing_runner',
+        err instanceof Error ? err.message : String(err)
+      )
     }
   })
 

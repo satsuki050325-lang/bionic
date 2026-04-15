@@ -11,6 +11,7 @@ const runnerState: Record<string, RunnerState> = {
   stale_approvals: { lastRunAt: null, lastSuccessAt: null, lastError: null },
   critical_alert_reminders: { lastRunAt: null, lastSuccessAt: null, lastError: null },
   uptime_runner: { lastRunAt: null, lastSuccessAt: null, lastError: null },
+  heartbeat_missing_runner: { lastRunAt: null, lastSuccessAt: null, lastError: null },
 }
 
 export function recordRunnerStart(name: string): void {
