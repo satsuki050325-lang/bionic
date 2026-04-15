@@ -11,6 +11,8 @@ import { incidentBriefRouter } from './routes/incidentBrief.js'
 import { metricsRouter } from './routes/metrics.js'
 import { servicesRouter } from './routes/services.js'
 import { uptimeTargetsRouter } from './routes/uptimeTargets.js'
+import { heartbeatsRouter } from './routes/heartbeats.js'
+import { heartbeatTargetsRouter } from './routes/heartbeatTargets.js'
 import { vercelWebhookRouter } from './routes/webhooks/vercel.js'
 import { githubWebhookRouter } from './routes/webhooks/github.js'
 import { stripeWebhookRouter } from './routes/webhooks/stripe.js'
@@ -50,6 +52,11 @@ app.use(
 )
 
 app.use(express.json({ limit: '1mb' }))
+
+// Heartbeat ping receiver: per-target Bearer auth, NOT the engine-wide token.
+// Must be registered BEFORE engineAuthMiddleware.
+app.use('/api/heartbeats', heartbeatsRouter)
+
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -71,6 +78,7 @@ app.use('/api/incident-brief', incidentBriefRouter)
 app.use('/api/metrics', metricsRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/uptime-targets', uptimeTargetsRouter)
+app.use('/api/heartbeat-targets', heartbeatTargetsRouter)
 
 app.listen(config.engine.port, config.engine.host, () => {
   console.log(`Bionic Engine running on http://${config.engine.host}:${config.engine.port}`)

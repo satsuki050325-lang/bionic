@@ -151,6 +151,9 @@ export interface RedactedEngineConfig {
     apiKey: RedactedFlag
     enabled: boolean
   }
+  heartbeat?: {
+    hmacKey: '[set]' | '[dev default]'
+  }
 }
 
 export interface Diagnostics {

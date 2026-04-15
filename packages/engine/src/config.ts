@@ -204,6 +204,13 @@ export interface EngineConfig {
     apiKey: string | null
     enabled: boolean
   }
+
+  heartbeat: {
+    /** Server-side pepper for HMAC-SHA256 hashing of heartbeat secrets. */
+    hmacKey: string
+    /** True if hmacKey came from env; false means we fell back to a dev default. */
+    hmacKeyFromEnv: boolean
+  }
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
@@ -295,6 +302,21 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
       apiKey: readString(env, 'ANTHROPIC_API_KEY'),
       enabled: !!readString(env, 'ANTHROPIC_API_KEY'),
     },
+
+    heartbeat: (() => {
+      const fromEnv = readString(env, 'BIONIC_HEARTBEAT_HMAC_KEY')
+      if (!fromEnv) {
+        console.warn(
+          '[config] BIONIC_HEARTBEAT_HMAC_KEY is not set. Heartbeat secret ' +
+            'hashes will use a non-production default pepper. Set this env ' +
+            'variable before taking heartbeats live.'
+        )
+      }
+      return {
+        hmacKey: fromEnv ?? 'bionic.heartbeat.dev-only-pepper.v1',
+        hmacKeyFromEnv: !!fromEnv,
+      }
+    })(),
   }
 }
 
@@ -366,6 +388,9 @@ export function redactConfig(config: EngineConfig): Record<string, unknown> {
     anthropic: {
       apiKey: config.anthropic.apiKey ? '[set]' : '[not set]',
       enabled: config.anthropic.enabled,
+    },
+    heartbeat: {
+      hmacKey: config.heartbeat.hmacKeyFromEnv ? '[set]' : '[dev default]',
     },
   }
 }
