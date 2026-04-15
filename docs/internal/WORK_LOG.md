@@ -3,6 +3,19 @@
 
 ---
 
+## 2026-04-15 / Claude Code（完了・CURRENT.md 現況同期）
+
+### やったこと
+- 冒頭フェーズ表記: 「Phase 1 完了 / Phase 2 設計確定」→「Phase 2.5a 完了 / Phase 2.5b 着手前」
+- 確定優先順位: 「Phase 2.4: UI最終仕上げ（今ここ）」を「（完了）」に変更し、「Phase 2.5a: Uptime ping監視（完了・実DB検証済み）」を追記
+- 次の1手「今すぐやること」: 完了済み項目を削除し「Phase 2.5b: Cron heartbeat監視（未着手）」に差し替え
+- 既知リスク: 「テストコードがまだない」を削除（engine test 88件通過済みで陳腐化）
+- 最終更新: 2026-04-14 → 2026-04-15 / Claude
+
+担当：Claude Code
+
+---
+
 ## 2026-04-15 / Claude Code（完了・uptime RPC 実DB検証）
 
 ### やったこと

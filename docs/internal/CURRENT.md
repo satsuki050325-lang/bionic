@@ -6,7 +6,7 @@
 
 ## 現在のフェーズ
 
-**Phase 1 完了 / Phase 2 設計確定**
+**Phase 2.5a 完了 / Phase 2.5b 着手前**
 自動化フロー：Phase 0（手動）
 
 ---
@@ -266,12 +266,7 @@
 ## 次の1手
 
 ### 今すぐやること
-- **[完了・検証済み] uptime RPC atomic claim の実DB検証**: 2026-04-15 に Supabase 本番DBで実施。
-  `claim_uptime_degraded` を2並列で呼び、一方のみ `true` を返し `degraded_event_emitted` が
-  `false→true` に遷移することを確認。3回目の呼び出しは `false`（idempotency）、
-  `claim_uptime_recovery` で正しく状態が戻ることも確認した。
-  atomic claim のステータスは **実装済み・検証済み** に更新
-- Phase 2.4: GitHub公開（リポジトリをpublicに変更）
+- Phase 2.5b: Cron heartbeat監視（未着手）
 
 ### done条件
 - [x] Settingsのenv読み取りバグ修正（[not set]問題）
@@ -323,7 +318,8 @@ Phase 2.4: bionic demo実装（完了）
 Phase 2.4: Dashboard UI改善（完了）
 Phase 2.4: Alerts UI改善（完了）
 Phase 2.4: Public Preview公開準備（LICENSE・README・CHECKLIST・SHOW_HN 完了）
-Phase 2.4: UI最終仕上げ（今ここ）
+Phase 2.4: UI最終仕上げ（完了）
+Phase 2.5a: Uptime ping監視（完了・実DB検証済み）
 
 
 ---
@@ -340,7 +336,6 @@ Phase 2.4: UI最終仕上げ（今ここ）
 
 ## 既知リスク
 
-- テストコードがまだない（次のタスク）
 - Discord Bot常駐・外部API監視・LLM要約が増えるとコストが発生する（今は実質$0）
 - sendApprovalNotificationはpending_approval action生成時に結線が必要（将来タスク）
 
@@ -359,4 +354,4 @@ Phase 2.4: UI最終仕上げ（今ここ）
 
 ## 最終更新
 
-2026-04-14 / Claude
+2026-04-15 / Claude
