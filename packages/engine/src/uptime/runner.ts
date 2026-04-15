@@ -75,24 +75,32 @@ async function processTarget(target: UptimeTarget): Promise<void> {
   })
 
   const now = new Date().toISOString()
-  const previousStatus = target.lastStatus
-  const previousWasDegraded = target.degradedEventEmitted
 
   if (outcome.ok) {
-    const update = {
-      last_checked_at: now,
-      last_status: 'up' as const,
-      last_latency_ms: outcome.latencyMs,
-      last_status_code: outcome.statusCode,
-      last_failure_reason: null,
-      consecutive_failures: 0,
-      degraded_event_emitted: false,
-      updated_at: now,
-    }
-    await supabase.from('uptime_targets').update(update).eq('id', target.id)
+    // Atomically claim a recovery transition: only one concurrent runner gets
+    // to flip a degraded/down target back to 'up'. The .select('id') return
+    // set tells us whether we were the claimer.
+    const { data: recoveryClaim, error: recoveryErr } = await supabase
+      .from('uptime_targets')
+      .update({
+        last_checked_at: now,
+        last_status: 'up',
+        last_latency_ms: outcome.latencyMs,
+        last_status_code: outcome.statusCode,
+        last_failure_reason: null,
+        consecutive_failures: 0,
+        degraded_event_emitted: false,
+        updated_at: now,
+      })
+      .eq('id', target.id)
+      .or('degraded_event_emitted.eq.true,last_status.eq.down')
+      .select('id')
 
-    // Emit recovery event only when transitioning out of a degraded state
-    if (previousWasDegraded || previousStatus === 'down') {
+    if (recoveryErr) {
+      console.error('[uptime] recovery claim failed:', recoveryErr)
+    }
+
+    if (recoveryClaim && recoveryClaim.length > 0) {
       await emitEvent({
         projectId: target.projectId,
         serviceId: target.serviceId,
@@ -100,48 +108,92 @@ async function processTarget(target: UptimeTarget): Promise<void> {
         payload: {
           status: 'ok',
           check: 'uptime',
+          targetId: target.id,
           url: target.url,
           latencyMs: outcome.latencyMs,
           statusCode: outcome.statusCode,
           source: 'uptime_runner',
         },
       })
+      return
     }
+
+    // No state transition (already 'up' or never been down) — just refresh the
+    // probe fields. Idempotent even under concurrent runs.
+    await supabase
+      .from('uptime_targets')
+      .update({
+        last_checked_at: now,
+        last_status: 'up',
+        last_latency_ms: outcome.latencyMs,
+        last_status_code: outcome.statusCode,
+        last_failure_reason: null,
+        consecutive_failures: 0,
+        updated_at: now,
+      })
+      .eq('id', target.id)
     return
   }
 
+  // Failure path: first write the new counters/status (non-atomic increment is
+  // acceptable — worst case a concurrent run writes the same value), then
+  // atomically claim the "emit degraded" transition.
   const newFailures = target.consecutiveFailures + 1
-  const shouldEmitDegraded =
-    newFailures >= DEGRADED_THRESHOLD && !previousWasDegraded
-
-  const update = {
-    last_checked_at: now,
-    last_status: 'down' as const,
-    last_latency_ms: outcome.latencyMs,
-    last_status_code: outcome.statusCode,
-    last_failure_reason: outcome.reason,
-    consecutive_failures: newFailures,
-    degraded_event_emitted: shouldEmitDegraded ? true : previousWasDegraded,
-    updated_at: now,
-  }
-  await supabase.from('uptime_targets').update(update).eq('id', target.id)
-
-  if (shouldEmitDegraded) {
-    await emitEvent({
-      projectId: target.projectId,
-      serviceId: target.serviceId,
-      type: 'service.health.degraded',
-      payload: {
-        status: 'down',
-        check: 'uptime',
-        url: target.url,
-        reason: outcome.reason,
-        statusCode: outcome.statusCode,
-        consecutiveFailures: newFailures,
-        source: 'uptime_runner',
-      },
+  const { error: failErr } = await supabase
+    .from('uptime_targets')
+    .update({
+      last_checked_at: now,
+      last_status: 'down',
+      last_latency_ms: outcome.latencyMs,
+      last_status_code: outcome.statusCode,
+      last_failure_reason: outcome.reason,
+      consecutive_failures: newFailures,
+      updated_at: now,
     })
+    .eq('id', target.id)
+
+  if (failErr) {
+    console.error('[uptime] failure update failed:', failErr)
+    return
   }
+
+  if (newFailures < DEGRADED_THRESHOLD) return
+
+  // Atomically claim the degraded emit. If another runner already claimed,
+  // this update matches zero rows and we skip the event.
+  const { data: degradedClaim, error: claimErr } = await supabase
+    .from('uptime_targets')
+    .update({
+      degraded_event_emitted: true,
+      updated_at: now,
+    })
+    .eq('id', target.id)
+    .eq('degraded_event_emitted', false)
+    .gte('consecutive_failures', DEGRADED_THRESHOLD)
+    .select('id')
+
+  if (claimErr) {
+    console.error('[uptime] degraded claim failed:', claimErr)
+    return
+  }
+
+  if (!degradedClaim || degradedClaim.length === 0) return
+
+  await emitEvent({
+    projectId: target.projectId,
+    serviceId: target.serviceId,
+    type: 'service.health.degraded',
+    payload: {
+      status: 'down',
+      check: 'uptime',
+      targetId: target.id,
+      url: target.url,
+      reason: outcome.reason,
+      statusCode: outcome.statusCode,
+      consecutiveFailures: newFailures,
+      source: 'uptime_runner',
+    },
+  })
 }
 
 export async function runDueUptimeChecks(): Promise<{

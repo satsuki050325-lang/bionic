@@ -42,12 +42,20 @@ export function buildFingerprint(
       'unknown_error'
     parts.push(stableKey)
   } else if (alertType === 'service_health') {
-    const status = (payload.status as string | undefined) ?? 'unknown'
-    const reason =
-      (payload.reason as string | undefined) ??
-      (payload.check as string | undefined) ??
-      'general'
-    parts.push(`health:${status}:${reason}`)
+    const targetId = payload.targetId as string | undefined
+    if (targetId) {
+      // Probe-scoped alert (e.g. uptime_target) — dedupe by probe identity so
+      // degraded-and-recovery events from the same target share a fingerprint,
+      // and unrelated targets for the same service stay in separate alerts.
+      parts.push(`health:target:${targetId}`)
+    } else {
+      const status = (payload.status as string | undefined) ?? 'unknown'
+      const reason =
+        (payload.reason as string | undefined) ??
+        (payload.check as string | undefined) ??
+        'general'
+      parts.push(`health:${status}:${reason}`)
+    }
   } else if (alertType === 'deployment_regression') {
     parts.push((payload.deploymentId as string | undefined) ?? 'unknown')
   } else {
@@ -67,7 +75,19 @@ export async function evaluateAlertForEvent(event: EngineEvent): Promise<void> {
   if (event.type === 'service.health.reported') {
     const payload = event.payload as Record<string, unknown>
     if (payload.status === 'ok' && event.serviceId) {
-      await autoResolveHealthAlerts(event.projectId, event.serviceId)
+      if (typeof payload.targetId === 'string') {
+        // Probe-scoped recovery: resolve only the matching alert, not every
+        // open service_health alert for the service.
+        const fingerprint = buildFingerprint(
+          event.projectId,
+          event.serviceId,
+          'service_health',
+          payload
+        )
+        await autoResolveHealthAlerts(event.projectId, event.serviceId, fingerprint)
+      } else {
+        await autoResolveHealthAlerts(event.projectId, event.serviceId)
+      }
     }
     return
   }

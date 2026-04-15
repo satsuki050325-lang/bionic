@@ -75,15 +75,22 @@ export async function resolveAlert(
 
 export async function autoResolveHealthAlerts(
   projectId: string,
-  serviceId: string
+  serviceId: string,
+  fingerprint?: string
 ): Promise<void> {
-  const { data: openAlerts, error } = await supabase
+  let query = supabase
     .from('engine_alerts')
     .select('id')
     .eq('project_id', projectId)
     .eq('service_id', serviceId)
     .eq('type', 'service_health')
     .eq('status', 'open')
+
+  if (fingerprint) {
+    query = query.eq('fingerprint', fingerprint)
+  }
+
+  const { data: openAlerts, error } = await query
 
   if (error || !openAlerts || openAlerts.length === 0) return
 
